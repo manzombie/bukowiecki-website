@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VFX Tools - Lukasz Bukowiecki</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="https://bukowiecki.co/" class="logo-link">
+                        <span class="logo-text">LUKASZ BUKOWIECKI</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="https://bukowiecki.co/" class="nav-link">← Back to Main Site</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="hero">
+                <h1 class="hero-title">VFX Tools</h1>
+                <p class="hero-subtitle">Professional tools for visual effects and post-production workflows</p>
+            </div>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-icon">🎬</div>
+                    <h3 class="tool-title">Subcaps to Locators Converter</h3>
+                    <p class="tool-description">Convert Avid subcaps files to locators format with support for multiple frame rates (23.976, 24, 25, 29.97, 30, 50, 59.94, 60fps). Calculate precise middle points and generate properly formatted locator files.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">Multi-FPS</span>
+                        <span class="feature-tag">Avid</span>
+                        <span class="feature-tag">Timecode</span>
+                    </div>
+                    <a href="subcap-converter.html" class="tool-link">Use Tool →</a>
+                </div>
+
+                <div class="tool-card coming-soon">
+                    <div class="tool-icon">🎨</div>
+                    <h3 class="tool-title">Color Space Converter</h3>
+                    <p class="tool-description">Convert between different color spaces and gamma curves for VFX workflows. Support for Rec.709, Rec.2020, and more.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">Rec.709</span>
+                        <span class="feature-tag">Rec.2020</span>
+                        <span class="feature-tag">Gamma</span>
+                    </div>
+                    <span class="tool-link disabled">Coming Soon</span>
+                </div>
+
+                <div class="tool-card coming-soon">
+                    <div class="tool-icon">📐</div>
+                    <h3 class="tool-title">Aspect Ratio Calculator</h3>
+                    <p class="tool-description">Calculate aspect ratios, crop dimensions, and letterbox/pillarbox sizes for various display formats and resolutions.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">16:9</span>
+                        <span class="feature-tag">4:3</span>
+                        <span class="feature-tag">Crop</span>
+                    </div>
+                    <span class="tool-link disabled">Coming Soon</span>
+                </div>
+
+                <div class="tool-card coming-soon">
+                    <div class="tool-icon">⏱️</div>
+                    <h3 class="tool-title">Frame Rate Converter</h3>
+                    <p class="tool-description">Convert timecode between different frame rates (23.98, 24, 25, 29.97, 30, 50, 59.94, 60fps) with precise calculations.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">23.98fps</span>
+                        <span class="feature-tag">29.97fps</span>
+                        <span class="feature-tag">Drop Frame</span>
+                    </div>
+                    <span class="tool-link disabled">Coming Soon</span>
+                </div>
+
+                <div class="tool-card coming-soon">
+                    <div class="tool-icon">🎯</div>
+                    <h3 class="tool-title">Shot List Generator</h3>
+                    <p class="tool-description">Generate professional shot lists and breakdowns from EDL files or manual input. Export to various formats.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">EDL</span>
+                        <span class="feature-tag">CSV</span>
+                        <span class="feature-tag">PDF</span>
+                    </div>
+                    <span class="tool-link disabled">Coming Soon</span>
+                </div>
+
+                <div class="tool-card coming-soon">
+                    <div class="tool-icon">🔧</div>
+                    <h3 class="tool-title">VFX Pipeline Tools</h3>
+                    <p class="tool-description">Collection of utilities for VFX pipeline management, file naming conventions, and workflow optimization.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">Pipeline</span>
+                        <span class="feature-tag">Naming</span>
+                        <span class="feature-tag">Workflow</span>
+                    </div>
+                    <span class="tool-link disabled">Coming Soon</span>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h2>About These Tools</h2>
+                <p>These tools are designed based on real-world VFX and post-production workflows. Each tool addresses common challenges faced by VFX artists, editors, and post-production professionals.</p>
+                <p>Built with modern web technologies, these tools work entirely in your browser - no software installation required. Your files never leave your device, ensuring complete privacy and security.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Lukasz Bukowiecki. All rights reserved.</p>
+                <p>Part of <a href="https://bukowiecki.co/" class="footer-link">bukowiecki.co</a></p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

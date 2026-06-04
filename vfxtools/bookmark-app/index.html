@@ -1,0 +1,2420 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bookmarks Reader</title>
+  <style>
+    /* ---------- THEME: Deep Focus (dark) ---------- */
+    :root, [data-mood="deep-focus"]{
+      --bg:#0b0c0f;
+      --card:#12141a;
+      --text:#e9e9ee;
+      --muted:#a6a8b3;
+      --link:#7aa2ff;
+      --pill-active:#5b8af0;
+      --bookmark:#5b8af0;
+      --accent-surface:#171a22;
+      --accent-border:#2a3142;
+      --nav-hover:#1a1d26;
+      --max: 720px;
+    }
+    /* ---------- THEME: Quiet Mind (grey) ---------- */
+    [data-mood="quiet-mind"]{
+      --bg:#1e2028;
+      --card:#282a34;
+      --text:#d8d9e0;
+      --muted:#8e90a0;
+      --link:#8daaf5;
+      --pill-active:#6b7fb8;
+      --bookmark:#6b7fb8;
+      --accent-surface:#2f3240;
+      --accent-border:#3d4054;
+      --nav-hover:#333642;
+    }
+    /* ---------- THEME: Soft Morning (warm light) ---------- */
+    [data-mood="soft-morning"]{
+      --bg:#f0ece4;
+      --card:#faf7f2;
+      --text:#2c2a26;
+      --muted:#7a7770;
+      --link:#5a7ec2;
+      --pill-active:#8a6b42;
+      --bookmark:#8a6b42;
+      --accent-surface:#ece8e0;
+      --accent-border:#d6d2ca;
+      --nav-hover:#ede9e2;
+    }
+
+    /* ---------- FONT FAMILIES ---------- */
+    [data-font="clean"], :root{
+      --font: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    }
+    [data-font="literary"]{
+      --font: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif;
+    }
+    [data-font="terminal"]{
+      --font: 'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font: 18px/1.75 var(--font);
+      transition: background .3s, color .3s;
+      position: relative;
+    }
+
+    /* ---------- AMBIENT BREATH ---------- */
+    body::before{
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(91,138,240,0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(91,138,240,0.02) 0%, transparent 50%);
+      opacity: 0;
+      animation: ambientBreath 45s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    [data-mood="quiet-mind"] body::before{
+      background:
+        radial-gradient(circle at 20% 50%, rgba(107,127,184,0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(107,127,184,0.03) 0%, transparent 50%);
+    }
+    [data-mood="soft-morning"] body::before{
+      background:
+        radial-gradient(circle at 20% 50%, rgba(138,107,66,0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(138,107,66,0.03) 0%, transparent 50%);
+    }
+    @keyframes ambientBreath{
+      0%, 100% { opacity: 0; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+    .wrap, .library{ position: relative; z-index: 1; }
+
+    /* ---------- LIBRARY VIEW ---------- */
+    .library{
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    .library h1{ font-size: 32px; margin: 0 0 8px; }
+    .library .subtitle{ color: var(--muted); font-size: 15px; margin-bottom: 32px; }
+    .card-grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .article-card{
+      background: var(--card);
+      border-radius: 14px;
+      padding: 20px;
+      cursor: pointer;
+      transition: background .15s;
+      text-decoration: none;
+      color: var(--text);
+      display: block;
+      position: relative;
+    }
+    .article-card:hover{ background: var(--nav-hover); }
+    .article-card h3{ margin: 0 0 6px; font-size: 18px; line-height: 1.3; padding-right: 48px; }
+    .article-card .author{ color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+    .article-card .desc{ color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .card-actions{
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .article-card:hover .card-actions{ opacity: 1; }
+    .card-action-btn{
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent-surface);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .12s, color .12s;
+      padding: 0;
+    }
+    .card-action-btn:hover{ background: var(--accent-border); color: var(--text); }
+    .card-action-btn.delete:hover{ background: #3d2020; color: #f07070; }
+    [data-mood="soft-morning"] .card-action-btn.delete:hover{ background: #f0ddd0; color: #c04040; }
+    .add-card{
+      background: var(--card);
+      border: 2px dashed var(--accent-border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color .15s;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .add-card:hover{ border-color: var(--link); color: var(--link); }
+
+    /* ---------- MODAL ---------- */
+    .modal-overlay{
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active{ display: flex; }
+    .modal{
+      background: var(--card);
+      border-radius: 16px;
+      padding: 28px 24px;
+      width: 90%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h2{ margin: 0 0 18px; font-size: 22px; }
+    .modal label{ display: block; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .modal input, .modal textarea{
+      width: 100%;
+      background: var(--accent-surface);
+      border: 1px solid var(--accent-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--text);
+      font: inherit;
+      font-size: 15px;
+      margin-bottom: 16px;
+      resize: vertical;
+    }
+    .modal textarea{ min-height: 200px; }
+    .modal input:focus, .modal textarea:focus{ outline: none; border-color: var(--link); }
+    .modal-actions{ display: flex; gap: 10px; justify-content: flex-end; }
+    .btn{
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font: inherit;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .btn-primary{ background: var(--link); color: #fff; }
+    .btn-secondary{ background: var(--nav-hover); color: var(--muted); }
+
+    /* ---------- ARTICLE VIEW ---------- */
+    .article-view{ display: none; }
+    .progress{
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: var(--link);
+      width: 0%;
+      z-index: 50;
+    }
+    .wrap{
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+      max-width: calc(var(--max) + 280px + 48px);
+      margin: 0 auto;
+      padding: 24px 16px 80px;
+      transition: max-width .3s ease;
+    }
+    nav{
+      position: sticky;
+      top: 16px;
+      align-self: start;
+      background: var(--card);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    nav h3{ margin: 0 0 12px; font-size: 14px; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+    nav a{
+      display: block;
+      color: var(--text);
+      text-decoration: none;
+      padding: 10px 10px;
+      border-radius: 10px;
+    }
+    nav a:hover{ background: var(--nav-hover); }
+    .back-link{
+      display: inline-block;
+      color: var(--link);
+      text-decoration: none;
+      padding: 10px 0;
+      font-size: 15px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .back-link:hover{ text-decoration: underline; }
+    
+    .share-btn{
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      margin: 8px 0 16px;
+      background: var(--accent-surface);
+      border: 1px solid var(--accent-border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .share-btn:hover{
+      background: var(--nav-hover);
+      color: var(--text);
+      border-color: var(--link);
+    }
+    .share-btn svg{ flex-shrink: 0; }
+    
+    .sort-btn{
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid var(--accent-border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .sort-btn:hover{ border-color: var(--link); color: var(--text); }
+    .sort-btn.active{ background: var(--pill-active); color: #fff; border-color: var(--pill-active); }
+
+    /* ---------- CATEGORY FILTER PILLS ---------- */
+    .cat-filter-row{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .cat-filter-row .cat-label{
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .cat-pill{
+      padding: 5px 14px;
+      border: 1px solid var(--accent-border);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .cat-pill:hover{ border-color: var(--link); color: var(--text); }
+    .cat-pill.active{ background: var(--pill-active); color: #fff; border-color: var(--pill-active); }
+
+    .cat-pill.add-cat{
+      border-style: dashed;
+      font-size: 14px;
+      padding: 4px 12px;
+    }
+    .cat-pill.add-cat:hover{ border-color: var(--link); color: var(--link); }
+    .cat-remove{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      margin-left: 4px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.1);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1;
+      cursor: pointer;
+      transition: all .15s;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+    }
+    .cat-remove:hover{ background: #c04040; color: #fff; }
+    [data-mood="soft-morning"] .cat-remove:hover{ background: #c04040; color: #fff; }
+
+    /* ---------- CATEGORY TAG BADGES ---------- */
+    .card-tags{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 10px;
+    }
+    .card-tag{
+      font-size: 10px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--accent-border);
+      color: var(--muted);
+      background: var(--accent-surface);
+    }
+
+    /* ---------- CATEGORY CHECKBOXES IN MODAL ---------- */
+    .cat-picker{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .cat-picker label{
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+      cursor: pointer;
+      padding: 6px 12px;
+      border: 1px solid var(--accent-border);
+      border-radius: 20px;
+      transition: all .15s;
+      margin-bottom: 0;
+    }
+    .cat-picker label:has(input:checked){
+      background: var(--pill-active);
+      color: #fff;
+      border-color: var(--pill-active);
+    }
+    .cat-picker input[type="checkbox"]{
+      display: none;
+    }
+
+    .card-date{
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 8px;
+    }
+    main{
+      max-width: var(--max);
+      background: var(--card);
+      border-radius: 16px;
+      padding: 28px 22px;
+      transition: max-width .3s ease;
+    }
+    h1{ margin: 0 0 10px; font-size: 34px; line-height: 1.2; }
+    .meta{ color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+    .tldr{
+      background: var(--accent-surface);
+      border-radius: 14px;
+      padding: 14px 14px;
+      margin: 18px 0 26px;
+    }
+    .tldr strong{ display: block; margin-bottom: 8px; }
+    h2{
+      margin: 34px 0 10px;
+      font-size: 22px;
+      line-height: 1.3;
+    }
+    p{ margin: 0 0 14px; }
+    blockquote{
+      margin: 18px 0;
+      padding: 14px 16px;
+      background: var(--accent-surface);
+      border-left: 4px solid var(--accent-border);
+      border-radius: 12px;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .callout{
+      margin: 18px 0;
+      padding: 14px 16px;
+      background: var(--accent-surface);
+      border-radius: 12px;
+    }
+    .callout .k{ color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
+    ul{ padding-left: 20px; }
+    li{ margin-bottom: 8px; }
+
+    /* ---------- READING TOOLBAR ---------- */
+    .toolbar-toggle{
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 61;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--accent-border);
+      background: var(--card);
+      color: var(--muted);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+      transition: transform .2s, background .15s;
+    }
+    .toolbar-toggle:hover{ background: var(--nav-hover); color: var(--text); }
+    .toolbar-toggle.open{ background: var(--nav-hover); }
+
+    .reading-toolbar{
+      position: fixed;
+      bottom: 72px;
+      right: 20px;
+      z-index: 60;
+      background: var(--card);
+      border: 1px solid var(--accent-border);
+      border-radius: 16px;
+      padding: 16px 18px 14px;
+      width: 260px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.35);
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .2s, transform .2s;
+    }
+    .reading-toolbar.open{
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .tb-section{
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tb-label{
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+    .tb-slider-row{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tb-slider{
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 3px;
+      border-radius: 3px;
+      background: var(--accent-border);
+      outline: none;
+    }
+    .tb-slider::-webkit-slider-thumb{
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--link);
+      cursor: pointer;
+    }
+    .tb-slider::-moz-range-thumb{
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--link);
+      cursor: pointer;
+      border: none;
+    }
+    .tb-value{
+      font-size: 11px;
+      color: var(--muted);
+      min-width: 32px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .tb-pills{
+      display: flex;
+      gap: 4px;
+    }
+    .tb-pill{
+      flex: 1;
+      padding: 6px 0;
+      border: 1px solid var(--accent-border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 11px;
+      letter-spacing: .03em;
+      cursor: pointer;
+      transition: all .12s;
+      text-align: center;
+    }
+    .tb-pill:hover{ border-color: var(--pill-active); color: var(--text); }
+    .tb-pill.active{ background: var(--pill-active); color: #fff; border-color: var(--pill-active); }
+    .tb-divider{
+      height: 1px;
+      background: var(--accent-border);
+      margin: 0;
+      border: none;
+    }
+
+    .lib-mood-pills{ display: flex; gap: 6px; }
+    .lib-mood-pills .tb-pill{ padding: 8px 14px; font-size: 12px; }
+
+    /* ---------- BOOKMARK MARKER ---------- */
+    .bookmark-marker{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 22px 0;
+      cursor: default;
+      user-select: none;
+    }
+    .bookmark-marker::before{
+      content: '';
+      flex: 1;
+      height: 3px;
+      border-radius: 3px;
+      background: var(--bookmark);
+    }
+    .bookmark-marker::after{
+      content: '';
+      flex: 1;
+      height: 3px;
+      border-radius: 3px;
+      background: var(--bookmark);
+    }
+    .bookmark-tag{
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #fff;
+      background: var(--bookmark);
+      padding: 4px 14px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    /* Clickable paragraph hint */
+    main p, main li{
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background .12s;
+    }
+    main p:hover, main li:hover{
+      background: var(--accent-surface);
+    }
+
+    /* ---------- ZEN MODE ---------- */
+    .zen-mode .wrap{
+      grid-template-columns: 1fr;
+      max-width: var(--max);
+      padding-top: 48px;
+    }
+    .zen-mode nav{
+      display: none;
+    }
+    .zen-mode main{
+      border-radius: 0;
+      background: transparent;
+      padding: 0 16px 120px;
+    }
+    .zen-mode .toolbar-toggle,
+    .zen-mode .reading-toolbar{
+      z-index: 61;
+    }
+    .zen-mode .progress{
+      height: 2px;
+      opacity: .5;
+    }
+    /* Zen exit hint */
+    .zen-hint{
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity .4s;
+      pointer-events: none;
+      z-index: 62;
+    }
+    .zen-mode .zen-hint{
+      opacity: 1;
+      animation: zenHintFade 4s ease-in-out forwards;
+    }
+    @keyframes zenHintFade{
+      0% { opacity: 0; }
+      10% { opacity: .7; }
+      70% { opacity: .7; }
+      100% { opacity: 0; }
+    }
+    /* Focus lens – dim paragraphs outside reading zone */
+    main p, main blockquote, main li, main h2{
+      transition: opacity .3s ease;
+    }
+    main p.in-focus, main blockquote.in-focus, main li.in-focus, main h2.in-focus{
+      opacity: 1;
+    }
+    main p:not(.in-focus), main blockquote:not(.in-focus), main li:not(.in-focus), main h2:not(.in-focus){
+      opacity: .55;
+    }
+    /* Effect toggles */
+    .tb-toggle-row{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 0;
+    }
+    .tb-toggle-label{
+      font-size: 11px;
+      color: var(--text);
+      opacity: .85;
+    }
+    .toggle-switch{
+      position: relative;
+      width: 34px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input{
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-track{
+      position: absolute;
+      inset: 0;
+      background: var(--accent-border);
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .toggle-track::after{
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: transform .2s, background .2s;
+    }
+    .toggle-switch input:checked + .toggle-track{
+      background: var(--pill-active);
+    }
+    .toggle-switch input:checked + .toggle-track::after{
+      transform: translateX(16px);
+      background: #fff;
+    }
+    /* Focus lens disabled state */
+    html:not([data-focus-lens]) main p:not(.in-focus),
+    html:not([data-focus-lens]) main blockquote:not(.in-focus),
+    html:not([data-focus-lens]) main li:not(.in-focus),
+    html:not([data-focus-lens]) main h2:not(.in-focus){
+      opacity: 1;
+    }
+    /* Ambient breathing disabled state */
+    html:not([data-ambient]) body::before{
+      animation: none;
+      opacity: 0;
+    }
+    /* Zen button in toolbar */
+    .zen-btn{
+      width: 100%;
+      padding: 9px 0;
+      border: 1px solid var(--accent-border);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 12px;
+      letter-spacing: .05em;
+      cursor: pointer;
+      transition: all .15s;
+      text-align: center;
+    }
+    .zen-btn:hover{ border-color: var(--pill-active); color: var(--text); }
+    .zen-mode .zen-btn{ background: var(--pill-active); color: #fff; border-color: var(--pill-active); }
+
+    @media (max-width: 900px){
+      .wrap{ grid-template-columns: 1fr; }
+      nav{ position: relative; top: auto; }
+      main{ padding: 22px 16px; }
+      .reading-toolbar{ right: 12px; bottom: 68px; width: calc(100% - 24px); }
+      .toolbar-toggle{ bottom: 14px; right: 12px; }
+    }
+
+    /* ---------- OWNER AUTH ---------- */
+    .owner-bar{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .owner-badge{
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--pill-active);
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+    .owner-btn{
+      padding: 5px 12px;
+      background: transparent;
+      border: 1px solid var(--accent-border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .owner-btn:hover{ border-color: var(--link); color: var(--text); }
+
+    /* ---------- TOAST ---------- */
+    .toast{
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--card);
+      border: 1px solid var(--accent-border);
+      color: var(--text);
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 200;
+      opacity: 0;
+      transition: transform .3s, opacity .3s;
+      pointer-events: none;
+    }
+    .toast.show{
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========== LIBRARY VIEW ========== -->
+<div class="library" id="libraryView">
+  <a href="../" class="back-link" style="display:inline-block;margin-bottom:12px;">&larr; Back to VFX Tools</a>
+  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+    <h1 style="margin:0 0 8px;">Bookmarks Reader</h1>
+    <div class="owner-bar" id="ownerBar">
+      <button class="owner-btn" id="addArticleTopBtn" onclick="openModal()" style="display:none;">+ Add Article</button>
+      <button class="owner-btn" id="loginBtn" onclick="openLoginModal()" style="display:none;">Login</button>
+    </div>
+  </div>
+  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+    <p class="subtitle" style="margin:0;">Your saved articles in a clean, readable format. Click to read.</p>
+    <div class="lib-mood-pills">
+      <button class="tb-pill" data-mood="soft-morning" onclick="setMood('soft-morning')">Soft Morning</button>
+      <button class="tb-pill" data-mood="quiet-mind" onclick="setMood('quiet-mind')">Quiet Mind</button>
+      <button class="tb-pill active" data-mood="deep-focus" onclick="setMood('deep-focus')">Deep Focus</button>
+    </div>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+    <span style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;">Sort:</span>
+    <button class="sort-btn active" id="sortDate" onclick="sortArticles('date')">Latest</button>
+    <button class="sort-btn" id="sortAZ" onclick="sortArticles('az')">A–Z</button>
+  </div>
+  <div class="cat-filter-row" id="catFilterRow">
+    <span class="cat-label">Filter:</span>
+    <!-- dynamically populated -->
+  </div>
+  <div class="card-grid" id="cardGrid"></div>
+</div>
+
+<!-- ========== ARTICLE VIEW ========== -->
+<div class="article-view" id="articleView">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <nav>
+      <a class="back-link" onclick="showLibrary()">&larr; All Articles</a>
+      <button class="share-btn" onclick="shareArticle()" title="Share this article">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+      <h3>Sections</h3>
+      <div id="navLinks"></div>
+    </nav>
+    <main id="articleContent"></main>
+  </div>
+
+  <!-- Reading toolbar -->
+  <button class="toolbar-toggle" id="tbToggle" onclick="toggleToolbar()" aria-label="Reading settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2.5" fill="currentColor"/><circle cx="16" cy="12" r="2.5" fill="currentColor"/><circle cx="11" cy="18" r="2.5" fill="currentColor"/></svg></button>
+  <div class="reading-toolbar" id="tbPanel">
+    <div class="tb-section">
+      <span class="tb-label">Width</span>
+      <div class="tb-slider-row">
+        <input type="range" class="tb-slider" id="widthSlider" min="520" max="1800" step="10" value="720" oninput="setWidth(this.value)" />
+        <span class="tb-value" id="widthValue">720</span>
+      </div>
+    </div>
+    <hr class="tb-divider">
+    <div class="tb-section">
+      <span class="tb-label">Size</span>
+      <div class="tb-slider-row">
+        <input type="range" class="tb-slider" id="sizeSlider" min="14" max="26" step="1" value="18" oninput="setFontSize(this.value)" />
+        <span class="tb-value" id="sizeValue">18</span>
+      </div>
+    </div>
+    <hr class="tb-divider">
+    <div class="tb-section">
+      <span class="tb-label">Font</span>
+      <div class="tb-pills">
+        <button class="tb-pill active" data-font="clean" onclick="setFont('clean')">Clean</button>
+        <button class="tb-pill" data-font="literary" onclick="setFont('literary')">Literary</button>
+        <button class="tb-pill" data-font="terminal" onclick="setFont('terminal')">Terminal</button>
+      </div>
+    </div>
+    <hr class="tb-divider">
+    <div class="tb-section">
+      <span class="tb-label">Mood</span>
+      <div class="tb-pills">
+        <button class="tb-pill" data-mood="soft-morning" onclick="setMood('soft-morning')">Soft Morning</button>
+        <button class="tb-pill" data-mood="quiet-mind" onclick="setMood('quiet-mind')">Quiet Mind</button>
+        <button class="tb-pill active" data-mood="deep-focus" onclick="setMood('deep-focus')">Deep Focus</button>
+      </div>
+    </div>
+    <hr class="tb-divider">
+    <div class="tb-section">
+      <span class="tb-label">Effects</span>
+      <div class="tb-toggle-row">
+        <span class="tb-toggle-label">Smooth Scroll</span>
+        <label class="toggle-switch"><input type="checkbox" id="toggleSmooth" checked onchange="toggleEffect('smooth', this.checked)"><span class="toggle-track"></span></label>
+      </div>
+      <div class="tb-toggle-row">
+        <span class="tb-toggle-label">Ambient Glow</span>
+        <label class="toggle-switch"><input type="checkbox" id="toggleAmbient" checked onchange="toggleEffect('ambient', this.checked)"><span class="toggle-track"></span></label>
+      </div>
+      <div class="tb-toggle-row">
+        <span class="tb-toggle-label">Focus Lens</span>
+        <label class="toggle-switch"><input type="checkbox" id="toggleFocus" checked onchange="toggleEffect('focus', this.checked)"><span class="toggle-track"></span></label>
+      </div>
+    </div>
+    <hr class="tb-divider">
+    <button class="zen-btn" onclick="toggleZen()">Zen Mode</button>
+  </div>
+  <div class="zen-hint" id="zenHint">Press Esc to exit Zen Mode</div>
+</div>
+
+<!-- ========== ADD ARTICLE MODAL ========== -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h2>Add Article</h2>
+    <label>Title</label>
+    <input type="text" id="newTitle" placeholder="Article title" />
+    <label>Author</label>
+    <input type="text" id="newAuthor" placeholder="Author name" />
+    <label>Short Description</label>
+    <input type="text" id="newDesc" placeholder="One-line summary" />
+    <label>Source URL <span style="font-size:10px;text-transform:none;letter-spacing:0;opacity:.6">(optional)</span></label>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="newSource" placeholder="https://x.com/..." style="flex:1;margin-bottom:0;" />
+      <button type="button" class="btn btn-secondary" id="fetchXBtn" onclick="fetchFromX()" style="padding:10px 16px;white-space:nowrap;">Fetch from X</button>
+    </div>
+    <p id="fetchStatus" style="font-size:12px;color:var(--muted);margin:6px 0 16px;"></p>
+    <label>Categories</label>
+    <div class="cat-picker" id="catPicker">
+      <!-- dynamically populated -->
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <input type="text" id="newCatInput" placeholder="New category name" style="flex:1;margin-bottom:0;" onkeydown="if(event.key==='Enter'){event.preventDefault();addCategoryFromInput()}" />
+      <button type="button" class="btn btn-secondary" onclick="addCategoryFromInput()" style="padding:10px 16px;white-space:nowrap;">+ Add</button>
+    </div>
+    <label>Article Content <span style="font-size:10px;text-transform:none;letter-spacing:0;opacity:.6">&mdash; paste plain text, formatting is automatic</span></label>
+    <textarea id="newBody" placeholder="Copy the full text from the X post and paste it here. Headings, paragraphs, lists, quotes and bold/italic are detected automatically."></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveArticle()">Save Article</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== DELETE CONFIRM ========== -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-width:380px; text-align:center;">
+    <h2 style="font-size:20px;">Delete article?</h2>
+    <p id="deleteTitle" style="color:var(--muted); font-size:15px; margin:0 0 20px;"></p>
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn" style="background:#c04040; color:#fff;" onclick="executeDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== LOGIN MODAL ========== -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal" style="max-width:340px; text-align:center;">
+    <h2 style="font-size:20px;">Owner Login</h2>
+    <input type="password" id="loginPassword" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()" />
+    <p id="loginError" style="font-size:13px; color:#f07070; margin:0 0 12px; display:none;"></p>
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="doLogin()">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TOAST ========== -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== ARTICLES DATABASE =====
+// Articles loaded from articles.json
+const _LEGACY_BUILTIN_ARTICLES = [
+  {
+    id: "focus-dan-koe",
+    title: "Full guide: how to unlock extreme focus on command",
+    author: "Dan Koe",
+    desc: "A complete focus masterclass covering psychology, routines, deep work, and embracing uncertainty.",
+    sections: [
+      { id: "tldr", label: "TL;DR" },
+      { id: "i", label: "I \u2014 Why it\u2019s hard to focus" },
+      { id: "ii", label: "II \u2014 Unlock focus" },
+      { id: "iii", label: "III \u2014 Routines" },
+      { id: "iv", label: "IV \u2014 Be extreme" },
+      { id: "v", label: "V \u2014 Deep work routine" },
+      { id: "vi", label: "VI \u2014 Embrace uncertainty" }
+    ],
+    body: `
+      <h1>Full guide: how to unlock extreme focus on command</h1>
+      <div class="meta">Dan Koe &middot; Reading time: ~18&ndash;22 min</div>
+
+      <p>You haven't experienced anything near what you're capable of.</p>
+      <p>And if you learn how to unlock that power, you can do what most people consider impossible.</p>
+      <p>Unfortunately, most people have the idea of success completely backward.</p>
+      <p>They think they need to grind for 12 hours a day like their favorite entrepreneur to see any form of result.</p>
+      <p>The reality is, you have responsibilities. I get it. Some of you can't just magically scrape back time. You may have a job, kids, spouse. Those things are important. Meaning, you probably have <strong>one hour</strong> a day you can put toward a better future.</p>
+      <p>And that's a great thing, because <em>you can drastically change your life in 365 hours.</em></p>
+      <p>One hour a day.</p>
+      <p>One meaningful project.</p>
+      <p>One vision for your future.</p>
+      <p>If you can spend 8 hours building someone else's dreams, you can spend 1 hour building your own.</p>
+      <p>And if you have more time to spare, even better, but do not think that you "need more time." You need a deep sense of clarity that allows you to make the most of the time you currently have. And you need to <em>feel like your efforts are making a difference in your life.</em></p>
+      <p>A pattern I've noticed in successful creatives and CEOs &ndash; that didn't sacrifice their life for success &ndash; is that they physically worked very little, yet people see them as hard workers. Mentally, they were always thinking, plotting, and scheming. They worked in their mind. And once they were clear on their idea, they executed with speed that others couldn't compete with.</p>
+      <p>Productivity is like fitness, and you wouldn't train 8 hours a day with no food or sleep and expect to make progress. The same applies to the mind.</p>
+      <p>With that, there are 3 types of work:</p>
+      <ul>
+        <li><strong>Building</strong> &ndash; <em>Intense</em> bursts of deep work to bring a project to life, like a product, service, or brand.</li>
+        <li><strong>Maintenance</strong> &ndash; <em>Consistent</em> and often repetitive work that you've systemized to keep what you built alive, like marketing or customer service.</li>
+        <li><strong>Recovery</strong> &ndash; <em>Subconscious</em> work that almost everyone ignores. The rest, leisure, and lack of narrow focused stress that allows breakthrough ideas to form the future of your work.</li>
+      </ul>
+      <p>Your goal, then, is to <em>build</em> for one hour a day until you are able to pursue what you want full time. <em>Then</em> you start to think about transitioning into maintenance work.</p>
+      <p>But what do you build?</p>
+      <p>How do you pierce through the distractions and inner voice that seems to be your enemy?</p>
+      <p>Where do you find a never-ending source of motivation to show up every day?</p>
+      <p>The answers to those questions determine much of your life.</p>
+      <p>I have 6 ideas to share with you on deep productivity. Not just "sit down and do the work" because that's been ran through enough and obviously hasn't fixed everyone's problems. You need understanding. We need to dissect the psychology of focus, how distractions work, and finally a protocol you can use to make your one hour a day count.</p>
+      <p>This will be comprehensive. A complete focus masterclass so you can get 10 books worth of knowledge from one article.</p>
+      <p>My hope is that I leave you with no option but to feel clear on what you want out of life and how to get it.</p>
+      <p>Because of that, this will be long. All I ask is that you dedicate your full attention. If you don't have the time, bookmark it and come back to it.</p>
+      <p>Let's begin.</p>
+
+      <section id="tldr" class="tldr">
+        <strong>TL;DR</strong>
+        <ul>
+          <li>Do 1 hour/day on one meaningful project.</li>
+          <li>Clarity + importance + urgency blocks distractions.</li>
+          <li>Build &rarr; maintain &rarr; recover. Recovery fuels breakthroughs.</li>
+          <li>Pick lever-moving tasks. Track progress weekly.</li>
+          <li>Uncertainty is the price of a better life.</li>
+        </ul>
+      </section>
+
+      <section id="i">
+        <h2>I &mdash; Why it's so hard to sit down and do the work</h2>
+        <blockquote>The optimal state of inner experience is one in which there is order in consciousness. This happens when psychic energy&mdash;or attention&mdash;is invested in realistic goals, and when skills match the opportunities for action. The pursuit of a goal brings order in awareness because a person must concentrate attention on the task at hand and momentarily forget everything else.<br><br>&mdash; Mihaly Csikszentmihalyi</blockquote>
+        <p>Your mind is a supercomputer running the game of life.</p>
+        <p>Your attention (an incredibly scarce resource), is the RAM.</p>
+        <p>RAM, for the non-technical, means "random access memory." It determines the performance of the computer.</p>
+        <p>The more programs and browser tabs you have open, the slower your computer will be. The mind works the same way, but there's one major caveat... you have a threshold for how much your mind can process.</p>
+        <p>Humans can process around 50 bits of conscious information per second. The unconscious mind can <em>manage</em> about 11 million bits per second (this is for things like walking, sensing, accessing stored habits or patterns), but that's aside the point.</p>
+        <p>In other words, when you add it up, you have about 125 billion bits of information to "use up" in your lifetime. That's it. <em>That's your potential</em>. Every single thing you give your attention lowers that number by a small amount. That should terrify you.</p>
+        <p>Sadly, most people live with multiple high-demand programs running at the same time. It's no wonder they can't focus. Their attention is split between thoughts about regretful past mistakes, thoughts about stressful future tasks, desires for pleasure and entertainment to escape those, and open loops of tasks they were supposed to complete but forgot about (I'm looking at you dudes who forgot to take out the trash).</p>
+        <p>The list of distractions goes on, and that's the danger.</p>
+        <p>If you understand entropy, you understand that by doing nothing with your life, it only becomes more chaotic and overwhelming.</p>
+        <p>You don't stay the same.</p>
+        <p>You dig yourself deeper into a rut without trying.</p>
+        <p>The good life demands consistent effort toward <em>your own</em> goals. You know the feeling. When everything aligns and you enter a blur of fulfilling work. I want to show you how to replicate it.</p>
+        <p>Entropy, for those wondering, is one of the most fundamental principles in physics. The simple version is that there are vastly more ways for things to be disorganized than organized, so systems naturally tend toward messier and often more chaotic states. Energy needs to be put into keeping things ordered.</p>
+        <p>As an everyday example, if you don't put energy into maintaining your bookshelf, books will end up all over your house, at your friend's house, and in places you didn't think they could end up. <em>The longer you go without organizing your shelf, the more effort it will take when you finally decide to.</em></p>
+        <p>Further, if you don't put effort into cleaning your room, it will slowly get messier and messier until you're late for work because your good socks are under a pizza box from last week.</p>
+        <p>Psychic entropy (or the mind tending toward disorder) can then be a useful metaphor to view focus and distractions through. This can be useful for creativity, as we will learn when we talk about a better type of routine, but when it comes to focused work, it's obvious why you can't laser in on one thing.</p>
+        <p>You aren't productive because you don't have clarity.</p>
+        <p>You don't have clarity because you allow your attention to drift toward one distraction, and before you know it, your mind is like the end of a frat party. People passed out everywhere and you don't even know where to start cleaning.</p>
+        <p>The good thing is that the solution is simple, but powerful.</p>
+      </section>
+
+      <section id="ii">
+        <h2>II &mdash; How to unlock insane focus on command</h2>
+        <p><em>Clarity, importance, and urgency.</em></p>
+        <p>Those are the critical ingredients that prevent distractions from penetrating your mind. Those are the requirements needed for <em>deep</em> focused work.</p>
+        <ul>
+          <li>To gain clarity, you need to choose a task that is challenging enough to be <em>novel.</em></li>
+          <li>If that task overwhelms you, you need to break the task down into sub-goals that <em>you do have clarity on.</em> Then, you execute and acquire the skill that allows you to continue moving to the main task.</li>
+          <li>For you to find something important, you need to fully understand (1) where your life will end up without achieving the goal and (2) what your potential could be if you achieved the goal.</li>
+        </ul>
+        <p>Urgency is what gets you to sit down and work right now rather than later, but we'll discuss the exact protocol for all of this in a few paragraphs.</p>
+        <p>The simplest formula for reaching the flow state, or the most optimal state of experience, is to ensure that the challenge you are taking on is just barely above your skill level.</p>
+        <p>Because think about it.</p>
+        <p>If the challenge of a goal is too high for your skill level, you get anxious. If the challenge is too low, you get bored. In a video game, you wouldn't fight a level 100 character when you are a level 1. It wouldn't be fun, obviously.</p>
+        <p>Imagine you're at a job. The work is repetitive and doesn't challenge you in the slightest. You get <strong>bored</strong>, and that boredom leads to self-centeredness. <em>Your focus breaks and you start to think of better things you could be doing.</em></p>
+        <p>Now imagine you're forced to speak in front of a thousand people. You haven't practiced before. It's overwhelming, so you become <strong>anxious</strong>. That anxiety leads to self-consciousness. Your focus turns inward and <em>negative thoughts flood your mind about how you aren't good enough.</em></p>
+        <p>But these aren't always a bad thing.</p>
+        <p>They are only the enemies when you are trying to focus. And that's just it... People aren't focused on the tasks that will actually create the life they want. They get stuck in "doing mode" (a narrow state of stress that prevents you from registering ideas or opportunities that could change your life) and feel like they are worthless if they aren't being productive, because society has convinced them that productivity is the highest value.</p>
+        <p>Boredom, in fact, can be a gateway to novelty.</p>
+        <p>Anxiety can very well be the chaos you need for ultimate creativity.</p>
+        <p>Your inability to sit in a room alone is likely the source of most of your problems.</p>
+        <p>So what's missing?</p>
+        <p>The answer lies in the fact that everyone works <em>too much.</em></p>
+      </section>
+
+      <section id="iii">
+        <h2>III &mdash; The routines of highly successful creatives</h2>
+        <div class="callout">
+          <p>Fill your brain in the afternoons with books, learning, and socialization</p>
+          <p>Empty your brain before bed with journaling, planning, and meditation</p>
+          <p>Use your brain in the morning with creation, output, and focus</p>
+        </div>
+        <p>I've always had some form of aversion toward Western work culture.</p>
+        <ul>
+          <li>80-hour work weeks</li>
+          <li>High-pressure environments</li>
+          <li>Little time for rest and recovery</li>
+        </ul>
+        <p>It never seemed "right" to me. It was mechanical. Robotic. Soulless. Why would I work on something I dislike, for people I dislike, knowing that my actions don't contribute to <em>my</em> future? Because if they did, I wouldn't have a problem working, because it wouldn't feel like work.</p>
+        <p>Most people wear overwork as a badge of honor.</p>
+        <p>But the artists, creatives, and visionaries we <em>actually remember</em> aren't participating in that imaginary race.</p>
+        <p>The ancient Greeks, as an example, saw rest as a gift. It was the pinnacle of civilized life. Almost every ancient society recognized that <em>both</em> work and rest were necessary for a good life. One provided the means to live, the other gave meaning to life. It wasn't until industrialization that 9-5 jobs even became a thing, and now we can't imagine our lives any other way. Before that, most people were self-employed farmers and artisans. They <em>directed their own work,</em> which is going to be a critical decision one must make as AI continues to accelerate the automation of jobs.</p>
+        <p>When we reverse engineer the lifestyles of highly successful creatives, we see the same pattern.</p>
+        <p>They didn't grind 16 hours a day (well, sometimes they did, but it was because they chose to, not because they were forced to, massive difference).</p>
+        <p>In fact, most of their time was spent in leisure, yet they contributed some of the most important ideas to society that have impacted our lives today. They lounged by the pool, played tennis, or paced the grounds of the Apple campus because they were one of the few people who realized what happens in the brain while at rest. That's when their best "work" was done.</p>
+        <p>(By the way, when I say "rest," I don't mean bubblebaths and wine. Most people use cheap pleasures as an escape from the life they hate and call it rest.)</p>
+        <p><em>Rest occurs when focus shifts inward.</em></p>
+        <p>When you stop focusing on external tasks, your brain automatically shifts into the Default Mode Network, which connects regions of the brain associated with visual thinking and creativity.</p>
+        <p>The interesting thing is, our brains don't use much less energy in this mode. Meaning, <em>while you are at rest, your brain is still at work, and it is working quite hard</em>. This is the secret of successful creatives. They <em>take</em> their rest, because society isn't going to give it to them, and their brain lights up with ideas that they can quickly jot down. Then, when it's time for a deep focus session, they bring those ideas to life by applying them to a meaningful project that leads to the future they desire.</p>
+        <p>With that, the best daily routine does not come from the latest podcast you listened to. It comes from 3 activities.</p>
+        <ul>
+          <li><strong>One that fills your mind</strong> &ndash; you need education, ideas, and novel resources you can apply toward your goals. This leads to intrinsic motivation.</li>
+          <li><strong>One that empties your mind</strong> &ndash; you don't want to be trapped in a chaotic bubble of thoughts and useful ideas. That's exactly how you make zero progress. Write things down.</li>
+          <li><strong>One that uses your mind</strong> &ndash; you need a vessel to focus your efforts. A project. A business. Something of your own that you can apply your education and ideas to.</li>
+        </ul>
+        <p>We will discuss the last one so you can get into a state of deep focused work, but for now, you have my permission to rest, because that is what makes your work impactful.</p>
+        <p>Go on a walk.</p>
+        <p>Drive up to the woods for a day.</p>
+        <p>Pull out a notebook and imagine a better future.</p>
+        <p>Of course, this all sounds cute, but it still doesn't help the people who don't know what to do. And it especially doesn't help the people who don't have the motivation to step into a new life.</p>
+      </section>
+
+      <section id="iv">
+        <h2>IV &mdash; You need to be extreme if you want your life to change</h2>
+        <p>There are a few moments in my life that I remember vividly.</p>
+        <p>They always followed the same pattern.</p>
+        <p>First, I felt a sense of tension with the lack of progress I was making. I knew something had to change.</p>
+        <p>Second, that tension became unbearable. I knew that I was letting my future self down.</p>
+        <p>Third, I disappeared. I started over from scratch. My life seemingly flipped in an instant and I entered a season of deep obsession towards a goal.</p>
+        <p>I wanted to understand this process, so I went looking. Here's what I found.</p>
+
+        <h2>1) Being extreme changes your brain</h2>
+        <p>"Neurons that fire together, wire together."</p>
+        <p>That's Hebb's Law, a famous saying that summarizes a neuropsychological theory related to neuroplasticity.</p>
+        <p>Neuroplasticity, as you may know, is your brain's ability to rewire itself by forming new neural connections throughout life. Your brain isn't fixed and rigid. It can adapt, learn, and change based on your experiences, thoughts, and actions.</p>
+        <p>Being extreme about changing your life helps quicken this process.</p>
+        <p>People scream about how "consistency is key," which is true due to repetition reinforcing neural pathways through consistent effort, but we can take it a step further.</p>
+        <p>Novelty and challenge stimulate neuroplasticity even more.</p>
+        <p>So, when you flip the switch and pursue a goal with all your might, you put your brain in an environment that quickly adapts and helps that become your <em>new standard.</em></p>
+
+        <h2>2) Intensity and obsession create a neurochemical cocktail</h2>
+        <p>Most people fall into a rut because they seek <em>extrinsic motivators.</em></p>
+        <p>But when you're obsessed in the context of this discussion, you are fueled by <em>intrinsic motivators.</em></p>
+        <p>Each of which stacks onto and strengthens each other in a way that sustains some degree of flow (optimal experience, or one of the most enjoyable states of mind):</p>
+        <ul>
+          <li><strong>Curiosity</strong> &ndash; The desire to explore the unknown, learn how to change, and fill knowledge gaps. Results in good dopamine from novelty and norepinephrine which heightens attention preparing you to learn.</li>
+          <li><strong>Passion</strong> &ndash; An intense enthusiasm is built for the path that allows you to change your life. Results in more good dopamine and norepinephrine.</li>
+          <li><strong>Purpose</strong> &ndash; The feeling that your actions contribute to something larger than yourself. Achieving goals results in more dopamine which reinforces behavior. Serotonin stems from significance and belonging. Oxytocin stems from connection.</li>
+          <li><strong>Autonomy</strong> &ndash; The desire to direct your own life and work. To control your choices, actions, and environment. Results in yet again more dopamine and a reduction in cortisol (the stress from feeling put in a box), allowing for creative decision making.</li>
+          <li><strong>Mastery</strong> &ndash; The process of learning and growing is its own reward. Results in sustainable good dopamine that keeps you in the game.</li>
+        </ul>
+        <p>You start with curiosity and experimentation until you find one thing that pulls you deeper.</p>
+        <p>You <em>become</em> passionate in the goal once enough effort is invested. You don't just choose your passion.</p>
+        <p>You attach that passion to something greater than yourself &ndash; a purpose.</p>
+        <p>You break off the default path and acquire the skill to be autonomous and direct your own work, often through entrepreneurship.</p>
+        <p>You shift from shallow reasoning (making money, etc) to a philosophical sense of mastery, allowing you to stay in the game.</p>
+        <p>You will understand how all of these come into play when we incorporate them into a daily focused work block.</p>
+
+        <h2>3) Your mind filters reality based on what you're obsessed with</h2>
+        <blockquote>The man who conceives himself to be a "failure-type person" will find some way to fail, in spite of all his good intentions, or his willpower, even if opportunity is literally dumped in his lap. The person who conceives himself to be a victim of injustice, one "who was meant to suffer," will invariably find circumstances to verify his opinions.<br><br>&mdash; Maxwell Maltz</blockquote>
+        <p>Your brain operates on a salience network.</p>
+        <p>Meaning, whatever provides the most dopamine becomes the most important.</p>
+        <p>For our ancestors, their sole goal was sex and survival. That was what was important to them. Their minds were biased toward noticing scarce resources, such as fat, sugar, or salt.</p>
+        <p>In today's world, corporations and social media companies have hijacked this part of our brain. <em>Digital fat, sugar, and salt</em>. They've studied how this mechanism works endlessly and have weaponized it to keep you on their platform.</p>
+        <p>This has led to the cheap dopamine epidemic we find ourselves in.</p>
+        <p>Our brain used to point out resources that would allow us to survive and thrive, but now there are so many distractions that we get trapped in this overwhelming bubble of nothingness. Our lives only become substantially worse unless we rip the band-aid off and laser in on a goal we choose for ourselves.</p>
+        <p>Then, when you are obsessed with that goal, your mind starts to heal, and your newfound curiosity will guide you toward the knowledge, skills, and actions required for your unique form of success.</p>
+        <p>That leads us into how to structure your life to maximize this effect.</p>
+      </section>
+
+      <section id="v">
+        <h2>V &mdash; The deep work routine that changed my life</h2>
+        <p>You need a routine.</p>
+        <p>And if you think you don't, you may not realize that you already have a routine that <em>you</em> didn't create. Your parents, teachers, employers, and society did.</p>
+        <p>Or your "routine" is not having a routine, which is still a routine.</p>
+        <p>But we don't just want any old routine.</p>
+        <p>We want to ensure that what you are working on moves the needle toward the life you want.</p>
+        <p>Especially if you only have one hour to spare.</p>
+        <p>The protocol below will help you determine what is worth that one hour of your time.</p>
+        <p>Other than that, I would highly encourage you to take intentional rest throughout your days.</p>
+        <p>Personally, I structure my days as a priority ladder.</p>
+        <p>I write first thing in the morning, as that is my highest leverage task. In my businesses, I'm the distribution guy. The success of the company is dependent on how well my writing does. 1 post can reach millions, which is an absurd amount of leverage (of course, that doesn't happen every time).</p>
+        <p>For other people, especially if they haven't started on their own path, building the product could be the most important task to spend their one hour on. Then, once it's built (remember that there are 3 types of work &ndash; building, maintenance, recovery), they can start to shift their priorities around.</p>
+        <p>I tend to structure my work blocks in two ways &ndash; productivity blocks and creativity blocks. Two completely different modes of focus. One narrow one open.</p>
+        <p>I work on the highest priority task for block one, first thing in the morning, then I go on a walk as a creativity block (remember the Default Mode Network in the brain). On that walk, sometimes I read, sometimes I think, other times I try to solve a problem. Then I repeat the process for a few more rounds until that day's work is done. That acts as a hard stop for thinking about work, allowing my mind to do what it does best.</p>
+        <p>With that out of the way, here's the protocol to launch into a season of intense progress toward your goals.</p>
+
+        <h2>1) Vision & Anti Vision</h2>
+        <p>Become brutally aware of 2 things:</p>
+        <ul>
+          <li>What you don't want</li>
+          <li>Where you will end up if you keep taking the same actions</li>
+        </ul>
+        <p>Observe the masses and see where mindless action leads. It's not pretty. Sit with your thoughts here. It's easier to know what you don't want (from experience) than what you want (from imagination).</p>
+        <p>So, create an anti-vision for your future.</p>
+        <p>Sit with a notebook and get specific.</p>
+        <p>Write out every single thing that you don't want and why. You should feel this deep sense of discomfort start to do it. Do not stop writing until you feel this.</p>
+        <p>With that discomfort, get petty. Like <em>really</em> petty. Write down exactly what your life would look like if you were able to create it from scratch. Think of the big goals you've always thought of achieving but set on the bookshelf because they aren't "rational."</p>
+        <p>If your friends and family think you wouldn't achieve these goals, even better.</p>
+        <p>In that same notebook from above, write out exactly what you are going to do to achieve those things. Write down every little thing you will need to learn. From the top down &ndash; your ideal future to the exact step you must take &ndash; map out what needs to be done.</p>
+        <p>The last thing you are going to write down is all of the potential distractions standing in the way of the life you want.</p>
+        <p>Success is less about being disciplined and more about removing the distractions that make discipline difficult.</p>
+        <p>Next, disappear.</p>
+        <p>Not from life, but from what is binding you to your old ways.</p>
+        <p>These can be people, games, apps. It's easier to remove everything at once and deal with the pain than it is to tell everyone your plans (and listen to their crab-in-a-bucket opinions).</p>
+        <p>In other words, break your addiction with feeling horrible.</p>
+        <p>Usually due to giving time and energy to people, activities, and things that don't care for your well-being.</p>
+        <p>You don't need to explain yourself.</p>
+
+        <h2>2) Create A Hierarchy Of Goals</h2>
+        <p>The mind craves order.</p>
+        <p>You need to create a new mental frame that you can tap into at anytime. And remember, you need to put energy into the system that will create the life you want, or else your mind will slowly become more disordered and chaotic, whether you like it or not.</p>
+        <p>That's what we're doing here.</p>
+        <p>We're creating an impenetrable frame.</p>
+        <p>We aren't setting goals in hopes that we achieve them.</p>
+        <p>Big goals are for <em>direction.</em> Small goals are for <em>clarity.</em> You are simply making an educated guess at the path you need to take. When it comes to actually moving along that path, you will need to adapt in real time, which is what we will learn last.</p>
+        <p>You don't need endless motivation when the task in front of you is so stupidly simple that you can't help but complete it.</p>
+        <p>Break down your vision into small pieces.</p>
+        <p>Create a 10-year goal.</p>
+        <p>Then a 1-year goal.</p>
+        <p>Then a 1-month goal.</p>
+        <p>Then a 1-week goal.</p>
+        <p>But now we need something worth working on. That is arguably the missing piece from most people's lives.</p>
+
+        <h2>3) Project-Based Learning</h2>
+        <p>You know what you don't want out of life.</p>
+        <p>You have an idea of what you want out of life.</p>
+        <p>Now you need to acquire the <em>skills</em> and <em>knowledge</em> that bridge the gap between both.</p>
+        <p>How do you slowly start moving into the unknown by having a way to order any potential chaos along the way?</p>
+        <p><em>Personal projects</em>.</p>
+        <p>The best way to learn is to build a real-world project and only search for information when you need it. How much you learn is directly correlated with how much progress you make on the project.</p>
+        <p>When you watch endless tutorials, you fill your mind with noise. Most of that information goes to waste. It leads to overwhelm, anxiety, and slows down how fast you learn. When it comes time to actually build the project, you feel as if you learned nothing, because you still don't know what to do. Endless consumption creates endless options. We don't want that.</p>
+        <p>As an example, it is rare that people just learn Photoshop from watching tutorials. They have an image they want to create. They try and fail, and from that failure, they have something <em>specific</em> to learn that can be <em>directly</em> applied. No knowledge goes to waste. You try, fail, and search for the information you need right when you need it.</p>
+        <p>For those wondering, a "project" can be anything. Your health can be a project. Your business can be a project. A project is simply a structured way of achieving a goal, or making progress toward a goal.</p>
+        <p>The bridge between where you are and where you want to be is a series of projects that reflect the value you've developed in yourself. If you'd like, you can turn that project into a product, because you've solved a problem in your own life and can now help others do the same. A quality project is the only qualification you need to start a business nowadays, or even get hired by posting about it online, which is an incredible thing considering it is one of the last options to take once everything is automated out of existence.</p>
+
+        <h2>Here's how you start:</h2>
+        <p>Choose something to build that moves the needle toward what you want in life. Think of it as a traditional goal, but a project turns that goal into a system. Create a note and brain dump everything that comes to mind. Save 3-5 sources of inspiration you want to emulate. Study those sources and break down their structure. Outline the project into sections, milestones, and what you need to learn.</p>
+        <p>Now that you're ready to start, don't start learning. Start with what you know.</p>
+        <p>Learning comes from struggle, not memorization. Start the project. Let it expose the gaps in your knowledge. Try to figure it out. Search for the answer when your mind is most likely to remember it.</p>
+
+        <h2>4) Lever Moving Tasks</h2>
+        <p>Every single day, complete at least 1-3 priority tasks that move the needle toward completing the project.</p>
+        <p>That is the only piece of productivity advice you need.</p>
+        <p>A good rule of thumb is this:</p>
+        <p>After 2 weeks, if you haven't made any noticeable progress toward your goals, you are not moving the right levers. You are doing something wrong. Most people won't admit that, or they will intentionally do busy work to avoid making progress, because secretly they want to fail.</p>
+        <p>That's an even bigger problem.</p>
+        <p>Your mind notices opportunities to achieve your goals, and many people have an unconscious or deeply programmed goal of staying the same. They want to fail.</p>
+        <p>So far, our anti-distraction frame is composed of a vision &rarr; anti-vision &rarr; hierarchy of goals &rarr; projects &rarr; lever-moving tasks.</p>
+        <p>This creates a tight feedback loop that encourages more flow states, enjoyment, and progress.</p>
+        <p>That's the foundation. That's what pushes you deeper into the unknown.</p>
+        <p>Lastly, how do you actually navigate the highs, lows, emotions, and uncertainty along the way?</p>
+      </section>
+
+      <section id="vi">
+        <h2>VI &mdash; Your potential is determined by the amount of uncertainty you're willing to embrace</h2>
+        <p>Uncertainty is signal, not noise.</p>
+        <p>You're supposed to feel lost.</p>
+        <p>You're supposed to feel overwhelmed.</p>
+        <p>You're supposed to feel like you have no idea what you're doing.</p>
+        <p>What in the world did you expect to happen when you decided to change your life? Did you just think that all possible knowledge and skill would be deposited into your head the moment you tried to do something?</p>
+        <p>When you commit to building your own thing, you commit to a life of uncertainty, because you commit to a life of <em>learning.</em></p>
+        <p>The thing is, the most successful people don't flinch at this. They don't perceive uncertainty as something dangerous, so their fight or flight response doesn't go off. They can trek into the unknown with a clear head, allowing them to make proper decisions.</p>
+        <p>How?</p>
+        <p>Because they realized that all outsized gains lie in their ability to <em>embrace, manage, and extend</em> uncertainty. They realized that the "certain" life is the least rewarding.</p>
+        <p>A job is certain. Your paycheck reflects that. A business is uncertain, depending on what level you are operating at. Starting out with a local business, agency work, freelancing, or even information products is level one. It's uncertain, but it's simple, and you have a cap of about $1 to $5 million a year before you need to increase the stakes even further by hiring a team or expanding the business model into something like software or physical products.</p>
+        <p>The same goes for investing. You can invest your savings in a "certain" 401k. That's level 1. You can invest in the stock market. That's level 2. You can invest in businesses, Bitcoin, or even more uncertain assets. Naturally, those have the highest returns on investment, but also the highest risk.</p>
+        <p>People are so afraid of making mistakes that they make the biggest mistake of them all, <em>not making mistakes.</em></p>
+        <p>Imagine a self-driving car.</p>
+        <p>For years, it has received negative feedback that refines the system that shapes the mind of the car.</p>
+        <p>It can navigate roads with ease and may be arguably safer than a human driving the car.</p>
+        <p>Even though we often don't think of it like this, the self-driving car made millions if not billions of mistakes before it could actually reach a meaningful destination.</p>
+        <p>I wish I could tell you that everyone reading this can just see success the first time they start working toward a goal. But if that were the case, the goal would lose all meaning.</p>
+        <p>Everything we just did is useful, but I cannot hold your hand throughout the process, nor can anyone else.</p>
+        <p>You must go through the exact same process as every other successful person.</p>
+        <p>You must invest in your portfolio of failures until you can afford to succeed.</p>
+        <p>&mdash; Dan</p>
+      </section>
+    `
+  }
+];
+
+// ===== STATE =====
+let articles = [];
+let BUILTIN_ARTICLES = []; // Loaded from articles.json
+let isOwner = false;
+const API = 'api.php';
+
+// ===== TOAST =====
+function showToast(msg, duration) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration || 2500);
+}
+
+// ===== OWNER AUTH =====
+async function checkOwnerStatus() {
+  try {
+    const res = await fetch(API + '?action=status');
+    if (res.ok) {
+      const data = await res.json();
+      isOwner = !!data.is_owner;
+    }
+  } catch (e) { /* API unavailable, stay as guest */ }
+  updateOwnerUI();
+}
+
+function updateOwnerUI() {
+  const bar = document.getElementById('ownerBar');
+  const loginBtn = document.getElementById('loginBtn');
+  // Remove old badge/logout if present
+  bar.querySelectorAll('.owner-badge, .logout-btn').forEach(el => el.remove());
+  const addTopBtn = document.getElementById('addArticleTopBtn');
+  if (isOwner) {
+    loginBtn.style.display = 'none';
+    addTopBtn.style.display = '';
+    const badge = document.createElement('span');
+    badge.className = 'owner-badge';
+    badge.textContent = 'Owner';
+    const logout = document.createElement('button');
+    logout.className = 'owner-btn logout-btn';
+    logout.textContent = 'Logout';
+    logout.onclick = doLogout;
+    bar.appendChild(badge);
+    bar.appendChild(logout);
+  } else {
+    loginBtn.style.display = '';
+    addTopBtn.style.display = 'none';
+  }
+  renderCategoryFilterRow();
+  renderLibrary();
+}
+
+function openLoginModal() {
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginModal').classList.add('active');
+  setTimeout(() => document.getElementById('loginPassword').focus(), 100);
+}
+
+function closeLoginModal() {
+  document.getElementById('loginModal').classList.remove('active');
+}
+
+async function doLogin() {
+  const pw = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  try {
+    const res = await fetch(API + '?action=login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      isOwner = true;
+      updateOwnerUI();
+      closeLoginModal();
+      showToast('Logged in as owner');
+    } else {
+      errEl.textContent = data.error || 'Invalid password';
+      errEl.style.display = '';
+    }
+  } catch (e) {
+    errEl.textContent = 'Connection error';
+    errEl.style.display = '';
+  }
+}
+
+async function doLogout() {
+  try {
+    await fetch(API + '?action=logout', { method: 'POST' });
+  } catch (e) {}
+  isOwner = false;
+  updateOwnerUI();
+  showToast('Logged out');
+}
+
+// ===== ARTICLES =====
+async function loadArticles() {
+  // Try loading from API first, fall back to static file
+  try {
+    const res = await fetch(API + '?action=load');
+    if (res.ok) {
+      BUILTIN_ARTICLES = await res.json();
+      console.log('Loaded', BUILTIN_ARTICLES.length, 'articles from API');
+    } else {
+      throw new Error('API returned ' + res.status);
+    }
+  } catch (e) {
+    console.log('API unavailable, trying static file:', e.message);
+    try {
+      const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+      const res = await fetch(basePath + 'articles.json');
+      if (res.ok) {
+        BUILTIN_ARTICLES = await res.json();
+        console.log('Loaded', BUILTIN_ARTICLES.length, 'articles from static JSON');
+      }
+    } catch (e2) {
+      console.log('Error loading articles.json:', e2.message);
+    }
+  }
+
+  // Merge with user's custom articles from localStorage
+  const saved = localStorage.getItem("bookmarks_reader_articles");
+  const custom = saved ? JSON.parse(saved) : [];
+  articles = [...BUILTIN_ARTICLES, ...custom];
+}
+
+async function saveCustomArticles() {
+  const custom = articles.filter(a => !BUILTIN_ARTICLES.find(b => b.id === a.id));
+  localStorage.setItem("bookmarks_reader_articles", JSON.stringify(custom));
+
+  // If owner, save the full merged array to server
+  if (isOwner) {
+    try {
+      const res = await fetch(API + '?action=save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articles: articles })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        // Update BUILTIN_ARTICLES to include the newly saved articles
+        BUILTIN_ARTICLES = [...articles];
+        // Clear localStorage custom articles since they're now on the server
+        localStorage.removeItem("bookmarks_reader_articles");
+        showToast('Saved to server (' + data.count + ' articles)');
+      } else {
+        showToast('Server save failed: ' + (data.error || 'unknown'));
+      }
+    } catch (e) {
+      showToast('Server save error: ' + e.message);
+    }
+  }
+}
+
+// ===== CATEGORIES =====
+const DEFAULT_CATEGORIES = ['AI', 'Self-Improvement', 'Geopolitics', 'Strategy'];
+let customCategories = [];
+
+function getAllCategories() {
+  // Collect from: defaults, custom, and any used in articles
+  const fromArticles = new Set();
+  articles.forEach(a => {
+    (a.categories || []).forEach(c => fromArticles.add(c));
+  });
+  const all = new Set([...DEFAULT_CATEGORIES, ...customCategories, ...fromArticles]);
+  return [...all].sort();
+}
+
+function loadCustomCategories() {
+  const saved = localStorage.getItem('bookmarks_reader_categories');
+  customCategories = saved ? JSON.parse(saved) : [];
+}
+
+function saveCustomCategories() {
+  localStorage.setItem('bookmarks_reader_categories', JSON.stringify(customCategories));
+}
+
+function addCategory(name) {
+  name = name.trim();
+  if (!name) return false;
+  const cats = getAllCategories();
+  if (cats.some(c => c.toLowerCase() === name.toLowerCase())) return false;
+  customCategories.push(name);
+  saveCustomCategories();
+  renderCategoryFilterRow();
+  renderCatPicker();
+  return true;
+}
+
+function removeCategory(name) {
+  // Remove from custom list
+  customCategories = customCategories.filter(c => c !== name);
+  saveCustomCategories();
+  // Remove from all articles
+  articles.forEach(a => {
+    if (a.categories) {
+      a.categories = a.categories.filter(c => c !== name);
+    }
+  });
+  saveCustomArticles();
+  if (activeCategory === name) activeCategory = 'all';
+  renderCategoryFilterRow();
+  renderCatPicker();
+  renderLibrary();
+}
+
+function addCategoryFromInput() {
+  const input = document.getElementById('newCatInput');
+  const name = input.value.trim();
+  if (addCategory(name)) {
+    input.value = '';
+    // Auto-check the new category in the picker
+    setTimeout(() => {
+      const cb = document.querySelector(`#catPicker input[value="${name}"]`);
+      if (cb) cb.checked = true;
+    }, 10);
+  } else if (name) {
+    showToast('Category already exists');
+  }
+}
+
+function addCategoryFromFilterRow() {
+  const name = prompt('New category name:');
+  if (name && addCategory(name)) {
+    showToast('Category "' + name.trim() + '" added');
+  } else if (name) {
+    showToast('Category already exists');
+  }
+}
+
+function renderCategoryFilterRow() {
+  const row = document.getElementById('catFilterRow');
+  const label = row.querySelector('.cat-label') || document.createElement('span');
+  label.className = 'cat-label';
+  label.textContent = 'Filter:';
+  row.innerHTML = '';
+  row.appendChild(label);
+
+  // All button
+  const allBtn = document.createElement('button');
+  allBtn.className = 'cat-pill' + (activeCategory === 'all' ? ' active' : '');
+  allBtn.dataset.cat = 'all';
+  allBtn.textContent = 'All';
+  allBtn.onclick = () => filterByCategory('all');
+  row.appendChild(allBtn);
+
+  // Category buttons
+  getAllCategories().forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-pill' + (activeCategory === cat ? ' active' : '');
+    btn.dataset.cat = cat;
+    btn.textContent = cat;
+    btn.onclick = () => filterByCategory(cat);
+    row.appendChild(btn);
+  });
+
+  // Add category button (owner only)
+  if (isOwner) {
+    const addBtn = document.createElement('button');
+    addBtn.className = 'cat-pill add-cat';
+    addBtn.textContent = '+';
+    addBtn.title = 'Add category';
+    addBtn.onclick = addCategoryFromFilterRow;
+    row.appendChild(addBtn);
+  }
+}
+
+function renderCatPicker(selectedCats) {
+  const picker = document.getElementById('catPicker');
+  picker.innerHTML = '';
+  getAllCategories().forEach(cat => {
+    const lbl = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.name = 'cat';
+    cb.value = cat;
+    if (selectedCats && selectedCats.includes(cat)) cb.checked = true;
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(' ' + cat));
+
+    // Delete button for custom (non-default) categories, owner only
+    if (isOwner && !DEFAULT_CATEGORIES.includes(cat)) {
+      const rm = document.createElement('button');
+      rm.type = 'button';
+      rm.className = 'cat-remove';
+      rm.textContent = '×';
+      rm.title = 'Remove category';
+      rm.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (confirm('Remove category "' + cat + '" from all articles?')) {
+          removeCategory(cat);
+        }
+      };
+      lbl.appendChild(rm);
+    }
+    picker.appendChild(lbl);
+  });
+}
+
+// ===== CATEGORY FILTER =====
+let activeCategory = 'all';
+
+function filterByCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll('.cat-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === cat);
+  });
+  renderLibrary();
+}
+
+// ===== SORTING =====
+let currentSort = 'date';
+
+function formatDate(isoStr) {
+  if (!isoStr) return '';
+  const d = new Date(isoStr);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function sortArticles(type) {
+  currentSort = type;
+  
+  // Update button states
+  document.getElementById('sortDate').classList.toggle('active', type === 'date');
+  document.getElementById('sortAZ').classList.toggle('active', type === 'az');
+  
+  // Sort articles array
+  if (type === 'az') {
+    articles.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+  } else {
+    // Sort by date (newest first), items without dates go to end
+    articles.sort((a, b) => {
+      if (!a.dateAdded && !b.dateAdded) return 0;
+      if (!a.dateAdded) return 1;
+      if (!b.dateAdded) return -1;
+      return new Date(b.dateAdded) - new Date(a.dateAdded);
+    });
+  }
+  
+  renderLibrary();
+}
+
+// ===== RENDER =====
+function renderLibrary() {
+  const grid = document.getElementById("cardGrid");
+  grid.innerHTML = "";
+  const bm = getBookmarks();
+  const filtered = activeCategory === 'all'
+    ? articles
+    : articles.filter(a => a.categories && a.categories.includes(activeCategory));
+  filtered.forEach((a) => {
+    const i = articles.indexOf(a);
+    const card = document.createElement("div");
+    card.className = "article-card";
+    const hasBm = bm[a.id] != null;
+    const isCustom = !BUILTIN_ARTICLES.find(b => b.id === a.id);
+    const canManage = isOwner || isCustom;
+    const dateStr = a.dateAdded ? formatDate(a.dateAdded) : '';
+    const tagsHtml = a.categories && a.categories.length
+      ? `<div class="card-tags">${a.categories.map(c => `<span class="card-tag">${c}</span>`).join('')}</div>`
+      : '';
+    card.innerHTML = `
+      ${canManage ? `<div class="card-actions">
+        <button class="card-action-btn edit" title="Edit" onclick="event.stopPropagation(); openEditModal(${i})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="card-action-btn delete" title="Delete" onclick="event.stopPropagation(); confirmDelete(${i})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+      </div>` : ''}
+      ${dateStr ? `<div class="card-date">${dateStr}</div>` : ''}
+      <h3>${a.title}</h3>
+      <div class="author">${a.author}</div>
+      <div class="desc">${a.desc}</div>
+      ${tagsHtml}
+      ${hasBm ? '<div style="margin-top:10px;display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--pill-active);padding:3px 10px;border-radius:12px;">Continue reading</div>' : ''}`;
+    card.onclick = () => showArticle(i);
+    grid.appendChild(card);
+  });
+  // Add card
+  const add = document.createElement("div");
+  add.className = "add-card";
+  add.innerHTML = "+ Add Article";
+  add.onclick = () => openModal();
+  grid.appendChild(add);
+  
+  // Export button
+  const exp = document.createElement("div");
+  exp.className = "add-card";
+  exp.innerHTML = "⬇ Export articles.json";
+  exp.onclick = () => exportArticles();
+  grid.appendChild(exp);
+}
+
+// Export all articles to downloadable JSON file
+function exportArticles() {
+  // Get custom articles (user-created ones)
+  const saved = localStorage.getItem("bookmarks_reader_articles");
+  const custom = saved ? JSON.parse(saved) : [];
+  
+  // Combine with any loaded curated articles
+  const all = [...BUILTIN_ARTICLES, ...custom];
+  
+  if (all.length === 0) {
+    alert("No articles to export. Add some first!");
+    return;
+  }
+  
+  // Create clean export (remove any internal fields)
+  const exportData = all.map(a => ({
+    id: a.id,
+    title: a.title,
+    author: a.author || "Unknown",
+    desc: a.desc || "",
+    dateAdded: a.dateAdded || new Date().toISOString(),
+    categories: a.categories || [],
+    body: a.body
+  }));
+  
+  // Download as JSON file
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "articles.json";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function showArticle(idx) {
+  const a = articles[idx];
+  currentArticleId = a.id;
+  document.getElementById("libraryView").style.display = "none";
+  document.getElementById("articleView").style.display = "block";
+  document.getElementById("articleContent").innerHTML = a.body;
+
+  // Build nav
+  const nav = document.getElementById("navLinks");
+  nav.innerHTML = "";
+  if (a.sections && a.sections.length) {
+    a.sections.forEach(s => {
+      const link = document.createElement("a");
+      link.href = "#" + s.id;
+      link.textContent = s.label;
+      nav.appendChild(link);
+    });
+  } else {
+    // Auto-detect h2s
+    const tmp = document.createElement("div");
+    tmp.innerHTML = a.body;
+    tmp.querySelectorAll("h2").forEach((h, i) => {
+      if (!h.closest("section")?.id) {
+        const id = "sec-" + i;
+        h.id = id;
+      }
+      const link = document.createElement("a");
+      link.href = "#" + (h.closest("section")?.id || h.id);
+      link.textContent = h.textContent.substring(0, 40);
+      nav.appendChild(link);
+    });
+    // Also set IDs on rendered content
+    document.getElementById("articleContent").querySelectorAll("h2").forEach((h, i) => {
+      if (!h.id && !h.closest("section")?.id) h.id = "sec-" + i;
+    });
+  }
+
+  // Bookmark system
+  setupBookmarkClicks();
+  const hasBm = getBookmarks()[a.id] != null;
+  if (hasBm) {
+    restoreBookmark(a.id);
+  } else {
+    window.scrollTo(0, 0);
+  }
+}
+
+function showLibrary() {
+  document.getElementById("articleView").style.display = "none";
+  document.getElementById("libraryView").style.display = "block";
+  window.scrollTo(0, 0);
+}
+
+// Share current article
+function shareArticle() {
+  const article = articles.find(a => a.id === currentArticleId);
+  if (!article) return;
+  
+  // Build share URL with article ID
+  const baseUrl = window.location.href.split('?')[0].split('#')[0];
+  const shareUrl = baseUrl + '?article=' + encodeURIComponent(currentArticleId);
+  
+  // Try native share API first (mobile)
+  if (navigator.share) {
+    navigator.share({
+      title: article.title,
+      text: article.desc || 'Check out this article',
+      url: shareUrl
+    }).catch(() => {});
+  } else {
+    // Fallback: copy to clipboard
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      // Show feedback
+      const btn = document.querySelector('.share-btn');
+      const original = btn.innerHTML;
+      btn.innerHTML = '✓ Link copied!';
+      btn.style.color = '#70c070';
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.style.color = '';
+      }, 2000);
+    }).catch(() => {
+      // Final fallback
+      prompt('Copy this link:', shareUrl);
+    });
+  }
+}
+
+// ===== MODAL (ADD / EDIT) =====
+let editingIndex = null; // null = adding, number = editing
+
+function openModal(editIdx) {
+  editingIndex = editIdx != null ? editIdx : null;
+  const heading = document.querySelector("#addModal .modal h2");
+
+  if (editingIndex != null) {
+    const a = articles[editingIndex];
+    heading.textContent = "Edit Article";
+    document.getElementById("newTitle").value = a.title;
+    document.getElementById("newAuthor").value = a.author || "";
+    document.getElementById("newDesc").value = a.desc || "";
+    document.getElementById("newSource").value = a.source || "";
+    document.getElementById("newBody").value = a.rawText || "";
+    renderCatPicker(a.categories || []);
+    document.querySelector("#addModal .btn-primary").textContent = "Save Changes";
+  } else {
+    heading.textContent = "Add Article";
+    document.getElementById("newTitle").value = "";
+    document.getElementById("newAuthor").value = "";
+    document.getElementById("newDesc").value = "";
+    document.getElementById("newSource").value = "";
+    document.getElementById("newBody").value = "";
+    renderCatPicker([]);
+    document.querySelector("#addModal .btn-primary").textContent = "Save Article";
+  }
+  document.getElementById("addModal").classList.add("active");
+}
+
+function openEditModal(idx) {
+  openModal(idx);
+}
+
+function closeModal() {
+  document.getElementById("addModal").classList.remove("active");
+  editingIndex = null;
+  document.getElementById("fetchStatus").textContent = "";
+}
+
+// Fetch tweet content from X API
+async function fetchFromX() {
+  const sourceInput = document.getElementById("newSource");
+  const statusEl = document.getElementById("fetchStatus");
+  const btn = document.getElementById("fetchXBtn");
+  const url = sourceInput.value.trim();
+
+  if (!url) {
+    statusEl.textContent = "Please enter an X/Twitter URL first";
+    statusEl.style.color = "#f07070";
+    return;
+  }
+
+  // Check if it's an X/Twitter URL
+  if (!url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/)) {
+    statusEl.textContent = "Not a valid X/Twitter post URL";
+    statusEl.style.color = "#f07070";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Fetching...";
+  statusEl.textContent = "Fetching tweet...";
+  statusEl.style.color = "var(--muted)";
+
+  try {
+    const res = await fetch(`/api/tweet?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      throw new Error(data.error || "Failed to fetch tweet");
+    }
+
+    // Populate fields
+    const author = data.author;
+    const authorName = author ? `${author.name} (@${author.username})` : "Unknown";
+    
+    // Title: first ~60 chars of tweet
+    const titleText = data.text.split('\n')[0].substring(0, 80);
+    document.getElementById("newTitle").value = titleText + (data.text.length > 80 ? "..." : "");
+    
+    // Author
+    document.getElementById("newAuthor").value = authorName;
+    
+    // Description: short summary
+    document.getElementById("newDesc").value = `Tweet by ${authorName}`;
+    
+    // Content: full tweet text
+    document.getElementById("newBody").value = data.text;
+
+    statusEl.textContent = "✓ Tweet loaded! Edit fields as needed.";
+    statusEl.style.color = "#70c070";
+  } catch (err) {
+    console.error("Fetch error:", err);
+    statusEl.textContent = "Error: " + err.message;
+    statusEl.style.color = "#f07070";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Fetch from X";
+  }
+}
+
+function saveArticle() {
+  const title = document.getElementById("newTitle").value.trim();
+  const author = document.getElementById("newAuthor").value.trim();
+  const desc = document.getElementById("newDesc").value.trim();
+  const source = document.getElementById("newSource").value.trim();
+  const raw = document.getElementById("newBody").value.trim();
+  if (!title || !raw) { alert("Title and content are required."); return; }
+
+  // Gather selected categories
+  const categories = Array.from(document.querySelectorAll('#catPicker input[name="cat"]:checked')).map(cb => cb.value);
+
+  const result = plainTextToArticle(raw);
+  const meta = `<div class="meta">${author || "Unknown"}${source ? ' &middot; <a href="'+escHtml(source)+'" target="_blank" rel="noopener" style="color:var(--link)">Source</a>' : ''}</div>`;
+  const body = `<h1>${escHtml(title)}</h1>${meta}${result.html}`;
+
+  if (editingIndex != null) {
+    // Update existing
+    const a = articles[editingIndex];
+    a.title = title;
+    a.author = author || "Unknown";
+    a.desc = desc || "";
+    a.source = source;
+    a.rawText = raw;
+    a.sections = result.sections;
+    a.body = body;
+    a.categories = categories;
+  } else {
+    // Add new
+    const id = "custom-" + Date.now();
+    articles.push({ id, title, author: author || "Unknown", desc: desc || "", source, rawText: raw, sections: result.sections, body, dateAdded: new Date().toISOString(), categories });
+  }
+
+  saveCustomArticles();
+  renderLibrary();
+  closeModal();
+}
+
+// ===== DELETE =====
+let deleteIndex = null;
+
+function confirmDelete(idx) {
+  deleteIndex = idx;
+  document.getElementById("deleteTitle").textContent = articles[idx].title;
+  document.getElementById("deleteModal").classList.add("active");
+}
+
+function closeDeleteModal() {
+  document.getElementById("deleteModal").classList.remove("active");
+  deleteIndex = null;
+}
+
+function executeDelete() {
+  if (deleteIndex == null) return;
+  const a = articles[deleteIndex];
+  // Also clean up bookmark
+  clearBookmarkFor(a.id);
+  articles.splice(deleteIndex, 1);
+  saveCustomArticles();
+  renderLibrary();
+  closeDeleteModal();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== PLAIN TEXT → HTML CONVERTER =====
+function plainTextToArticle(text) {
+  // Normalize line endings
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  // Split into blocks by double newline
+  const blocks = text.split(/\n{2,}/).map(b => b.trim()).filter(Boolean);
+
+  let html = '';
+  let sections = [];
+  let sectionIdx = 0;
+  let inList = false;
+
+  // Patterns
+  const headingPat = /^(?:#{1,3}\s+|([IVXLC]+)\s*[–—\-\.]\s+|(\d+)\)\s+|(\d+)\.\s+(?=[A-Z].*[a-z]))(.+)$/;
+  const romanSectionPat = /^([IVXLC]+)\s*[–—\-]\s+(.+)$/;
+  const numberedHeadingPat = /^(\d+)\)\s+(.+)$/;
+  const dotHeadingPat = /^(\d+)\.\s+([A-Z].{4,})$/;
+  const hashHeadingPat = /^#{1,3}\s+(.+)$/;
+  const listItemPat = /^[\-•]\s+/;
+  const quoteStartPat = /^["""]|^>\s*/;
+  const attributionPat = /[–—\-]\s*.{2,}$/;
+
+  function applyInline(line) {
+    // Bold: **text** or text between double asterisks
+    line = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Italic: *text* or _text_
+    line = line.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    line = line.replace(/(?<!\w)_(.+?)_(?!\w)/g, '<em>$1</em>');
+    return line;
+  }
+
+  function closeList() {
+    if (inList) { html += '</ul>'; inList = false; }
+  }
+
+  // Track if the last output was a blockquote (to merge trailing attribution)
+  let lastWasQuote = false;
+
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+
+    // --- Standalone attribution line after a quote block (e.g. "– Author") ---
+    if (lastWasQuote && lines.length === 1 && /^[–—\-]\s*.+/.test(lines[0])) {
+      // Append attribution into the previous blockquote
+      html = html.replace(/<\/blockquote>$/, '<br><br>' + applyInline(lines[0]) + '</blockquote>');
+      lastWasQuote = false;
+      continue;
+    }
+    lastWasQuote = false;
+
+    // --- Check if entire block is a list ---
+    const allList = lines.length > 1 && lines.every(l => listItemPat.test(l));
+    if (allList) {
+      closeList();
+      html += '<ul>';
+      lines.forEach(l => {
+        html += '<li>' + applyInline(l.replace(listItemPat, '')) + '</li>';
+      });
+      html += '</ul>';
+      continue;
+    }
+
+    // Process line by line within the block
+    for (let j = 0; j < lines.length; j++) {
+      const line = lines[j];
+
+      // --- List item ---
+      if (listItemPat.test(line)) {
+        if (!inList) { html += '<ul>'; inList = true; }
+        html += '<li>' + applyInline(line.replace(listItemPat, '')) + '</li>';
+        continue;
+      }
+      closeList();
+
+      // --- Heading: Roman numeral section (e.g. "III – Title") ---
+      let m;
+      if ((m = line.match(romanSectionPat))) {
+        const sid = 'sec-' + sectionIdx++;
+        const label = m[1] + ' \u2014 ' + m[2];
+        sections.push({ id: sid, label: label.substring(0, 50) });
+        html += '<section id="' + sid + '"><h2>' + applyInline(m[1] + ' &mdash; ' + m[2]) + '</h2></section>';
+        continue;
+      }
+
+      // --- Heading: numbered with ) e.g. "1) Title" ---
+      if ((m = line.match(numberedHeadingPat))) {
+        html += '<h2>' + applyInline(m[1] + ') ' + m[2]) + '</h2>';
+        continue;
+      }
+
+      // --- Heading: numbered with . e.g. "3. Title Here" (only if capitalized and long enough) ---
+      if ((m = line.match(dotHeadingPat))) {
+        html += '<h2>' + applyInline(m[1] + '. ' + m[2]) + '</h2>';
+        continue;
+      }
+
+      // --- Heading: markdown # style ---
+      if ((m = line.match(hashHeadingPat))) {
+        const sid = 'sec-' + sectionIdx++;
+        sections.push({ id: sid, label: m[1].substring(0, 50) });
+        html += '<section id="' + sid + '"><h2>' + applyInline(m[1]) + '</h2></section>';
+        continue;
+      }
+
+      // --- Heading: short ALL CAPS line (likely a section title) ---
+      if (line.length > 3 && line.length < 80 && line === line.toUpperCase() && /[A-Z]/.test(line) && !/[.!?]$/.test(line)) {
+        const nice = line.split(' ').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
+        html += '<h2>' + applyInline(nice) + '</h2>';
+        continue;
+      }
+
+      // --- Blockquote: starts with " or > ---
+      if (quoteStartPat.test(line)) {
+        let quoteLines = [line.replace(/^>\s*/, '').replace(/^["""\u201C]/, '').replace(/["""\u201D]$/, '')];
+        while (j + 1 < lines.length && !listItemPat.test(lines[j+1]) && !romanSectionPat.test(lines[j+1])) {
+          j++;
+          const ql = lines[j].replace(/^>\s*/, '');
+          if (/^[–—\-]\s*/.test(ql)) {
+            quoteLines.push('<br><br>' + ql);
+            break;
+          }
+          quoteLines.push(ql.replace(/^["""\u201C]/, '').replace(/["""\u201D]$/, ''));
+        }
+        html += '<blockquote>' + applyInline(quoteLines.join(' ')) + '</blockquote>';
+        lastWasQuote = true;
+        continue;
+      }
+
+      // --- Attribution line on its own (– Author) ---
+      if (/^[–—\-]\s*.{2,}$/.test(line) && !(/^-\s+/.test(line))) {
+        // Check if previous output was a blockquote
+        if (html.endsWith('</blockquote>')) {
+          html = html.replace(/<\/blockquote>$/, '<br><br>' + applyInline(line) + '</blockquote>');
+        } else {
+          html += '<blockquote>' + applyInline(line) + '</blockquote>';
+        }
+        continue;
+      }
+
+      // --- Regular paragraph ---
+      html += '<p>' + applyInline(line) + '</p>';
+    }
+  }
+  closeList();
+
+  return { html, sections };
+}
+
+// ===== ZEN MODE =====
+function toggleZen() {
+  const view = document.getElementById("articleView");
+  const isZen = view.classList.toggle("zen-mode");
+
+  if (isZen) {
+    // Request browser fullscreen
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    // Close toolbar
+    document.getElementById("tbPanel").classList.remove("open");
+    document.getElementById("tbToggle").classList.remove("open");
+    // Re-trigger hint animation
+    const hint = document.getElementById("zenHint");
+    hint.style.animation = "none";
+    hint.offsetHeight; // force reflow
+    hint.style.animation = "";
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
+
+// Exit zen on Escape or when browser exits fullscreen
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    const view = document.getElementById("articleView");
+    if (view.classList.contains("zen-mode")) {
+      view.classList.remove("zen-mode");
+      // Fullscreen exit is handled by browser on Escape
+    }
+  }
+});
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    document.getElementById("articleView").classList.remove("zen-mode");
+  }
+});
+document.addEventListener("webkitfullscreenchange", () => {
+  if (!document.webkitFullscreenElement) {
+    document.getElementById("articleView").classList.remove("zen-mode");
+  }
+});
+
+// ===== PROGRESS BAR (handled by Lenis below) =====
+
+// ===== TOOLBAR TOGGLE =====
+function toggleToolbar() {
+  const panel = document.getElementById("tbPanel");
+  const btn = document.getElementById("tbToggle");
+  const isOpen = panel.classList.toggle("open");
+  btn.classList.toggle("open", isOpen);
+}
+
+// ===== PREFERENCES =====
+function setMood(mood) {
+  document.documentElement.setAttribute("data-mood", mood);
+  localStorage.setItem("bookmarks_reader_mood", mood);
+  document.querySelectorAll("[data-mood]").forEach(b => {
+    if (b.tagName === "BUTTON") {
+      b.classList.toggle("active", b.getAttribute("data-mood") === mood);
+    }
+  });
+}
+
+function setWidth(val) {
+  document.documentElement.style.setProperty("--max", val + "px");
+  document.getElementById("widthValue").textContent = val;
+  document.getElementById("widthSlider").value = val;
+  localStorage.setItem("bookmarks_reader_width", val);
+}
+
+function setFontSize(val) {
+  document.documentElement.style.setProperty("--fs", val + "px");
+  document.body.style.fontSize = val + "px";
+  document.getElementById("sizeValue").textContent = val;
+  document.getElementById("sizeSlider").value = val;
+  localStorage.setItem("bookmarks_reader_fontsize", val);
+}
+
+function setFont(font) {
+  document.documentElement.setAttribute("data-font", font);
+  localStorage.setItem("bookmarks_reader_font", font);
+  document.querySelectorAll("[data-font]").forEach(b => {
+    if (b.tagName === "BUTTON") {
+      b.classList.toggle("active", b.getAttribute("data-font") === font);
+    }
+  });
+}
+
+function toggleEffect(effect, on) {
+  localStorage.setItem("bookmarks_reader_fx_" + effect, on ? "1" : "0");
+  if (effect === "smooth") {
+    if (on) {
+      initLenis();
+    } else if (window.lenis) {
+      window.lenis.destroy();
+      window.lenis = null;
+    }
+  }
+  if (effect === "ambient") {
+    document.documentElement.toggleAttribute("data-ambient", on);
+  }
+  if (effect === "focus") {
+    document.documentElement.toggleAttribute("data-focus-lens", on);
+    if (!on) {
+      document.querySelectorAll(".in-focus").forEach(el => el.classList.remove("in-focus"));
+    }
+  }
+}
+
+function restorePreferences() {
+  const mood = localStorage.getItem("bookmarks_reader_mood") || "deep-focus";
+  setMood(mood);
+  const width = localStorage.getItem("bookmarks_reader_width") || "720";
+  setWidth(width);
+  const font = localStorage.getItem("bookmarks_reader_font") || "clean";
+  setFont(font);
+  const size = localStorage.getItem("bookmarks_reader_fontsize") || "18";
+  setFontSize(size);
+  // Restore effect toggles (default: all on)
+  ["smooth", "ambient", "focus"].forEach(fx => {
+    const val = localStorage.getItem("bookmarks_reader_fx_" + fx);
+    const on = val === null ? true : val === "1";
+    const checkbox = document.getElementById("toggle" + fx.charAt(0).toUpperCase() + fx.slice(1));
+    if (checkbox) checkbox.checked = on;
+    toggleEffect(fx, on);
+  });
+}
+
+// ===== BOOKMARK =====
+let currentArticleId = null;
+
+function getBookmarks() {
+  const raw = localStorage.getItem("bookmarks_reader_bookmarks");
+  return raw ? JSON.parse(raw) : {};
+}
+
+function saveBookmarkFor(articleId, paragraphIndex) {
+  const bm = getBookmarks();
+  bm[articleId] = paragraphIndex;
+  localStorage.setItem("bookmarks_reader_bookmarks", JSON.stringify(bm));
+}
+
+function clearBookmarkFor(articleId) {
+  const bm = getBookmarks();
+  delete bm[articleId];
+  localStorage.setItem("bookmarks_reader_bookmarks", JSON.stringify(bm));
+}
+
+function placeBookmark(paragraphIndex) {
+  // Remove any existing marker
+  const old = document.querySelector(".bookmark-marker");
+  if (old) old.remove();
+
+  const main = document.getElementById("articleContent");
+  const targets = main.querySelectorAll("p, li");
+  if (paragraphIndex >= targets.length) return;
+
+  const target = targets[paragraphIndex];
+  const marker = document.createElement("div");
+  marker.className = "bookmark-marker";
+  marker.innerHTML = '<span class="bookmark-tag">Continue here</span>';
+  marker.title = "Click to remove bookmark";
+  marker.onclick = function(e) {
+    e.stopPropagation();
+    marker.remove();
+    clearBookmarkFor(currentArticleId);
+  };
+
+  // Insert marker after the clicked paragraph
+  target.parentNode.insertBefore(marker, target.nextSibling);
+}
+
+function setupBookmarkClicks() {
+  const main = document.getElementById("articleContent");
+  const targets = main.querySelectorAll("p, li");
+  targets.forEach((el, i) => {
+    el.addEventListener("click", function(e) {
+      if (e.target.closest(".bookmark-marker")) return;
+      placeBookmark(i);
+      saveBookmarkFor(currentArticleId, i);
+    });
+  });
+}
+
+function restoreBookmark(articleId) {
+  const bm = getBookmarks();
+  if (bm[articleId] != null) {
+    placeBookmark(bm[articleId]);
+    setTimeout(() => {
+      const marker = document.querySelector(".bookmark-marker");
+      if (marker) {
+        if (window.lenis) {
+          window.lenis.scrollTo(marker, { offset: -window.innerHeight / 3 });
+        } else {
+          marker.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    }, 150);
+  }
+}
+
+// ===== INIT =====
+(async function init() {
+  loadCustomCategories();
+  await loadArticles();
+  renderCategoryFilterRow();
+  renderLibrary();
+  restorePreferences();
+  checkOwnerStatus();
+
+  // Check for direct article link (?article=id)
+  const params = new URLSearchParams(window.location.search);
+  const articleId = params.get('article');
+  if (articleId) {
+    const idx = articles.findIndex(a => a.id === articleId);
+    if (idx !== -1) {
+      showArticle(idx);
+    }
+  }
+})();
+</script>
+
+<!-- Lenis smooth scroll -->
+<script src="https://unpkg.com/lenis@1.1.17/dist/lenis.min.js"></script>
+<script>
+function onScrollUpdate() {
+  // Progress bar
+  const doc = document.documentElement;
+  const scrollTop = window.scrollY || doc.scrollTop;
+  const scrollHeight = doc.scrollHeight - doc.clientHeight;
+  const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+  const bar = document.getElementById('progress');
+  if (bar) bar.style.width = (progress * 100).toFixed(1) + '%';
+  updateFocusLens();
+}
+
+// Native scroll fallback (always attached, runs when Lenis is off)
+window.addEventListener('scroll', function() {
+  if (!window.lenis) onScrollUpdate();
+}, { passive: true });
+
+function initLenis() {
+  if (window.lenis) return; // already running
+  const l = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smooth: true,
+    smoothTouch: false
+  });
+  window.lenis = l;
+  function raf(time) {
+    if (!window.lenis) return; // destroyed
+    window.lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+  l.on('scroll', () => onScrollUpdate());
+}
+
+// Init Lenis by default (restorePreferences may destroy it if toggled off)
+initLenis();
+
+// Focus lens – highlight paragraph nearest viewport center
+function updateFocusLens() {
+  if (!document.documentElement.hasAttribute('data-focus-lens')) return;
+  const main = document.querySelector('main');
+  if (!main) return;
+  const els = main.querySelectorAll('p, blockquote, li, h2');
+  if (!els.length) return;
+  const center = window.innerHeight / 2;
+  const zone = window.innerHeight * 0.18; // ±18% from center
+  let closest = null;
+  let closestDist = Infinity;
+  els.forEach(el => {
+    const rect = el.getBoundingClientRect();
+    const mid = rect.top + rect.height / 2;
+    const dist = Math.abs(mid - center);
+    if (dist < closestDist) { closestDist = dist; closest = el; }
+    if (dist < zone) {
+      el.classList.add('in-focus');
+    } else {
+      el.classList.remove('in-focus');
+    }
+  });
+  // Always ensure at least the closest element is focused
+  if (closest && !closest.classList.contains('in-focus')) {
+    closest.classList.add('in-focus');
+  }
+}
+</script>
+</body>
+</html>

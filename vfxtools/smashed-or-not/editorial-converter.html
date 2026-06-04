@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editorial Converter - VFX Tools</title>
+    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="stylesheet" href="editorial-converter/editorial-converter.css?v=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="https://bukowiecki.co/" class="logo-link">
+                        <span class="logo-text">LUKASZ BUKOWIECKI</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">← Back to VFX Tools</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="tool-header editorial-hero">
+        <div class="container">
+            <p class="eyebrow">Browser-Based Editorial Utility</p>
+            <h1>Editorial Converter</h1>
+            <p>Convert Avid SubCap exports, flatten EDLs, and enrich shot lists entirely in the browser. No uploads, no backend, no spreadsheet cleanup marathon.</p>
+        </div>
+    </div>
+
+    <main class="main">
+        <div class="container">
+            <div class="back-nav">
+                <a href="index.html" class="back-link">← Back to VFX Tools</a>
+            </div>
+
+            <section class="editorial-layout">
+                <aside class="mode-panel">
+                    <div class="panel-card sticky-card">
+                        <div class="panel-heading">
+                            <h2>Modes</h2>
+                            <p>Pick one workflow and drop in the files.</p>
+                        </div>
+                        <div id="modeList" class="mode-list" aria-label="Conversion modes"></div>
+                    </div>
+
+                    <div class="panel-card mode-notes">
+                        <h3>Built for messy reality</h3>
+                        <ul>
+                            <li>UTF-8 and UTF-16 text decoding</li>
+                            <li>Blank lines and inconsistent spacing tolerated</li>
+                            <li>CSV export with proper quoting</li>
+                            <li>Preview before download</li>
+                            <li>Large-file friendly previews</li>
+                        </ul>
+                    </div>
+                </aside>
+
+                <section class="workspace-panel">
+                    <div class="panel-card workspace-head">
+                        <div>
+                            <p class="workspace-kicker" id="modeKicker">Mode</p>
+                            <h2 id="modeTitle">Editorial Converter</h2>
+                            <p id="modeDescription" class="workspace-description"></p>
+                        </div>
+                        <button id="processButton" class="btn process-button" type="button">Process Files</button>
+                    </div>
+
+                    <div class="panel-card">
+                        <div id="dropzoneGrid" class="dropzone-grid"></div>
+                        <div id="statusMessage" class="status-message"></div>
+                    </div>
+
+                    <div class="panel-card preview-shell">
+                        <div class="preview-toolbar">
+                            <div>
+                                <h3>Preview</h3>
+                                <p id="resultSummary" class="result-summary">Load files to see the parsed output.</p>
+                            </div>
+                            <button id="downloadButton" class="btn btn-secondary download-button" type="button" disabled>Download CSV</button>
+                        </div>
+
+                        <div id="warningBox" class="warning-box" hidden></div>
+
+                        <div id="emptyState" class="empty-state">
+                            <div class="empty-glyph">⌘</div>
+                            <p>Choose a mode, drop in your files, and preview the cleaned CSV here before downloading.</p>
+                        </div>
+
+                        <div id="previewMeta" class="preview-meta" hidden></div>
+                        <div class="table-wrap" id="tableWrap" hidden>
+                            <table id="previewTable" class="preview-table"></table>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Lukasz Bukowiecki. All rights reserved.</p>
+                <p>Part of <a href="https://bukowiecki.co/" class="footer-link">bukowiecki.co</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.documentElement.setAttribute('data-mood', localStorage.getItem('vfxtools_mood') || 'deep-focus');
+    </script>
+    <script type="module" src="editorial-converter/app.js"></script>
+</body>
+</html>

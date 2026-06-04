@@ -1,0 +1,13 @@
+TITLE: REEL_01
+FCM: NON-DROP FRAME
+
+001  AX       V     C        01:00:00:00 01:00:08:12 10:00:00:00 10:00:08:12
+* FROM CLIP NAME: SHOT_010_comp_v003
+* SOURCE FILE: /show/plates/SHOT_010_comp_v003.mov
+* COMMENT: First turnover shot
+
+002  BX       V     D 024    01:00:08:12 01:00:16:00 10:00:08:12 10:00:16:00
+* FROM CLIP NAME: SHOT_020_comp_v001
+* SOURCE FILE: /show/plates/SHOT_020_comp_v001.mov
+* COLOR: RED
+

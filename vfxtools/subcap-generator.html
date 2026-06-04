@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subcaps Text Generator - VFX Tools</title>
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+        .split-panel {
+            background: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 30px;
+        }
+        .split-panel h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .column-checkboxes {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .column-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: var(--background-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .column-checkbox:hover {
+            border-color: var(--accent-color);
+        }
+        .column-checkbox.selected {
+            border-color: var(--accent-color);
+            background: rgba(255, 107, 53, 0.08);
+        }
+        .column-checkbox input[type="checkbox"] {
+            accent-color: var(--accent-color);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .column-checkbox label {
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            cursor: pointer;
+            flex: 1;
+        }
+        .column-checkbox .col-sample {
+            color: var(--text-light);
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+        .csv-summary {
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--background-light);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+        .csv-summary p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        .csv-summary p:last-child {
+            margin-bottom: 0;
+        }
+        .csv-summary strong {
+            color: var(--text-dark);
+        }
+        .generate-bar {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+        .generate-bar .btn {
+            flex: 1;
+        }
+        .preview-content {
+            max-height: 400px;
+        }
+        .field-order-hint {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+        .skipped-rows {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: var(--background-light);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--warning-color);
+            font-size: 0.9rem;
+            color: var(--warning-color);
+            font-weight: 500;
+        }
+        .separator-setting {
+            margin-top: 15px;
+        }
+        .separator-setting label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        @media (max-width: 900px) {
+            .split-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="https://bukowiecki.co/" class="logo-link">
+                        <span class="logo-text">LUKASZ BUKOWIECKI</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">← Back to VFX Tools</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="tool-header">
+        <div class="container">
+            <h1>Subcaps Text Generator</h1>
+            <p>Generate Avid subcap files from CSV turnovers with flexible field mapping</p>
+        </div>
+    </div>
+
+    <main class="main">
+        <div class="container">
+            <div class="back-nav">
+                <a href="index.html" class="back-link">← Back to VFX Tools</a>
+            </div>
+
+            <div class="instructions">
+                <h3>How to use:</h3>
+                <ul>
+                    <li>Upload a CSV file with timecode and shot data (e.g. from ScriptSync or a turnover spreadsheet)</li>
+                    <li>The CSV must contain <strong>Counts::ReelTC_in</strong> (timecode in) and <strong>Counts::Cut</strong> (duration in frames) columns</li>
+                    <li>Select which fields to include as subtitle text — they'll appear tab-separated in the subcap</li>
+                    <li>Set your project frame rate (default 24fps)</li>
+                    <li>Generate and download the .txt file to import into Avid as subcaps</li>
+                </ul>
+            </div>
+
+            <div class="split-layout">
+                <!-- LEFT: Upload & Settings -->
+                <div class="split-panel">
+                    <h3>1. Upload CSV</h3>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="csvInput" class="file-input" accept=".csv" />
+                        <label for="csvInput" class="file-input-label" id="csvLabel">
+                            <div style="font-size: 1.5rem; margin-bottom: 15px;">📁</div>
+                            <div style="font-size: 1.1rem; margin-bottom: 10px;">Click to upload or drag & drop your CSV</div>
+                            <div style="font-size: 0.9rem; color: var(--text-light);">Supports .csv files</div>
+                        </label>
+                    </div>
+                    <div class="file-info" id="csvInfo">
+                        <strong>Selected file:</strong> <span id="csvFileName"></span><br>
+                        <strong>Size:</strong> <span id="csvFileSize"></span>
+                    </div>
+                    <div class="csv-summary" id="csvSummary" style="display:none;">
+                        <p><strong>Rows:</strong> <span id="rowCount"></span></p>
+                        <p><strong>Columns:</strong> <span id="colList"></span></p>
+                        <p id="skippedInfo" style="display:none;"><strong>Skipped:</strong> <span id="skippedCount"></span> rows (missing timecode or cut length)</p>
+                    </div>
+
+                    <div class="settings-section" id="settingsPanel" style="display:none; margin-top: 20px;">
+                        <h3>2. Settings</h3>
+                        <div class="setting-group">
+                            <label for="fpsSelect" class="setting-label">Frame Rate:</label>
+                            <select id="fpsSelect" class="fps-select">
+                                <option value="23.976">23.976 fps (Film)</option>
+                                <option value="24" selected>24 fps (Film)</option>
+                                <option value="25">25 fps (PAL)</option>
+                                <option value="29.97">29.97 fps (NTSC)</option>
+                                <option value="30">30 fps</option>
+                                <option value="48">48 fps (HFR Film)</option>
+                                <option value="50">50 fps (PAL HFR)</option>
+                                <option value="59.94">59.94 fps (NTSC HFR)</option>
+                                <option value="60">60 fps (HFR)</option>
+                            </select>
+                        </div>
+
+                        <div class="separator-setting">
+                            <label for="separatorSelect">Field Separator in Subcap Text:</label>
+                            <select id="separatorSelect" class="fps-select">
+                                <option value="tab" selected>Tab (Avid default)</option>
+                                <option value="space">Space</option>
+                                <option value="pipe"> | (pipe)</option>
+                                <option value="dash"> - (dash)</option>
+                            </select>
+                        </div>
+
+                        <div class="separator-setting">
+                            <label for="prefixSelect">Prefix Symbol:</label>
+                            <select id="prefixSelect" class="fps-select">
+                                <option value="none">None</option>
+                                <option value="bullet" selected>&#8226; Bullet dot</option>
+                                <option value="diamond">&#9670; Diamond</option>
+                                <option value="square">&#9632; Square</option>
+                                <option value="circle">&#9679; Circle</option>
+                                <option value="triangle">&#9650; Triangle</option>
+                                <option value="star">&#9733; Star</option>
+                                <option value="arrow">&#9654; Arrow</option>
+                                <option value="dash">&#8212; Em dash</option>
+                            </select>
+                            <p class="field-order-hint">Symbol placed before the text on each subcap — useful as a colour marker on the Avid timeline.</p>
+                        </div>
+                    </div>
+
+                    <div id="columnPicker" style="display:none; margin-top: 20px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 5px; font-size: 1.2rem; font-weight: 600;">3. Select Fields for Subcap Text</h3>
+                        <p class="field-order-hint">Tick the fields you want in the subtitle. They appear in CSV column order, separated by your chosen separator.</p>
+                        <div class="column-checkboxes" id="columnCheckboxes"></div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Preview & Download -->
+                <div class="split-panel">
+                    <h3>Output Preview</h3>
+                    <div id="emptyPreview" style="color: var(--text-light); padding: 40px 0; text-align: center;">
+                        Upload a CSV and select fields to see the preview here.
+                    </div>
+                    <div class="preview-section" id="previewSection">
+                        <div class="preview-content" id="previewContent"></div>
+                    </div>
+                    <div class="status-message" id="statusMessage"></div>
+                    <div class="generate-bar" id="generateBar" style="display:none;">
+                        <button class="btn" id="generateBtn">Generate Subcaps</button>
+                    </div>
+                    <div class="generate-bar" id="downloadBar" style="display:none;">
+                        <button class="btn btn-secondary" id="downloadBtn">Download .txt</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Lukasz Bukowiecki. All rights reserved.</p>
+                <p>Part of <a href="https://bukowiecki.co/" class="footer-link">bukowiecki.co</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ── State ──
+        let csvData = [];       // array of row objects
+        let csvHeaders = [];    // column names
+        let selectedFields = [];
+        let generatedContent = '';
+        let skippedRows = 0;
+        let selectedFps = 24;
+
+        // ── DOM refs ──
+        const csvInput = document.getElementById('csvInput');
+        const csvLabel = document.getElementById('csvLabel');
+        const csvInfo = document.getElementById('csvInfo');
+        const csvFileName = document.getElementById('csvFileName');
+        const csvFileSize = document.getElementById('csvFileSize');
+        const csvSummary = document.getElementById('csvSummary');
+        const rowCount = document.getElementById('rowCount');
+        const colList = document.getElementById('colList');
+        const skippedInfo = document.getElementById('skippedInfo');
+        const skippedCount = document.getElementById('skippedCount');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const columnPicker = document.getElementById('columnPicker');
+        const columnCheckboxes = document.getElementById('columnCheckboxes');
+        const fpsSelect = document.getElementById('fpsSelect');
+        const separatorSelect = document.getElementById('separatorSelect');
+        const prefixSelect = document.getElementById('prefixSelect');
+        const previewSection = document.getElementById('previewSection');
+        const previewContent = document.getElementById('previewContent');
+        const emptyPreview = document.getElementById('emptyPreview');
+        const statusMessage = document.getElementById('statusMessage');
+        const generateBar = document.getElementById('generateBar');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBar = document.getElementById('downloadBar');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // ── Timecode helpers ──
+        function timeToFrames(tc, fps) {
+            const parts = tc.split(':').map(Number);
+            if (parts.length !== 4 || parts.some(isNaN)) return null;
+            const [h, m, s, f] = parts;
+            return (h * 3600 + m * 60 + s) * fps + f;
+        }
+
+        function framesToTime(totalFrames, fps) {
+            const f = Math.floor(totalFrames % fps);
+            const totalSec = Math.floor(totalFrames / fps);
+            const s = totalSec % 60;
+            const m = Math.floor((totalSec % 3600) / 60);
+            const h = Math.floor(totalSec / 3600);
+            return [h, m, s, f].map(v => String(v).padStart(2, '0')).join(':');
+        }
+
+        // ── CSV parser ──
+        function parseCSV(text) {
+            const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+            if (lines.length < 2) return { headers: [], rows: [] };
+
+            const headers = lines[0].split(',').map(h => h.trim());
+            const rows = [];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                const values = line.split(',');
+                const row = {};
+                headers.forEach((h, idx) => {
+                    row[h] = (values[idx] || '').trim();
+                });
+                rows.push(row);
+            }
+            return { headers, rows };
+        }
+
+        // ── File handling ──
+        csvLabel.addEventListener('dragover', e => { e.preventDefault(); csvLabel.classList.add('dragover'); });
+        csvLabel.addEventListener('dragleave', () => csvLabel.classList.remove('dragover'));
+        csvLabel.addEventListener('drop', e => {
+            e.preventDefault();
+            csvLabel.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleCSV(e.dataTransfer.files[0]);
+        });
+        csvInput.addEventListener('change', e => {
+            if (e.target.files.length) handleCSV(e.target.files[0]);
+        });
+
+        function handleCSV(file) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showStatus('Please select a .csv file', 'error');
+                return;
+            }
+            csvFileName.textContent = file.name;
+            csvFileSize.textContent = formatBytes(file.size);
+            csvInfo.classList.add('show');
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                const { headers, rows } = parseCSV(e.target.result);
+                csvHeaders = headers;
+                csvData = rows;
+
+                // Validate required columns
+                const hasTCIn = headers.includes('Counts::ReelTC_in');
+                const hasCut = headers.includes('Counts::Cut');
+                if (!hasTCIn || !hasCut) {
+                    showStatus(`Missing required column${!hasTCIn && !hasCut ? 's' : ''}: ${!hasTCIn ? 'Counts::ReelTC_in' : ''} ${!hasCut ? 'Counts::Cut' : ''}`, 'error');
+                    return;
+                }
+
+                // Count skipped rows
+                skippedRows = rows.filter(r => !r['Counts::ReelTC_in'] || !r['Counts::Cut']).length;
+                const validRows = rows.length - skippedRows;
+
+                rowCount.textContent = `${validRows} valid` + (skippedRows > 0 ? ` (${skippedRows} skipped)` : '');
+                colList.textContent = headers.join(', ');
+                csvSummary.style.display = 'block';
+                if (skippedRows > 0) {
+                    skippedCount.textContent = `${skippedRows} rows (missing timecode or cut length)`;
+                    skippedInfo.style.display = 'block';
+                } else {
+                    skippedInfo.style.display = 'none';
+                }
+
+                // Build column picker (exclude TC/Cut as those are structural)
+                const textColumns = headers.filter(h => h !== 'Counts::ReelTC_in' && h !== 'Counts::Cut');
+                buildColumnPicker(textColumns, rows);
+
+                settingsPanel.style.display = 'block';
+                columnPicker.style.display = 'block';
+                generateBar.style.display = 'flex';
+                hideStatus();
+            };
+            reader.readAsText(file);
+        }
+
+        function buildColumnPicker(columns, rows) {
+            columnCheckboxes.innerHTML = '';
+            // Sample first valid row for preview
+            const sample = rows.find(r => r['Counts::ReelTC_in'] && r['Counts::Cut']) || rows[0] || {};
+
+            columns.forEach(col => {
+                const div = document.createElement('div');
+                div.className = 'column-checkbox';
+                const id = 'col_' + col.replace(/[^a-zA-Z0-9]/g, '_');
+                // Pre-select Vendor1 and Vendor2 if present
+                const preselect = (col === 'Vendor1' || col === 'Vendor2');
+                div.innerHTML = `
+                    <input type="checkbox" id="${id}" value="${col}" ${preselect ? 'checked' : ''}>
+                    <label for="${id}">${col}</label>
+                    <span class="col-sample">e.g. "${sample[col] || '(empty)'}"</span>
+                `;
+                if (preselect) div.classList.add('selected');
+                const cb = div.querySelector('input');
+                cb.addEventListener('change', () => {
+                    div.classList.toggle('selected', cb.checked);
+                    updateSelectedFields();
+                });
+                div.addEventListener('click', e => {
+                    if (e.target !== cb) {
+                        cb.checked = !cb.checked;
+                        div.classList.toggle('selected', cb.checked);
+                        updateSelectedFields();
+                    }
+                });
+                columnCheckboxes.appendChild(div);
+            });
+            updateSelectedFields();
+        }
+
+        function updateSelectedFields() {
+            selectedFields = [];
+            columnCheckboxes.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+                selectedFields.push(cb.value);
+            });
+            updatePreview();
+        }
+
+        // ── FPS change ──
+        fpsSelect.addEventListener('change', e => {
+            selectedFps = parseFloat(e.target.value);
+            updatePreview();
+        });
+        separatorSelect.addEventListener('change', () => updatePreview());
+        prefixSelect.addEventListener('change', () => updatePreview());
+
+        // ── Preview (live) ──
+        function updatePreview() {
+            if (!csvData.length || !selectedFields.length) {
+                emptyPreview.style.display = 'block';
+                previewSection.classList.remove('show');
+                return;
+            }
+            emptyPreview.style.display = 'none';
+
+            const fps = parseFloat(fpsSelect.value);
+            const sep = getSeparator();
+            const prefix = getPrefix();
+
+            // Build and sort entries by TC_IN
+            const previewEntries = [];
+            for (const row of csvData) {
+                const tcIn = row['Counts::ReelTC_in'];
+                const cut = row['Counts::Cut'];
+                if (!tcIn || !cut) continue;
+
+                const framesIn = timeToFrames(tcIn, fps);
+                if (framesIn === null) continue;
+                const framesOut = framesIn + parseInt(cut, 10);
+                const tcOut = framesToTime(framesOut, fps);
+
+                const textParts = selectedFields.map(f => row[f] || '').filter(v => v);
+                const text = textParts.join(sep);
+
+                previewEntries.push({ framesIn, tcIn, tcOut, text });
+            }
+            previewEntries.sort((a, b) => a.framesIn - b.framesIn);
+
+            // Fix overlaps only (keep gaps for non-turned-over shots)
+            for (let i = 0; i < previewEntries.length - 1; i++) {
+                const nextIn = previewEntries[i + 1].framesIn;
+                const thisOut = timeToFrames(previewEntries[i].tcOut, fps);
+                if (thisOut > nextIn) {
+                    previewEntries[i].tcOut = previewEntries[i + 1].tcIn;
+                }
+            }
+
+            const lines = [];
+            const show = Math.min(previewEntries.length, 10);
+            for (let i = 0; i < show; i++) {
+                const e = previewEntries[i];
+                lines.push(`${e.tcIn} ${e.tcOut}`);
+                lines.push(`${prefix}${e.text}`);
+                lines.push('');
+            }
+
+            let preview = lines.join('\n');
+            if (previewEntries.length > 10) {
+                preview += `\n... and ${previewEntries.length - 10} more entries`;
+            }
+            previewContent.textContent = preview;
+            previewSection.classList.add('show');
+        }
+
+        function getSeparator() {
+            const val = separatorSelect.value;
+            if (val === 'tab') return '\t';
+            if (val === 'space') return ' ';
+            if (val === 'pipe') return ' | ';
+            if (val === 'dash') return ' - ';
+            return '\t';
+        }
+
+        function getPrefix() {
+            const val = prefixSelect.value;
+            const symbols = {
+                none: '',
+                bullet: '\u2022',
+                diamond: '\u25C6',
+                square: '\u25A0',
+                circle: '\u25CF',
+                triangle: '\u25B2',
+                star: '\u2605',
+                arrow: '\u25BA',
+                dash: '\u2014'
+            };
+            const sym = symbols[val] || '';
+            return sym ? sym + ' ' : '';
+        }
+
+        // ── Generate ──
+        generateBtn.addEventListener('click', () => {
+            if (!csvData.length) { showStatus('Upload a CSV first', 'error'); return; }
+            if (!selectedFields.length) { showStatus('Select at least one field for subtitle text', 'error'); return; }
+
+            const fps = parseFloat(fpsSelect.value);
+            const sep = getSeparator();
+            const prefix = getPrefix();
+            const entries = [];
+
+            for (const row of csvData) {
+                const tcIn = row['Counts::ReelTC_in'];
+                const cut = row['Counts::Cut'];
+                if (!tcIn || !cut) continue;
+
+                const framesIn = timeToFrames(tcIn, fps);
+                if (framesIn === null) continue;
+                const framesOut = framesIn + parseInt(cut, 10);
+                const tcOut = framesToTime(framesOut, fps);
+
+                const textParts = selectedFields.map(f => row[f] || '').filter(v => v);
+                const text = textParts.join(sep);
+
+                entries.push({ framesIn, tcIn, tcOut, text });
+            }
+
+            if (!entries.length) {
+                showStatus('No valid rows found to generate subcaps', 'error');
+                return;
+            }
+
+            // Sort by timecode in (earliest first)
+            entries.sort((a, b) => a.framesIn - b.framesIn);
+
+            // Fix overlaps: if TC_OUT extends past the next TC_IN, trim it
+            // Gaps between shots are kept (no subcap where no shot was turned over)
+            for (let i = 0; i < entries.length - 1; i++) {
+                const nextIn = timeToFrames(entries[i + 1].tcIn, fps);
+                const thisOut = timeToFrames(entries[i].tcOut, fps);
+                if (thisOut > nextIn) {
+                    entries[i].tcOut = entries[i + 1].tcIn;
+                }
+            }
+
+            // Build the Avid subcaps file content (will be encoded as UTF-16 LE)
+            const lineBreak = '\r\n';
+            let content = '';
+            content += '@ This file written with the Avid Caption plugin, version 1' + lineBreak;
+            content += lineBreak;
+            content += '<begin subtitles>' + lineBreak;
+
+            for (const entry of entries) {
+                content += `${entry.tcIn} ${entry.tcOut}` + lineBreak;
+                content += `${prefix}${entry.text}` + lineBreak;
+                content += lineBreak;
+            }
+
+            content += '<end subtitles>' + lineBreak;
+
+            generatedContent = content;
+            showStatus(`Generated ${entries.length} subcap entries at ${fps} fps`, 'success');
+            downloadBar.style.display = 'flex';
+
+            // Update preview to show full output header
+            const previewLines = content.split('\r\n').slice(0, 30);
+            previewContent.textContent = previewLines.join('\n');
+            if (content.split('\r\n').length > 30) {
+                previewContent.textContent += `\n... (${entries.length} entries total)`;
+            }
+            previewSection.classList.add('show');
+            emptyPreview.style.display = 'none';
+        });
+
+        // ── Download as UTF-16 LE (Avid format) ──
+        downloadBtn.addEventListener('click', () => {
+            if (!generatedContent) { showStatus('Generate subcaps first', 'error'); return; }
+
+            // Encode as UTF-16 LE with BOM
+            const text = generatedContent;
+            const buffer = new ArrayBuffer(2 + text.length * 2); // BOM + chars
+            const view = new Uint8Array(buffer);
+            // BOM
+            view[0] = 0xFF;
+            view[1] = 0xFE;
+            for (let i = 0; i < text.length; i++) {
+                const code = text.charCodeAt(i);
+                view[2 + i * 2] = code & 0xFF;
+                view[2 + i * 2 + 1] = (code >> 8) & 0xFF;
+            }
+
+            const blob = new Blob([buffer], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            // Generate filename from uploaded CSV name
+            const baseName = csvFileName.textContent.replace(/\.csv$/i, '');
+            a.download = `${baseName}_subcaps.txt`;
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showStatus('File downloaded!', 'success');
+        });
+
+        // ── Utilities ──
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function showStatus(msg, type) {
+            statusMessage.textContent = msg;
+            statusMessage.className = `status-message ${type} show`;
+        }
+
+        function hideStatus() {
+            statusMessage.classList.remove('show');
+        }
+    </script>
+    <script>document.documentElement.setAttribute('data-mood', localStorage.getItem('vfxtools_mood') || 'deep-focus');</script>
+</body>
+</html>

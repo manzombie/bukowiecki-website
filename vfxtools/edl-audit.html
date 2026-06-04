@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VFX EDL Audit - VFX Tools</title>
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .audit-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .audit-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .audit-header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .audit-header p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        .offline-badge {
+            display: inline-block;
+            background: var(--success-color);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 15px;
+            vertical-align: middle;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-zone {
+            background: var(--secondary-color);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow-light);
+        }
+
+        .upload-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .drop-area {
+            border: 3px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            background: var(--background-light);
+        }
+
+        .drop-area:hover {
+            border-color: var(--accent-color);
+            background: #fff5f2;
+        }
+
+        .drop-area.drag-over {
+            border-color: var(--success-color);
+            background: #f0fff4;
+        }
+
+        .drop-area.has-file {
+            border-color: var(--success-color);
+            border-style: solid;
+            background: #f0fff4;
+        }
+
+        .drop-area input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .drop-area p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .file-name {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--success-color);
+            margin-top: 10px;
+        }
+
+        /* Controls Section */
+        .controls-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--secondary-color);
+            border-radius: var(--border-radius);
+            padding: 20px 25px;
+            box-shadow: var(--shadow-light);
+        }
+
+        .controls-section .btn {
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            width: auto;
+        }
+
+        .controls-section .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, var(--error-color) 0%, #c0392b 100%);
+        }
+
+        .btn-reset:hover {
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .subcaps-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: auto;
+            padding-left: 20px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 900px) {
+            .subcaps-controls {
+                margin-left: 0;
+                padding-left: 0;
+                border-left: none;
+                width: 100%;
+                margin-top: 15px;
+                padding-top: 15px;
+                border-top: 1px solid var(--border-color);
+                flex-wrap: wrap;
+            }
+        }
+
+        .subcaps-controls select {
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            background: var(--secondary-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .subcaps-controls select:hover,
+        .subcaps-controls select:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Status Section */
+        .status-section {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: var(--border-radius);
+            padding: 15px 25px;
+            margin-bottom: 30px;
+        }
+
+        .status-text {
+            font-size: 0.95rem;
+            color: #856404;
+            font-weight: 500;
+        }
+
+        /* Results Section */
+        .results-section {
+            background: var(--secondary-color);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow-light);
+        }
+
+        /* Summary Panel */
+        .summary-panel {
+            margin-bottom: 30px;
+        }
+
+        .summary-panel h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .summary-grid {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .summary-item {
+            background: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 20px 30px;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .summary-label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .summary-value {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .summary-changes {
+            background: #e3f2fd;
+        }
+
+        .summary-changes .summary-value {
+            color: #1565c0;
+        }
+
+        .summary-omit {
+            background: #ffebee;
+        }
+
+        .summary-omit .summary-value {
+            color: #c62828;
+        }
+
+        .summary-new {
+            background: #e8f5e9;
+        }
+
+        .summary-new .summary-value {
+            color: #2e7d32;
+        }
+
+        .summary-takes {
+            background: #fff3e0;
+        }
+
+        .summary-takes .summary-value {
+            color: #e65100;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Tables Section */
+        .tables-section {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .table-container {
+            overflow: hidden;
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .changes-title {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .omit-title {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .new-title {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .audit-table th {
+            background: var(--background-light);
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-light);
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .audit-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        .audit-table tbody tr:hover {
+            background: var(--background-light);
+        }
+
+        .audit-table .vfx-id {
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            white-space: nowrap;
+        }
+
+        .audit-table .tc {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .audit-table .num {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+
+        .audit-table .delta {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .audit-table .delta.changed {
+            font-weight: 600;
+            color: #1565c0;
+        }
+
+        .audit-table .reel-changed {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        .audit-table .confidence {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-align: center;
+            border-radius: 4px;
+            padding: 3px 8px;
+        }
+
+        .conf-high {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .conf-med {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .conf-low {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .row-changed {
+            background: #fff;
+        }
+
+        .row-unchanged {
+            background: #fafafa;
+            color: var(--text-light);
+        }
+
+        .row-omit td {
+            background: #fff5f5;
+        }
+
+        .row-new td {
+            background: #f5fff5;
+        }
+
+        .take-cell {
+            text-align: center;
+        }
+
+        .different-take {
+            display: inline-block;
+            background: #ff9800;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .same-take {
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+
+        /* Warnings Section */
+        .warnings-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: var(--border-radius);
+        }
+
+        .warnings-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .warnings-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .warnings-section li {
+            font-size: 0.9rem;
+            color: #856404;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .warnings-section li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="https://bukowiecki.co/" class="logo-link">
+                        <span class="logo-text">LUKASZ BUKOWIECKI</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">← Back to VFX Tools</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="audit-container">
+            <div class="audit-header">
+                <h1>VFX EDL Audit Tool <span class="offline-badge">Offline Mode</span></h1>
+                <p>Compare EDL files (AC01 vs AC02), track VFX shot changes, and generate SUBCAPS for Avid</p>
+            </div>
+
+            <div class="upload-section">
+                <div class="upload-zone" id="ac01-zone">
+                    <span class="upload-label">AC01 (Old Cut)</span>
+                    <div class="drop-area" id="ac01-drop">
+                        <input type="file" id="ac01-input" accept=".edl" />
+                        <p>Drag & drop EDL file or click to browse</p>
+                        <span class="file-name" id="ac01-filename"></span>
+                    </div>
+                </div>
+                <div class="upload-zone" id="ac02-zone">
+                    <span class="upload-label">AC02 (New Cut)</span>
+                    <div class="drop-area" id="ac02-drop">
+                        <input type="file" id="ac02-input" accept=".edl" />
+                        <p>Drag & drop EDL file or click to browse</p>
+                        <span class="file-name" id="ac02-filename"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <button id="compare-btn" class="btn" disabled>Compare</button>
+                <button id="export-csv-btn" class="btn btn-secondary" disabled>Export CSV</button>
+                <button id="export-json-btn" class="btn btn-secondary" disabled>Export JSON</button>
+                <div class="subcaps-controls">
+                    <select id="subcaps-mode">
+                        <option value="changes">SUBCAPS: Changes Only</option>
+                        <option value="all">SUBCAPS: All VFX IDs</option>
+                    </select>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="subcaps-include-new" />
+                        Include NEW shots
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="subcaps-verbose" />
+                        Verbose captions
+                    </label>
+                    <button id="export-subcaps-btn" class="btn btn-secondary" disabled>Export SUBCAPS</button>
+                </div>
+                <button id="reset-btn" class="btn btn-reset">Reset</button>
+            </div>
+
+            <div class="status-section" id="status-section" style="display: none;">
+                <div class="status-text" id="status-text"></div>
+            </div>
+
+            <div class="results-section" id="results-section" style="display: none;">
+                <div class="summary-panel">
+                    <h2>Summary</h2>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">AC01 Shots</span>
+                            <span class="summary-value" id="summary-ac01">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">AC02 Shots</span>
+                            <span class="summary-value" id="summary-ac02">0</span>
+                        </div>
+                        <div class="summary-item summary-changes">
+                            <span class="summary-label">Changed</span>
+                            <span class="summary-value" id="summary-changed">0</span>
+                        </div>
+                        <div class="summary-item summary-omit">
+                            <span class="summary-label">Omitted</span>
+                            <span class="summary-value" id="summary-omit">0</span>
+                        </div>
+                        <div class="summary-item summary-new">
+                            <span class="summary-label">New</span>
+                            <span class="summary-value" id="summary-new">0</span>
+                        </div>
+                        <div class="summary-item summary-takes">
+                            <span class="summary-label">Diff Takes</span>
+                            <span class="summary-value" id="summary-takes">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-controls">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="hide-unchanged" checked />
+                        Hide unchanged shots
+                    </label>
+                </div>
+
+                <div class="tables-section">
+                    <div class="table-container" id="changes-container">
+                        <h3 class="table-title changes-title">Changes</h3>
+                        <div class="table-scroll">
+                            <table id="changes-table" class="audit-table">
+                                <thead>
+                                    <tr>
+                                        <th>VFX ID</th>
+                                        <th>Old Clip</th>
+                                        <th>New Clip</th>
+                                        <th>Take</th>
+                                        <th>Old Src In/Out</th>
+                                        <th>Old Dur</th>
+                                        <th>New Src In/Out</th>
+                                        <th>New Dur</th>
+                                        <th>Head</th>
+                                        <th>Tail</th>
+                                        <th>Net</th>
+                                        <th>Old Rec In/Out</th>
+                                        <th>New Rec In/Out</th>
+                                        <th>Reel</th>
+                                        <th>Conf</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="changes-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="table-container" id="omit-container">
+                        <h3 class="table-title omit-title">Omitted Shots</h3>
+                        <div class="table-scroll">
+                            <table id="omit-table" class="audit-table">
+                                <thead>
+                                    <tr>
+                                        <th>VFX ID</th>
+                                        <th>Clip Name</th>
+                                        <th>Src In/Out</th>
+                                        <th>Duration</th>
+                                        <th>Rec In/Out</th>
+                                        <th>Reel</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="omit-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="table-container" id="new-container">
+                        <h3 class="table-title new-title">New Shots</h3>
+                        <div class="table-scroll">
+                            <table id="new-table" class="audit-table">
+                                <thead>
+                                    <tr>
+                                        <th>VFX ID</th>
+                                        <th>Clip Name</th>
+                                        <th>Src In/Out</th>
+                                        <th>Duration</th>
+                                        <th>Rec In/Out</th>
+                                        <th>Reel</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="new-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warnings-section" id="warnings-section" style="display: none;">
+                    <h3>Warnings</h3>
+                    <ul id="warnings-list"></ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Lukasz Bukowiecki. All rights reserved.</p>
+                <p>Part of <a href="https://bukowiecki.co/" class="footer-link">bukowiecki.co</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        const FRAME_RATE = 24;
+        let ac01Text = null;
+        let ac02Text = null;
+        let auditResults = null;
+        let debugLog = [];
+
+        // DOM Elements
+        const ac01Input = document.getElementById('ac01-input');
+        const ac02Input = document.getElementById('ac02-input');
+        const ac01Drop = document.getElementById('ac01-drop');
+        const ac02Drop = document.getElementById('ac02-drop');
+        const ac01Filename = document.getElementById('ac01-filename');
+        const ac02Filename = document.getElementById('ac02-filename');
+        const compareBtn = document.getElementById('compare-btn');
+        const exportCsvBtn = document.getElementById('export-csv-btn');
+        const exportJsonBtn = document.getElementById('export-json-btn');
+        const exportSubcapsBtn = document.getElementById('export-subcaps-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const statusSection = document.getElementById('status-section');
+        const statusText = document.getElementById('status-text');
+        const resultsSection = document.getElementById('results-section');
+        const hideUnchangedCheckbox = document.getElementById('hide-unchanged');
+        const subcapsMode = document.getElementById('subcaps-mode');
+        const subcapsIncludeNew = document.getElementById('subcaps-include-new');
+        const subcapsVerbose = document.getElementById('subcaps-verbose');
+
+        // Utility: Log for debugging
+        function log(msg) {
+            const timestamp = new Date().toISOString();
+            debugLog.push(`[${timestamp}] ${msg}`);
+            console.log(msg);
+        }
+
+        // Utility: Timecode to frames
+        function tcToFrames(tc) {
+            if (!tc || typeof tc !== 'string') return 0;
+            const parts = tc.split(':');
+            if (parts.length !== 4) {
+                log(`Invalid timecode format: ${tc}. Expected HH:MM:SS:FF.`);
+                return 0;
+            }
+            const [hh, mm, ss, ff] = parts.map(p => parseInt(p, 10));
+            return ((hh * 3600) + (mm * 60) + ss) * FRAME_RATE + ff;
+        }
+
+        // Utility: Frames to timecode
+        function framesToTc(frames) {
+            const totalSeconds = Math.floor(frames / FRAME_RATE);
+            const ff = frames % FRAME_RATE;
+            const ss = totalSeconds % 60;
+            const mm = Math.floor(totalSeconds / 60) % 60;
+            const hh = Math.floor(totalSeconds / 3600);
+            return [hh, mm, ss, ff].map(n => String(n).padStart(2, '0')).join(':');
+        }
+
+        // Utility: Format frame delta as readable string
+        function formatDelta(delta, context) {
+            if (delta === 0) return 'No change';
+            const absVal = Math.abs(delta);
+            const frames = absVal === 1 ? 'frame' : 'frames';
+
+            if (context === 'head') {
+                return delta > 0
+                    ? `Trimmed by ${absVal} ${frames}`
+                    : `Extended by ${absVal} ${frames}`;
+            } else if (context === 'tail') {
+                return delta > 0
+                    ? `Extended by ${absVal} ${frames}`
+                    : `Trimmed by ${absVal} ${frames}`;
+            } else if (context === 'net') {
+                return delta > 0
+                    ? `Extended by ${absVal} ${frames}`
+                    : `Trimmed by ${absVal} ${frames}`;
+            }
+            return `${absVal} ${frames}`;
+        }
+
+        // Utility: Short delta for subcaps
+        function shortDelta(delta) {
+            if (delta === 0) return '0f';
+            const sign = delta > 0 ? '+' : '';
+            return `${sign}${delta}f`;
+        }
+
+        // Parse EDL text into events array
+        function parseEdl(text) {
+            const lines = text.split(/\r?\n/);
+            const events = [];
+            let currentEvent = null;
+
+            const eventRegex = /^(\d{3})\s+(\S+)\s+(\S+)\s+(\S+)\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})/;
+            const clipNameRegex = /^\*\s*FROM CLIP NAME:\s*(.+?)\*?\s*$/i;
+            const locRegex = /^\*\s*LOC:\s*(\d{2}:\d{2}:\d{2}:\d{2})\s+(\S+)\s+(\S+)/i;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const eventMatch = line.match(eventRegex);
+                if (eventMatch) {
+                    if (currentEvent) {
+                        events.push(currentEvent);
+                    }
+                    currentEvent = {
+                        event_number: eventMatch[1],
+                        reel: eventMatch[2],
+                        track: eventMatch[3],
+                        edit_type: eventMatch[4],
+                        src_in: eventMatch[5],
+                        src_out: eventMatch[6],
+                        rec_in: eventMatch[7],
+                        rec_out: eventMatch[8],
+                        src_in_frames: tcToFrames(eventMatch[5]),
+                        src_out_frames: tcToFrames(eventMatch[6]),
+                        rec_in_frames: tcToFrames(eventMatch[7]),
+                        rec_out_frames: tcToFrames(eventMatch[8]),
+                        from_clip_name: null,
+                        loc_tc: null,
+                        loc_colour: null,
+                        loc_label: null,
+                        notes: [],
+                        line_number: i + 1
+                    };
+                    currentEvent.duration = currentEvent.src_out_frames - currentEvent.src_in_frames;
+                } else if (line.startsWith('*') && currentEvent) {
+                    const clipMatch = line.match(clipNameRegex);
+                    if (clipMatch) {
+                        currentEvent.from_clip_name = clipMatch[1].replace(/\*$/, '').trim();
+                    } else {
+                        const locMatch = line.match(locRegex);
+                        if (locMatch) {
+                            currentEvent.loc_tc = locMatch[1];
+                            currentEvent.loc_colour = locMatch[2];
+                            currentEvent.loc_label = locMatch[3];
+                        } else {
+                            currentEvent.notes.push(line);
+                        }
+                    }
+                }
+            }
+
+            if (currentEvent) {
+                events.push(currentEvent);
+            }
+
+            return events;
+        }
+
+        // Index events by VFX ID (loc_label)
+        function indexByVfxId(events) {
+            const map = new Map();
+            const duplicates = [];
+
+            for (const event of events) {
+                const id = event.loc_label;
+                if (!id) continue;
+
+                if (map.has(id)) {
+                    const existing = map.get(id);
+                    if (!Array.isArray(existing)) {
+                        map.set(id, [existing, event]);
+                        duplicates.push(id);
+                    } else {
+                        existing.push(event);
+                    }
+                } else {
+                    map.set(id, event);
+                }
+            }
+
+            return { map, duplicates };
+        }
+
+        // Match a new event to old events when duplicates exist
+        function matchDuplicate(newEvent, oldEvents) {
+            const byClip = oldEvents.filter(e => e.from_clip_name === newEvent.from_clip_name);
+            if (byClip.length === 1) {
+                return { match: byClip[0], confidence: 'HIGH' };
+            }
+
+            let closest = null;
+            let minDiff = Infinity;
+            const candidates = byClip.length > 0 ? byClip : oldEvents;
+
+            for (const old of candidates) {
+                const diff = Math.abs(old.src_in_frames - newEvent.src_in_frames);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = old;
+                }
+            }
+
+            if (closest) {
+                return { match: closest, confidence: minDiff < 24 ? 'MED' : 'LOW' };
+            }
+
+            return { match: oldEvents[0], confidence: 'LOW' };
+        }
+
+        // Compare shots between old and new EDLs
+        function compareShots(oldEvents, newEvents) {
+            const oldIndex = indexByVfxId(oldEvents);
+            const newIndex = indexByVfxId(newEvents);
+            const warnings = [];
+
+            for (const id of oldIndex.duplicates) {
+                warnings.push(`Duplicate VFX ID detected in AC01: ${id}`);
+            }
+            for (const id of newIndex.duplicates) {
+                warnings.push(`Duplicate VFX ID detected in AC02: ${id}`);
+            }
+
+            const changes = [];
+            const omits = [];
+            const newShots = [];
+            const matchedOldIds = new Set();
+
+            for (const newEvent of newEvents) {
+                const vfxId = newEvent.loc_label;
+
+                if (!vfxId) {
+                    if (newEvent.from_clip_name) {
+                        const oldByClip = oldEvents.find(e =>
+                            e.from_clip_name === newEvent.from_clip_name && !matchedOldIds.has(e)
+                        );
+                        if (oldByClip) {
+                            const diff = computeFrameDiff(oldByClip, newEvent);
+                            changes.push({
+                                ...diff,
+                                confidence: 'LOW',
+                                vfx_id: newEvent.from_clip_name + ' (no LOC)',
+                                matched_by: 'clip_name'
+                            });
+                            matchedOldIds.add(oldByClip);
+                            warnings.push(`Shot matched by clip name only (no LOC): ${newEvent.from_clip_name}`);
+                        } else {
+                            newShots.push({
+                                vfx_id: newEvent.from_clip_name + ' (no LOC)',
+                                ...newEvent
+                            });
+                        }
+                    }
+                    continue;
+                }
+
+                const oldEntry = oldIndex.map.get(vfxId);
+
+                if (!oldEntry) {
+                    newShots.push({
+                        vfx_id: vfxId,
+                        ...newEvent
+                    });
+                } else {
+                    let oldEvent, confidence;
+
+                    if (Array.isArray(oldEntry)) {
+                        const result = matchDuplicate(newEvent, oldEntry);
+                        oldEvent = result.match;
+                        confidence = result.confidence;
+                        if (result.confidence !== 'HIGH') {
+                            warnings.push(`Ambiguous match for ${vfxId} - confidence: ${result.confidence}`);
+                        }
+                    } else {
+                        oldEvent = oldEntry;
+                        confidence = 'HIGH';
+                    }
+
+                    matchedOldIds.add(oldEvent);
+                    const diff = computeFrameDiff(oldEvent, newEvent);
+                    changes.push({
+                        ...diff,
+                        confidence,
+                        vfx_id: vfxId,
+                        matched_by: 'loc_label'
+                    });
+                }
+            }
+
+            for (const oldEvent of oldEvents) {
+                if (!matchedOldIds.has(oldEvent) && oldEvent.loc_label) {
+                    omits.push({
+                        vfx_id: oldEvent.loc_label,
+                        ...oldEvent
+                    });
+                }
+            }
+
+            return {
+                changes,
+                omits,
+                newShots,
+                warnings,
+                ac01Count: oldEvents.length,
+                ac02Count: newEvents.length
+            };
+        }
+
+        // Compute frame differences between old and new events
+        // Parse clip name to extract episode, scene, and take
+        // Format: {Episode}_{Scene}_{Take} e.g. 305_14D_2 = Episode 305, Scene 14D, Take 2
+        function parseClipName(clipName) {
+            if (!clipName) return null;
+
+            // Remove trailing asterisk and camera suffix (_X, _Y, etc.)
+            let cleaned = clipName.replace(/\*$/, '').trim();
+
+            // Pattern: Episode_Scene_Take or Episode_Scene_Take_Camera
+            // Examples: 305_14D_2, 305_14_3_Y, 305_14C_3
+            const match = cleaned.match(/^(\d+)_(\d+[A-Za-z]?)_(\d+)(?:_[A-Za-z])?$/);
+
+            if (match) {
+                return {
+                    episode: match[1],
+                    scene: match[2],
+                    take: parseInt(match[3], 10),
+                    base: `${match[1]}_${match[2]}` // Episode + Scene without take
+                };
+            }
+
+            return null;
+        }
+
+        // Check if two clip names represent different takes of the same scene
+        function isDifferentTake(oldClipName, newClipName) {
+            const oldParsed = parseClipName(oldClipName);
+            const newParsed = parseClipName(newClipName);
+
+            if (!oldParsed || !newParsed) return { isDifferent: false };
+
+            // Same episode and scene, but different take number
+            if (oldParsed.base === newParsed.base && oldParsed.take !== newParsed.take) {
+                return {
+                    isDifferent: true,
+                    oldTake: oldParsed.take,
+                    newTake: newParsed.take,
+                    scene: oldParsed.base
+                };
+            }
+
+            return { isDifferent: false };
+        }
+
+        function computeFrameDiff(oldEvent, newEvent) {
+            const headDelta = newEvent.src_in_frames - oldEvent.src_in_frames;
+            const tailDelta = newEvent.src_out_frames - oldEvent.src_out_frames;
+            const netDelta = newEvent.duration - oldEvent.duration;
+
+            const reelChanged = oldEvent.reel !== newEvent.reel;
+
+            // Check for different take
+            const takeChange = isDifferentTake(oldEvent.from_clip_name, newEvent.from_clip_name);
+
+            const hasChanges = headDelta !== 0 || tailDelta !== 0 || reelChanged || takeChange.isDifferent;
+
+            return {
+                old: oldEvent,
+                new: newEvent,
+                head_delta: headDelta,
+                tail_delta: tailDelta,
+                net_delta: netDelta,
+                reel_changed: reelChanged,
+                different_take: takeChange.isDifferent,
+                old_take: takeChange.oldTake,
+                new_take: takeChange.newTake,
+                has_changes: hasChanges,
+                clip_name: newEvent.from_clip_name || oldEvent.from_clip_name,
+                old_clip_name: oldEvent.from_clip_name,
+                new_clip_name: newEvent.from_clip_name
+            };
+        }
+
+        // Generate SUBCAPS text file content
+        function generateSubcapsTxt(results, mode, verbose, includeNew) {
+            let entries = [];
+            const warnings = [];
+
+            if (mode === 'all') {
+                for (const change of results.changes) {
+                    entries.push({
+                        rec_in: change.new.rec_in,
+                        rec_out: change.new.rec_out,
+                        rec_in_frames: change.new.rec_in_frames,
+                        vfx_id: change.vfx_id,
+                        net_delta: change.net_delta,
+                        head_delta: change.head_delta,
+                        tail_delta: change.tail_delta
+                    });
+                }
+                for (const shot of results.newShots) {
+                    entries.push({
+                        rec_in: shot.rec_in,
+                        rec_out: shot.rec_out,
+                        rec_in_frames: shot.rec_in_frames,
+                        vfx_id: shot.vfx_id,
+                        net_delta: null,
+                        head_delta: null,
+                        tail_delta: null,
+                        is_new: true
+                    });
+                }
+            } else {
+                for (const change of results.changes) {
+                    if (change.has_changes) {
+                        entries.push({
+                            rec_in: change.new.rec_in,
+                            rec_out: change.new.rec_out,
+                            rec_in_frames: change.new.rec_in_frames,
+                            vfx_id: change.vfx_id,
+                            net_delta: change.net_delta,
+                            head_delta: change.head_delta,
+                            tail_delta: change.tail_delta
+                        });
+                    }
+                }
+                if (includeNew) {
+                    for (const shot of results.newShots) {
+                        entries.push({
+                            rec_in: shot.rec_in,
+                            rec_out: shot.rec_out,
+                            rec_in_frames: shot.rec_in_frames,
+                            vfx_id: shot.vfx_id,
+                            net_delta: null,
+                            head_delta: null,
+                            tail_delta: null,
+                            is_new: true
+                        });
+                    }
+                }
+            }
+
+            entries.sort((a, b) => a.rec_in_frames - b.rec_in_frames);
+
+            for (let i = 1; i < entries.length; i++) {
+                const prev = entries[i - 1];
+                const curr = entries[i];
+                const prevOutFrames = tcToFrames(prev.rec_out);
+                if (curr.rec_in_frames < prevOutFrames) {
+                    warnings.push(`Overlap detected: ${prev.vfx_id} ends at ${prev.rec_out}, ${curr.vfx_id} starts at ${curr.rec_in}`);
+                }
+            }
+
+            let content = 'This file written with the Avid Caption plugin, version 1\n\n';
+            content += '<begin subtitles>\n';
+
+            for (const entry of entries) {
+                content += `${entry.rec_in} ${entry.rec_out}\n`;
+
+                if (verbose && !entry.is_new && entry.net_delta !== null) {
+                    content += `${entry.vfx_id} | Net:${shortDelta(entry.net_delta)} | Head:${shortDelta(entry.head_delta)} | Tail:${shortDelta(entry.tail_delta)}\n`;
+                } else if (entry.is_new) {
+                    content += `${entry.vfx_id} [NEW]\n`;
+                } else {
+                    content += `${entry.vfx_id}\n`;
+                }
+                content += '\n';
+            }
+
+            content += '<end subtitles>\n';
+
+            return { content, warnings };
+        }
+
+        // Format delta for CSV (readable format)
+        function formatCsvDelta(delta, type) {
+            if (delta === 0) return 'No change';
+            const absVal = Math.abs(delta);
+            const frames = absVal === 1 ? 'frame' : 'frames';
+
+            if (type === 'head') {
+                return delta > 0
+                    ? `Trimmed by ${absVal} ${frames}`
+                    : `Extended by ${absVal} ${frames}`;
+            } else if (type === 'tail') {
+                return delta > 0
+                    ? `Extended by ${absVal} ${frames}`
+                    : `Trimmed by ${absVal} ${frames}`;
+            } else {
+                return delta > 0
+                    ? `Extended by ${absVal} ${frames}`
+                    : `Trimmed by ${absVal} ${frames}`;
+            }
+        }
+
+        // Export CSV
+        function exportCSV(results) {
+            const rows = [
+                ['Type', 'VFX ID', 'Old Clip Name', 'New Clip Name', 'Take Change',
+                 'Old Src In', 'Old Src Out', 'Old Duration',
+                 'New Src In', 'New Src Out', 'New Duration', 'Head Delta', 'Tail Delta', 'Net Delta',
+                 'Old Rec In', 'Old Rec Out', 'New Rec In', 'New Rec Out', 'Reel Change', 'Confidence']
+            ];
+
+            for (const change of results.changes) {
+                const takeChangeText = change.different_take
+                    ? `Different Take (T${change.old_take} -> T${change.new_take})`
+                    : 'Same Take';
+
+                rows.push([
+                    change.has_changes ? 'CHANGE' : 'UNCHANGED',
+                    change.vfx_id,
+                    change.old_clip_name || '',
+                    change.new_clip_name || '',
+                    takeChangeText,
+                    change.old.src_in,
+                    change.old.src_out,
+                    change.old.duration,
+                    change.new.src_in,
+                    change.new.src_out,
+                    change.new.duration,
+                    formatCsvDelta(change.head_delta, 'head'),
+                    formatCsvDelta(change.tail_delta, 'tail'),
+                    formatCsvDelta(change.net_delta, 'net'),
+                    change.old.rec_in,
+                    change.old.rec_out,
+                    change.new.rec_in,
+                    change.new.rec_out,
+                    change.reel_changed ? `${change.old.reel} -> ${change.new.reel}` : '',
+                    change.confidence
+                ]);
+            }
+
+            for (const shot of results.omits) {
+                rows.push([
+                    'OMIT',
+                    shot.vfx_id,
+                    shot.from_clip_name || '',
+                    '',
+                    '',
+                    shot.src_in,
+                    shot.src_out,
+                    shot.duration,
+                    '', '', '', '', '', '',
+                    shot.rec_in,
+                    shot.rec_out,
+                    '', '',
+                    shot.reel,
+                    ''
+                ]);
+            }
+
+            for (const shot of results.newShots) {
+                rows.push([
+                    'NEW',
+                    shot.vfx_id,
+                    '',
+                    shot.from_clip_name || '',
+                    '',
+                    '', '', '',
+                    shot.src_in,
+                    shot.src_out,
+                    shot.duration,
+                    '', '', '',
+                    '', '',
+                    shot.rec_in,
+                    shot.rec_out,
+                    shot.reel,
+                    ''
+                ]);
+            }
+
+            return rows.map(row => row.map(cell => {
+                const str = String(cell);
+                if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                    return `"${str.replace(/"/g, '""')}"`;
+                }
+                return str;
+            }).join(',')).join('\n');
+        }
+
+        // Export JSON
+        function exportJSON(results) {
+            return JSON.stringify(results, null, 2);
+        }
+
+        // Render UI results
+        function renderUI(results) {
+            const hideUnchanged = hideUnchangedCheckbox.checked;
+
+            document.getElementById('summary-ac01').textContent = results.ac01Count;
+            document.getElementById('summary-ac02').textContent = results.ac02Count;
+
+            const changedCount = results.changes.filter(c => c.has_changes).length;
+            const differentTakesCount = results.changes.filter(c => c.different_take).length;
+            document.getElementById('summary-changed').textContent = changedCount;
+            document.getElementById('summary-omit').textContent = results.omits.length;
+            document.getElementById('summary-new').textContent = results.newShots.length;
+            document.getElementById('summary-takes').textContent = differentTakesCount;
+
+            const changesTbody = document.getElementById('changes-tbody');
+            changesTbody.innerHTML = '';
+
+            for (const change of results.changes) {
+                if (hideUnchanged && !change.has_changes) continue;
+
+                const row = document.createElement('tr');
+                row.className = change.has_changes ? 'row-changed' : 'row-unchanged';
+
+                const takeDisplay = change.different_take
+                    ? `<span class="different-take">Different Take<br>T${change.old_take} → T${change.new_take}</span>`
+                    : '<span class="same-take">Same</span>';
+
+                row.innerHTML = `
+                    <td class="vfx-id">${escapeHtml(change.vfx_id)}</td>
+                    <td>${escapeHtml(change.old_clip_name || '')}</td>
+                    <td>${escapeHtml(change.new_clip_name || '')}</td>
+                    <td class="take-cell">${takeDisplay}</td>
+                    <td class="tc">${change.old.src_in}<br>${change.old.src_out}</td>
+                    <td class="num">${change.old.duration}f</td>
+                    <td class="tc">${change.new.src_in}<br>${change.new.src_out}</td>
+                    <td class="num">${change.new.duration}f</td>
+                    <td class="delta ${change.head_delta !== 0 ? 'changed' : ''}">${formatDelta(change.head_delta, 'head')}</td>
+                    <td class="delta ${change.tail_delta !== 0 ? 'changed' : ''}">${formatDelta(change.tail_delta, 'tail')}</td>
+                    <td class="delta ${change.net_delta !== 0 ? 'changed' : ''}">${formatDelta(change.net_delta, 'net')}</td>
+                    <td class="tc">${change.old.rec_in}<br>${change.old.rec_out}</td>
+                    <td class="tc">${change.new.rec_in}<br>${change.new.rec_out}</td>
+                    <td class="${change.reel_changed ? 'reel-changed' : ''}">${change.reel_changed ? `${change.old.reel} → ${change.new.reel}` : change.new.reel}</td>
+                    <td class="confidence conf-${change.confidence.toLowerCase()}">${change.confidence}</td>
+                `;
+                changesTbody.appendChild(row);
+            }
+
+            const omitTbody = document.getElementById('omit-tbody');
+            omitTbody.innerHTML = '';
+
+            for (const shot of results.omits) {
+                const row = document.createElement('tr');
+                row.className = 'row-omit';
+                row.innerHTML = `
+                    <td class="vfx-id">${escapeHtml(shot.vfx_id)}</td>
+                    <td>${escapeHtml(shot.from_clip_name || '')}</td>
+                    <td class="tc">${shot.src_in}<br>${shot.src_out}</td>
+                    <td class="num">${shot.duration}f</td>
+                    <td class="tc">${shot.rec_in}<br>${shot.rec_out}</td>
+                    <td>${shot.reel}</td>
+                `;
+                omitTbody.appendChild(row);
+            }
+
+            const newTbody = document.getElementById('new-tbody');
+            newTbody.innerHTML = '';
+
+            for (const shot of results.newShots) {
+                const row = document.createElement('tr');
+                row.className = 'row-new';
+                row.innerHTML = `
+                    <td class="vfx-id">${escapeHtml(shot.vfx_id)}</td>
+                    <td>${escapeHtml(shot.from_clip_name || '')}</td>
+                    <td class="tc">${shot.src_in}<br>${shot.src_out}</td>
+                    <td class="num">${shot.duration}f</td>
+                    <td class="tc">${shot.rec_in}<br>${shot.rec_out}</td>
+                    <td>${shot.reel}</td>
+                `;
+                newTbody.appendChild(row);
+            }
+
+            document.getElementById('changes-container').style.display = results.changes.length > 0 ? 'block' : 'none';
+            document.getElementById('omit-container').style.display = results.omits.length > 0 ? 'block' : 'none';
+            document.getElementById('new-container').style.display = results.newShots.length > 0 ? 'block' : 'none';
+
+            const warningsSection = document.getElementById('warnings-section');
+            const warningsList = document.getElementById('warnings-list');
+            warningsList.innerHTML = '';
+
+            if (results.warnings.length > 0) {
+                warningsSection.style.display = 'block';
+                for (const warning of results.warnings) {
+                    const li = document.createElement('li');
+                    li.textContent = warning;
+                    warningsList.appendChild(li);
+                }
+            } else {
+                warningsSection.style.display = 'none';
+            }
+
+            resultsSection.style.display = 'block';
+        }
+
+        // Utility: Escape HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;');
+        }
+
+        // File download helper
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Update status
+        function setStatus(text) {
+            statusSection.style.display = 'block';
+            statusText.textContent = text;
+        }
+
+        // Hide status
+        function hideStatus() {
+            statusSection.style.display = 'none';
+        }
+
+        // Update button states
+        function updateButtons() {
+            compareBtn.disabled = !(ac01Text && ac02Text);
+            const hasResults = auditResults !== null;
+            exportCsvBtn.disabled = !hasResults;
+            exportJsonBtn.disabled = !hasResults;
+            exportSubcapsBtn.disabled = !hasResults;
+        }
+
+        // Handle file load
+        function handleFile(file, isAc01) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (isAc01) {
+                    ac01Text = e.target.result;
+                    ac01Filename.textContent = file.name;
+                    ac01Drop.classList.add('has-file');
+                } else {
+                    ac02Text = e.target.result;
+                    ac02Filename.textContent = file.name;
+                    ac02Drop.classList.add('has-file');
+                }
+                updateButtons();
+            };
+            reader.onerror = function() {
+                alert('Error reading file: ' + file.name);
+            };
+            reader.readAsText(file);
+        }
+
+        // Setup drag and drop
+        function setupDropZone(dropEl, inputEl, isAc01) {
+            dropEl.addEventListener('click', () => inputEl.click());
+
+            dropEl.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropEl.classList.add('drag-over');
+            });
+
+            dropEl.addEventListener('dragleave', () => {
+                dropEl.classList.remove('drag-over');
+            });
+
+            dropEl.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropEl.classList.remove('drag-over');
+                const file = e.dataTransfer.files[0];
+                if (file) handleFile(file, isAc01);
+            });
+
+            inputEl.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) handleFile(file, isAc01);
+            });
+        }
+
+        // Compare action
+        function doCompare() {
+            if (!ac01Text || !ac02Text) return;
+
+            try {
+                setStatus('Parsing AC01...');
+                const oldEvents = parseEdl(ac01Text);
+                log(`Parsed AC01: ${oldEvents.length} events`);
+
+                setStatus('Parsing AC02...');
+                const newEvents = parseEdl(ac02Text);
+                log(`Parsed AC02: ${newEvents.length} events`);
+
+                setStatus('Matching VFX IDs...');
+                setStatus('Calculating frame deltas...');
+                auditResults = compareShots(oldEvents, newEvents);
+                log(`Comparison complete: ${auditResults.changes.length} matches, ${auditResults.omits.length} omits, ${auditResults.newShots.length} new`);
+
+                setStatus('Rendering report...');
+                renderUI(auditResults);
+
+                hideStatus();
+                updateButtons();
+            } catch (err) {
+                log(`Error: ${err.message}`);
+                alert('Error processing EDL files: ' + err.message);
+                hideStatus();
+            }
+        }
+
+        // Reset action
+        function doReset() {
+            ac01Text = null;
+            ac02Text = null;
+            auditResults = null;
+            ac01Filename.textContent = '';
+            ac02Filename.textContent = '';
+            ac01Drop.classList.remove('has-file');
+            ac02Drop.classList.remove('has-file');
+            ac01Input.value = '';
+            ac02Input.value = '';
+            resultsSection.style.display = 'none';
+            hideStatus();
+            updateButtons();
+        }
+
+        // Event listeners
+        setupDropZone(ac01Drop, ac01Input, true);
+        setupDropZone(ac02Drop, ac02Input, false);
+
+        compareBtn.addEventListener('click', doCompare);
+        resetBtn.addEventListener('click', doReset);
+
+        exportCsvBtn.addEventListener('click', () => {
+            if (!auditResults) return;
+            const csv = exportCSV(auditResults);
+            downloadFile(csv, 'vfx_audit_report.csv', 'text/csv');
+        });
+
+        exportJsonBtn.addEventListener('click', () => {
+            if (!auditResults) return;
+            const json = exportJSON(auditResults);
+            downloadFile(json, 'vfx_audit_report.json', 'application/json');
+        });
+
+        exportSubcapsBtn.addEventListener('click', () => {
+            if (!auditResults) return;
+            const mode = subcapsMode.value;
+            const verbose = subcapsVerbose.checked;
+            const includeNew = subcapsIncludeNew.checked;
+            const result = generateSubcapsTxt(auditResults, mode, verbose, includeNew);
+
+            if (result.warnings.length > 0) {
+                console.warn('SUBCAPS warnings:', result.warnings);
+            }
+
+            const filename = mode === 'all' ? 'SUBCAPS_AC02_all.txt' : 'SUBCAPS_AC02_changes.txt';
+            downloadFile(result.content, filename, 'text/plain');
+        });
+
+        hideUnchangedCheckbox.addEventListener('change', () => {
+            if (auditResults) renderUI(auditResults);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            const isMod = e.metaKey || e.ctrlKey;
+
+            if (isMod && e.key === 'd') {
+                e.preventDefault();
+                if (!compareBtn.disabled) doCompare();
+            } else if (isMod && e.key === 'e') {
+                e.preventDefault();
+                if (!exportCsvBtn.disabled) exportCsvBtn.click();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                doReset();
+            }
+        });
+
+    })();
+    </script>
+    <script>document.documentElement.setAttribute('data-mood', localStorage.getItem('vfxtools_mood') || 'deep-focus');</script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VFX Tools - Lukasz Bukowiecki</title>
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="https://bukowiecki.co/" class="logo-link">
+                        <span class="logo-text">LUKASZ BUKOWIECKI</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="https://bukowiecki.co/" class="nav-link">← Back to Main Site</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="hero" style="position: relative;">
+                <div class="mood-switcher" style="position: absolute; top: 0; right: 0;">
+                    <button class="mood-pill active" data-mood="deep-focus" onclick="setMood('deep-focus')">Deep Focus</button>
+                    <button class="mood-pill" data-mood="quiet-mind" onclick="setMood('quiet-mind')">Quiet Mind</button>
+                    <button class="mood-pill" data-mood="soft-morning" onclick="setMood('soft-morning')">Soft Morning</button>
+                </div>
+                <h1 class="hero-title">VFX Tools</h1>
+                <p class="hero-subtitle">Workflow tools built by a VFX Editor, for VFX Editors. Less manual work. Fewer mistakes. More time for decisions that matter.</p>
+            </div>
+
+            <section class="category-section">
+                <div class="category-header">
+                    <h2 class="category-title">VFX Tools</h2>
+                    <p class="category-subtitle">Specialized utilities for editorial workflows, turnover, and audit sanity checks.</p>
+                </div>
+                <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-icon">🔍</div>
+                    <h3 class="tool-title">VFX EDL Audit</h3>
+                    <p class="tool-description">Stop cross-referencing EDLs by hand. Upload two versions, get a clean diff: head/tail trims, new shots, omits—all flagged automatically. Export as CSV or SUBCAPS for Avid.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">EDL Compare</span>
+                        <span class="feature-tag">VFX Tracking</span>
+                        <span class="feature-tag">SUBCAPS</span>
+                    </div>
+                    <a href="edl-audit.html" class="tool-link">Use Tool →</a>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">📋</div>
+                    <h3 class="tool-title">EDL Master</h3>
+                    <p class="tool-description">Generate shot IDs, locators, subcaps, and turnover EDLs from a single source file. Edit the shot table, cascade changes automatically, download everything as a ZIP.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">Shot IDs</span>
+                        <span class="feature-tag">Batch Export</span>
+                        <span class="feature-tag">Avid Ready</span>
+                    </div>
+                    <a href="edl-master.html" class="tool-link">Use Tool →</a>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">📝</div>
+                    <h3 class="tool-title">Subcaps Text Generator</h3>
+                    <p class="tool-description">Generate Avid subcap files from CSV turnovers. Upload your shot list, pick which fields to display, and download a ready-to-import .txt with calculated timecodes.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">CSV to Subcaps</span>
+                        <span class="feature-tag">Multi-FPS</span>
+                        <span class="feature-tag">Avid Ready</span>
+                    </div>
+                    <a href="subcap-generator.html" class="tool-link">Use Tool →</a>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🧾</div>
+                    <h3 class="tool-title">Editorial Converter</h3>
+                    <p class="tool-description">Convert Avid SubCap TXT exports to CSV, flatten EDLs into editorial-friendly tables, and match CSVs by Shot ID without leaving the browser.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">SubCap</span>
+                        <span class="feature-tag">EDL to CSV</span>
+                        <span class="feature-tag">CSV Match</span>
+                    </div>
+                    <a href="editorial-converter.html" class="tool-link">Use Tool →</a>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🎬</div>
+                    <h3 class="tool-title">Subcaps to Locators</h3>
+                    <p class="tool-description">Convert Avid subcaps to locators with precise timecode math. Supports multiple frame rates. Calculates middle points automatically.</p>
+                    <div class="tool-features">
+                        <span class="feature-tag">Multi-FPS</span>
+                        <span class="feature-tag">Avid</span>
+                        <span class="feature-tag">Timecode</span>
+                    </div>
+                    <a href="subcap-converter.html" class="tool-link">Use Tool →</a>
+                </div>
+                </div>
+            </section>
+
+            <section class="category-section">
+                <div class="category-header">
+                    <h2 class="category-title">Productivity Tools</h2>
+                    <p class="category-subtitle">Capture and organize long-form ideas, so nothing gets lost between sessions.</p>
+                </div>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-icon">📚</div>
+                        <h3 class="tool-title">Bookmark App</h3>
+                        <p class="tool-description">Save long-form posts and articles into a clean reader with mood + font presets, built-in bookmarking, and quick editing.</p>
+                        <div class="tool-features">
+                            <span class="feature-tag">Reading</span>
+                            <span class="feature-tag">Library</span>
+                            <span class="feature-tag">Focus Modes</span>
+                        </div>
+                        <a href="bookmark-app/index.html" class="tool-link">Open App →</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="category-section">
+                <div class="category-header">
+                    <h2 class="category-title">Lifestyle</h2>
+                    <p class="category-subtitle">Off-the-clock tools — because not everything is about timecodes.</p>
+                </div>
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-icon">🥋</div>
+                        <h3 class="tool-title">Smashed or Not?</h3>
+                        <p class="tool-description">BJJ matchup analyser. Plug in age, weight, and belt for both players — get a verdict, radar breakdown, and a tactical game plan before you step on the mat.</p>
+                        <div class="tool-features">
+                            <span class="feature-tag">BJJ</span>
+                            <span class="feature-tag">Matchup</span>
+                            <span class="feature-tag">Game Plan</span>
+                        </div>
+                        <a href="smashed-or-not/index.html" class="tool-link">Open App →</a>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-icon">✨</div>
+                        <h3 class="tool-title">Thank You Pack</h3>
+                        <p class="tool-description">Cute, smug &amp; chaotic kaomoji thank-you lines. Click any line to copy it instantly — a mini collectible gallery of text reactions.</p>
+                        <div class="tool-features">
+                            <span class="feature-tag">Kaomoji</span>
+                            <span class="feature-tag">Copy-Paste</span>
+                            <span class="feature-tag">ASCII Art</span>
+                        </div>
+                        <a href="thank-you-pack/index.html?v=2" class="tool-link">Open App →</a>
+                    </div>
+                </div>
+            </section>
+
+            <div class="about-section">
+                <h2>Why These Tools Exist</h2>
+                <p>I've spent 15+ years in VFX editorial. The same manual processes kept eating hours every show: reconciling EDLs, rebuilding shot lists, verifying changes under pressure. These tools fix that.</p>
+                <p>Everything runs in your browser—no installation, no account, no data leaves your machine. If it saves me time on a real show, it's here.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Lukasz Bukowiecki. All rights reserved.</p>
+                <p>Part of <a href="https://bukowiecki.co/" class="footer-link">bukowiecki.co</a></p>
+            </div>
+        </div>
+    </footer>
+<script>
+function setMood(mood) {
+    document.documentElement.setAttribute('data-mood', mood);
+    localStorage.setItem('vfxtools_mood', mood);
+    document.querySelectorAll('.mood-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-mood') === mood);
+    });
+}
+(function restoreMood() {
+    const saved = localStorage.getItem('vfxtools_mood') || 'deep-focus';
+    setMood(saved);
+})();
+</script>
+</body>
+</html>

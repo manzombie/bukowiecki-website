@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDL Master - VFX Tools</title>
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .edl-master-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .edl-master-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .edl-master-header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .edl-master-header p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+        
+        .edl-form-section {
+            background: var(--secondary-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .edl-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .edl-form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .edl-form-group label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .edl-form-group input {
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--secondary-color);
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+        
+        .edl-form-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .edl-form-group select {
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--secondary-color);
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .edl-form-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .edl-settings-section {
+            margin: 0 0 30px;
+            padding: 25px;
+            background: var(--background-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+
+        .edl-settings-section h4 {
+            color: var(--primary-color);
+            font-size: 1.15rem;
+            margin-bottom: 18px;
+        }
+
+        .edl-settings-info {
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-left: 4px solid var(--accent-color);
+            border-radius: 6px;
+            background: rgba(255, 107, 53, 0.08);
+            color: var(--text-dark);
+            font-size: 0.92rem;
+        }
+        
+        .edl-file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .edl-file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .edl-file-input-label {
+            display: block;
+            padding: 30px;
+            border: 3px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--background-light);
+        }
+        
+        .edl-file-input-label:hover {
+            border-color: var(--accent-color);
+            background: #fff5f2;
+        }
+        
+        .edl-file-input-label.dragover {
+            border-color: var(--success-color);
+            background: #f0fff4;
+        }
+        
+        .edl-generate-btn {
+            background: linear-gradient(135deg, var(--accent-color) 0%, #e55a2b 100%);
+            color: var(--secondary-color);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+        
+        .edl-generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        }
+        
+        .edl-generate-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .edl-results-section {
+            background: var(--secondary-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            padding: 40px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .edl-results-section.show {
+            display: block;
+        }
+        
+        .edl-downloads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .edl-download-item {
+            background: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        
+        .edl-download-item h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .edl-download-item p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .edl-download-btn {
+            background: linear-gradient(135deg, var(--success-color) 0%, #2ecc71 100%);
+            color: var(--secondary-color);
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+        
+        .edl-download-btn:hover {
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .edl-zip-download {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .edl-zip-btn {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: var(--secondary-color);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .edl-zip-btn:hover {
+            box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+        }
+        
+        .edl-table-section {
+            background: var(--secondary-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            padding: 40px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .edl-table-section.show {
+            display: block;
+        }
+        
+        .edl-table-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .edl-table-btn {
+            background: var(--accent-color);
+            color: var(--secondary-color);
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .edl-table-btn:hover {
+            background: #e55a2b;
+        }
+        
+        .edl-table-btn.secondary {
+            background: var(--text-light);
+        }
+        
+        .edl-table-btn.secondary:hover {
+            background: var(--text-dark);
+        }
+        
+        .edl-table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+        
+        .edl-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        .edl-table th,
+        .edl-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .edl-table th {
+            background: var(--background-light);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .edl-table td {
+            color: var(--text-dark);
+        }
+        
+        .edl-table tr:hover {
+            background: var(--background-light);
+        }
+        
+        .edl-editable {
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: inherit;
+            color: inherit;
+            width: 100%;
+            min-width: 60px;
+        }
+        
+        .edl-editable:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: var(--secondary-color);
+        }
+        
+        .edl-color-original { background-color: #ffebee; }
+        .edl-color-modified-1 { background-color: #fff9c4; }
+        .edl-color-modified-2 { background-color: #e8f5e8; }
+        .edl-color-modified-3 { background-color: #e3f2fd; }
+        .edl-color-modified-4 { background-color: #fce4ec; }
+        
+        .edl-status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            display: none;
+            font-weight: 500;
+        }
+        
+        .edl-status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .edl-status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .edl-status-message.show {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .edl-master-container {
+                padding: 20px 15px;
+            }
+            
+            .edl-form-section,
+            .edl-results-section,
+            .edl-table-section {
+                padding: 30px 20px;
+            }
+            
+            .edl-form-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .edl-downloads-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .edl-table-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="https://bukowiecki.co/" class="logo-link">
+                        <span class="logo-text">LUKASZ BUKOWIECKI</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">← Back to VFX Tools</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="tool-header">
+        <div class="container">
+            <h1>EDL Master</h1>
+            <p>Generate Avid locators, subcaps, and EDL files with interactive shot ID management</p>
+        </div>
+    </div>
+
+    <main class="main">
+        <div class="edl-master-container">
+            <div class="edl-form-section">
+                <h3>Upload EDL File</h3>
+                <div class="edl-file-input-wrapper">
+                    <input type="file" id="edlFileInput" class="edl-file-input" accept=".edl,.txt" />
+                    <label for="edlFileInput" class="edl-file-input-label" id="edlFileLabel">
+                        <div style="font-size: 1.5rem; margin-bottom: 15px;">📁</div>
+                        <div style="font-size: 1.1rem; margin-bottom: 10px;">Click to upload or drag & drop your EDL file</div>
+                        <div style="font-size: 0.9rem; color: #666;">Supports .edl and .txt files</div>
+                    </label>
+                </div>
+                
+                <div class="edl-form-grid">
+                    <div class="edl-form-group">
+                        <label for="seqNumber">Sequence Number:</label>
+                        <input type="text" id="seqNumber" placeholder="e.g., 310A" maxlength="10">
+                    </div>
+                    <div class="edl-form-group">
+                        <label for="seqCode">Sequence Code:</label>
+                        <input type="text" id="seqCode" placeholder="e.g., ACR" maxlength="3">
+                    </div>
+                    <div class="edl-form-group">
+                        <label for="startNumber">Starting Number:</label>
+                        <input type="number" id="startNumber" value="1000" min="1">
+                    </div>
+                    <div class="edl-form-group">
+                        <label for="incrementNumber">Increment:</label>
+                        <input type="number" id="incrementNumber" value="20" min="1" max="100">
+                    </div>
+                </div>
+
+                <div class="edl-settings-section">
+                    <h4>Project Settings</h4>
+                    <div class="edl-form-grid" style="margin-bottom: 0;">
+                        <div class="edl-form-group">
+                            <label for="fpsSelect">Frame Rate:</label>
+                            <select id="fpsSelect">
+                                <option value="23.976">23.976 fps (Film Standard)</option>
+                                <option value="24" selected>24 fps (Film Standard)</option>
+                                <option value="25">25 fps (PAL Standard)</option>
+                                <option value="29.97">29.97 fps (NTSC Standard)</option>
+                                <option value="30">30 fps (NTSC Standard)</option>
+                                <option value="50">50 fps (PAL High Frame Rate)</option>
+                                <option value="59.94">59.94 fps (NTSC High Frame Rate)</option>
+                                <option value="60">60 fps (High Frame Rate)</option>
+                            </select>
+                            <div class="edl-settings-info" id="fpsInfo">Selected: 24 fps - Standard film frame rate (timecode math uses a 24-frame base)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="edl-generate-btn" id="generateBtn" disabled>Generate Files</button>
+            </div>
+
+            <div class="edl-status-message" id="statusMessage"></div>
+
+            <div class="edl-results-section" id="resultsSection">
+                <h3>Generated Files</h3>
+                <div class="edl-downloads-grid">
+                    <div class="edl-download-item">
+                        <h4>Subcaps File</h4>
+                        <p>Avid subtitle format with shot IDs</p>
+                        <button class="edl-download-btn" id="downloadSubcaps">Download</button>
+                    </div>
+                    <div class="edl-download-item">
+                        <h4>Locators File</h4>
+                        <p>Avid locators with timecode markers</p>
+                        <button class="edl-download-btn" id="downloadLocators">Download</button>
+                    </div>
+                    <div class="edl-download-item">
+                        <h4>ProRes EDL</h4>
+                        <p>EDL with ProRes locators</p>
+                        <button class="edl-download-btn" id="downloadProRes">Download</button>
+                    </div>
+                    <div class="edl-download-item">
+                        <h4>James' List EDL</h4>
+                        <p>Shortened EDL format</p>
+                        <button class="edl-download-btn" id="downloadJames">Download</button>
+                    </div>
+                </div>
+                
+                <div class="edl-zip-download">
+                    <button class="edl-zip-btn" id="downloadZip">Download All Files as ZIP</button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="edl-table-btn" id="openTableBtn">Open Editable Shot Table</button>
+                </div>
+            </div>
+
+            <div class="edl-table-section" id="tableSection">
+                <h3>Editable Shot ID Table</h3>
+                <div class="edl-table-controls">
+                    <button class="edl-table-btn" id="saveChangesBtn">Save Changes</button>
+                    <button class="edl-table-btn secondary" id="resetTableBtn">Reset to Original</button>
+                </div>
+                <div class="edl-table-container">
+                    <table class="edl-table" id="shotTable">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Timecode</th>
+                                <th>Seq Number</th>
+                                <th>Seq Code</th>
+                                <th>Start Number (Editable)</th>
+                                <th>Shot ID</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shotTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Lukasz Bukowiecki. All rights reserved.</p>
+                <p>Part of <a href="https://bukowiecki.co/" class="footer-link">bukowiecki.co</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        // Global variables
+        let currentShotsData = [];
+        let originalShotsData = [];
+        let generatedFiles = {};
+        let originalEdlFilename = '';
+        let originalEdlContent = '';
+
+        // DOM elements
+        const edlFileInput = document.getElementById('edlFileInput');
+        const edlFileLabel = document.getElementById('edlFileLabel');
+        const seqNumberInput = document.getElementById('seqNumber');
+        const seqCodeInput = document.getElementById('seqCode');
+        const startNumberInput = document.getElementById('startNumber');
+        const incrementNumberInput = document.getElementById("incrementNumber");
+        const fpsSelect = document.getElementById('fpsSelect');
+        const fpsInfo = document.getElementById('fpsInfo');
+        const generateBtn = document.getElementById('generateBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const resultsSection = document.getElementById('resultsSection');
+        const tableSection = document.getElementById('tableSection');
+        const shotTableBody = document.getElementById('shotTableBody');
+        const openTableBtn = document.getElementById('openTableBtn');
+        const saveChangesBtn = document.getElementById('saveChangesBtn');
+        const resetTableBtn = document.getElementById('resetTableBtn');
+        const fpsOptions = {
+            "23.976": {
+                label: "23.976 fps - Standard film frame rate",
+                timecodeBase: 24
+            },
+            "24": {
+                label: "24 fps - Standard film frame rate",
+                timecodeBase: 24
+            },
+            "25": {
+                label: "25 fps - PAL standard frame rate",
+                timecodeBase: 25
+            },
+            "29.97": {
+                label: "29.97 fps - NTSC standard frame rate",
+                timecodeBase: 30
+            },
+            "30": {
+                label: "30 fps - NTSC standard frame rate",
+                timecodeBase: 30
+            },
+            "50": {
+                label: "50 fps - PAL high frame rate",
+                timecodeBase: 50
+            },
+            "59.94": {
+                label: "59.94 fps - NTSC high frame rate",
+                timecodeBase: 60
+            },
+            "60": {
+                label: "60 fps - High frame rate standard",
+                timecodeBase: 60
+            }
+        };
+
+        fpsSelect.addEventListener('change', updateFpsInfo);
+        updateFpsInfo();
+
+        // File input handling
+        edlFileInput.addEventListener('change', handleFile);
+        edlFileLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            edlFileLabel.classList.add('dragover');
+        });
+        edlFileLabel.addEventListener('dragleave', () => {
+            edlFileLabel.classList.remove('dragover');
+        });
+        edlFileLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            edlFileLabel.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile({ target: { files: files } });
+            }
+        });
+
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.toLowerCase().match(/\.(edl|txt)$/)) {
+                showStatus('Please select an EDL or TXT file', 'error');
+                return;
+            }
+
+            originalEdlFilename = file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                originalEdlContent = e.target.result;
+                // Try to extract sequence info from filename
+                const match = originalEdlFilename.match(/(\d+)_([A-Za-z]{3})/);
+                if (match) {
+                    if (!seqNumberInput.value) seqNumberInput.value = match[1];
+                    if (!seqCodeInput.value) seqCodeInput.value = match[2].toUpperCase();
+                }
+                generateBtn.disabled = false;
+                updateFileDisplay(originalEdlFilename);
+                showStatus('EDL file loaded successfully', 'success');
+            };
+            reader.readAsText(file);
+        }
+
+        // Generate button click
+        generateBtn.addEventListener('click', generateFiles);
+
+        function generateFiles() {
+            if (!originalEdlContent) {
+                showStatus('Please upload an EDL file first', 'error');
+                return;
+            }
+
+            const seqNumber = seqNumberInput.value.trim();
+            const seqCode = seqCodeInput.value.trim().toUpperCase();
+            const startNumber = parseInt(startNumberInput.value) || 1000;
+            const increment = parseInt(incrementNumberInput.value) || 20;
+            const fps = getSelectedTimecodeBaseFps();
+            if (!seqNumber || !seqCode) {
+                showStatus('Please enter both sequence number and code', 'error');
+                return;
+            }
+
+            if (seqCode.length !== 3) {
+                showStatus('Sequence code must be exactly 3 letters', 'error');
+                return;
+            }
+
+            try {
+                // Parse EDL and generate shot data
+                currentShotsData = parseEdlToShots(originalEdlContent, seqNumber, seqCode, startNumber, increment);
+                originalShotsData = JSON.parse(JSON.stringify(currentShotsData)); // Deep copy
+
+                // Generate all files
+                generatedFiles = {
+                    subcaps: generateSubcaps(currentShotsData),
+                    locators: generateLocators(currentShotsData, fps),
+                    prores: generateProResEdl(originalEdlContent, currentShotsData, fps),
+                    james: generateJamesEdl(originalEdlContent, currentShotsData, fps)
+                };
+
+                resultsSection.classList.add('show');
+                showStatus(`Successfully generated ${currentShotsData.length} shots at ${fpsSelect.value} fps`, 'success');
+            } catch (error) {
+                showStatus('Error processing EDL file: ' + error.message, 'error');
+            }
+        }
+
+        // EDL parsing function
+        function parseEdlToShots(edlContent, seqNumber, seqCode, startNumber, increment = 20) {
+            const lines = edlContent.split('\n');
+            const pattern = /^\s*(\d+)\s+(\S+)\s+V\s+C\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})/;
+            const shots = [];
+            let counter = startNumber;
+            // const increment = 20; // Now passed as parameter
+
+            for (const line of lines) {
+                const match = pattern.exec(line);
+                if (match) {
+                    const recIn = match[5];
+                    const recOut = match[6];
+                    shots.push({
+                        eventNum: match[1],
+                        reel: match[2],
+                        srcIn: match[3],
+                        srcOut: match[4],
+                        recIn: recIn,
+                        recOut: recOut,
+                        timecode: recIn,
+                        seqNumber: seqNumber,
+                        seqCode: seqCode,
+                        startNumber: counter,
+                        originalSeqNumber: seqNumber,
+                        originalSeqCode: seqCode,
+                        originalStartNumber: counter,
+                        edlLine: line.trim(),
+                        modificationLevel: 0
+                    });
+                    counter += increment;
+                }
+            }
+
+            return shots;
+        }
+
+        // File generation functions
+   function generateSubcaps(shots) {
+    const lines = [
+        '@ This file written with the Avid Caption plugin, version 1',
+        '',
+        '<begin subtitles>'
+    ];
+
+    for (const shot of shots) {
+        const shotLabel = `${shot.seqNumber}_${shot.seqCode}_${shot.startNumber}`;
+        lines.push(`${shot.recIn} ${shot.recOut}`);
+        lines.push(shotLabel);
+        lines.push(''); // blank line between subtitles (Avid expects this)
+    }
+
+    lines.push('<end subtitles>');
+    return lines.join('\n');
+}
+
+
+
+        function generateLocators(shots, fps) {
+            // // const sceneCode = `${seqNumber}_${seqCode}`; // Now using individual shot data // Now using individual shot data
+            const lines = [];
+            const locatorUser = 'LUKASZ_V2';
+            const track = 'V1';
+            const color = 'Yellow';
+
+            for (const shot of shots) {
+                const shotLabel = `${shot.seqNumber}_${shot.seqCode}_${shot.startNumber}`;
+                const midTime = calculateMiddleTime(shot.recIn, shot.recOut, fps);
+                lines.push(`${locatorUser}\t${midTime}\t${track}\t${color}\t${shotLabel}\t1\t\t${color}`);
+            }
+
+            return lines.join('\n');
+        }
+
+        function generateProResEdl(edlContent, shots, fps) {
+            const lines = edlContent.split('\n');
+            const pattern = /^\s*(\d+)\s+(\S+)\s+V\s+C\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})/;
+            const result = [];
+            let shotIndex = 0;
+
+            for (const line of lines) {
+                const match = pattern.exec(line);
+                if (match) {
+                    result.push(line.trim());
+                    if (shotIndex < shots.length) {
+                        const shot = shots[shotIndex];
+                        const shotLabel = `${shot.seqNumber}_${shot.seqCode}_${shot.startNumber}_PRORES`;
+                        const midTime = calculateMiddleTime(shot.recIn, shot.recOut, fps);
+                        result.push(`*LOC: ${midTime} YELLOW  ${shotLabel}`);
+                        shotIndex++;
+                    }
+                } else if (!line.trim().startsWith('*FROM CLIP NAME:')) {
+                    result.push(line.trim());
+                }
+            }
+
+            return result.join('\n');
+        }
+
+        function generateJamesEdl(edlContent, shots, fps) {
+            const lines = edlContent.split('\n');
+            const pattern = /^\s*(\d+)\s+(\S+)\s+V\s+C\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})/;
+            const result = [];
+            let shotIndex = 0;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const match = pattern.exec(line);
+                if (match) {
+                    const eventNum = match[1].padStart(3, '0');
+                    const reel = match[2].substring(0, 9);
+                    const rest = line.substring(match[0].indexOf(match[2]) + match[2].length).trim();
+                    result.push(`${eventNum}  ${reel} ${rest}`);
+
+                    // Check for FROM CLIP NAME line
+                    if (i + 1 < lines.length && lines[i + 1].trim().startsWith('*FROM CLIP NAME:')) {
+                        let fromClipLine = lines[i + 1].trim();
+                        if (!fromClipLine.startsWith('* ')) {
+                            fromClipLine = '* ' + fromClipLine.substring(1);
+                        }
+                        result.push(fromClipLine);
+                        i++; // Skip the FROM CLIP NAME line
+                    }
+
+                    // Add locator
+                    if (shotIndex < shots.length) {
+                        const shot = shots[shotIndex];
+                        const shotLabel = `${shot.seqNumber}_${shot.seqCode}_${shot.startNumber}`;
+                        const midTime = calculateMiddleTime(shot.recIn, shot.recOut, fps);
+                        result.push(`* LOC: ${midTime} YELLOW  ${shotLabel}`);
+                        shotIndex++;
+                    }
+                } else if (!line.trim().startsWith('*FROM CLIP NAME:')) {
+                    result.push(line.trim());
+                }
+            }
+
+            return result.join('\n');
+        }
+
+        // Timecode helper functions
+        function tcToFrames(tc, fps) {
+            const [h, m, s, f] = tc.split(':').map(Number);
+            return ((h * 3600 + m * 60 + s) * fps) + f;
+        }
+
+        function framesToTc(frames, fps) {
+            const h = Math.floor(frames / (3600 * fps));
+            const m = Math.floor((frames % (3600 * fps)) / (60 * fps));
+            const s = Math.floor((frames % (60 * fps)) / fps);
+            const f = frames % fps;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}:${f.toString().padStart(2, '0')}`;
+        }
+
+        function calculateMiddleTime(startTc, endTc, fps) {
+            const startFrames = tcToFrames(startTc, fps);
+            const endFrames = tcToFrames(endTc, fps);
+            const midFrames = Math.floor((startFrames + endFrames) / 2);
+            return framesToTc(midFrames, fps);
+        }
+
+        // Table functionality
+        openTableBtn.addEventListener('click', () => {
+            if (currentShotsData.length === 0) {
+                showStatus('Please generate files first', 'error');
+                return;
+            }
+            populateTable();
+            tableSection.classList.add('show');
+        });
+
+        function populateTable() {
+            shotTableBody.innerHTML = '';
+            for (let i = 0; i < currentShotsData.length; i++) {
+                const shot = currentShotsData[i];
+                const row = document.createElement('tr');
+                const colorClass = getColorClass(shot, i);
+                
+                row.innerHTML = `
+                    <td>${shot.eventNum}</td>
+                    <td>${shot.timecode}</td>
+                    <td class="${colorClass}">
+                        <input type="text" class="edl-editable" value="${shot.seqNumber}" 
+                               data-field="seqNumber" data-index="${i}" maxlength="10">
+                    </td>
+                    <td class="${colorClass}">
+                        <input type="text" class="edl-editable" value="${shot.seqCode}" 
+                               data-field="seqCode" data-index="${i}" maxlength="3">
+                    </td>
+                    <td class="${colorClass}"><input type="number" class="edl-editable" value="${shot.startNumber}" data-field="startNumber" data-index="${i}" min="1"></td>
+                    <td>${shot.seqNumber}_${shot.seqCode}_${shot.startNumber}</td>
+                `;
+                shotTableBody.appendChild(row);
+            }
+
+            // Add event listeners for editable fields
+            document.querySelectorAll(".edl-editable").forEach(input => {
+                input.addEventListener("blur", handleTableEdit);
+                input.addEventListener("keypress", (e) => {
+                    if (e.key === "Enter") {
+                        e.target.blur();
+                    }
+                });
+            });        }
+
+        function getColorClass(shot, index) {
+            // Determine color based on Shot ID pattern changes
+            if (index === 0) return "edl-color-original";
+            
+            const currentPattern = `${shot.seqNumber}_${shot.seqCode}`;
+            const prevPattern = `${currentShotsData[index - 1].seqNumber}_${currentShotsData[index - 1].seqCode}`;
+            
+            if (currentPattern !== prevPattern) {
+                // Count pattern changes up to this point
+                let patternChanges = 0;
+                let lastPattern = `${currentShotsData[0].seqNumber}_${currentShotsData[0].seqCode}`;
+                
+                for (let i = 1; i <= index; i++) {
+                    const pattern = `${currentShotsData[i].seqNumber}_${currentShotsData[i].seqCode}`;
+                    if (pattern !== lastPattern) {
+                        patternChanges++;
+                        lastPattern = pattern;
+                    }
+                }
+                
+                const classes = ["edl-color-original", "edl-color-modified-1", "edl-color-modified-2", "edl-color-modified-3", "edl-color-modified-4"];
+                return classes[Math.min(patternChanges, classes.length - 1)];
+            } else {
+                // Same pattern as previous, find the color of the group
+                for (let i = index - 1; i >= 0; i--) {
+                    const prevPattern = `${currentShotsData[i].seqNumber}_${currentShotsData[i].seqCode}`;
+                    if (prevPattern === currentPattern) {
+                        continue;
+                    } else {
+                        // Found the start of this pattern group
+                        return getColorClass(currentShotsData[index], i + 1);
+                    }
+                }
+                return "edl-color-original";
+            }
+        }
+        function handleTableEdit(event) {
+            const input = event.target;
+            const field = input.dataset.field;
+            const index = parseInt(input.dataset.index);
+            const newValue = field === "startNumber" ? parseInt(input.value) : input.value.trim();
+
+            if (field === "seqNumber" && !/^\d+[A-Za-z]*$/.test(newValue)) {
+                showStatus("Sequence number must start with digits and can include letters (e.g., 312A)", "error");
+                input.value = currentShotsData[index][field];
+                return;
+            }
+
+            if (field === "seqCode" && !/^[A-Za-z]{3}$/.test(newValue)) {
+                showStatus("Sequence code must be exactly 3 letters", "error");
+                input.value = currentShotsData[index][field];
+                return;
+            }
+
+            if (field === "startNumber" && (isNaN(newValue) || newValue < 1)) {
+                showStatus("Start number must be a positive number", "error");
+                input.value = currentShotsData[index][field];
+                return;
+            }
+
+            // Apply cascading changes
+            applyCascadingChanges(index, field, newValue);
+            updateTableDisplay();
+        }
+        function applyCascadingChanges(startIndex, field, newValue) {
+            const increment = parseInt(incrementNumberInput.value) || 20;
+            
+            if (field === "startNumber") {
+                // If start number is changed, just update that row and subsequent rows
+                let currentStartNumber = newValue;
+                for (let i = startIndex; i < currentShotsData.length; i++) {
+                    const shot = currentShotsData[i];
+                    shot.startNumber = currentStartNumber;
+                    shot.modificationLevel = Math.max(shot.modificationLevel, 1);
+                    currentStartNumber += increment;
+                }
+            } else {
+                // If sequence number or code is changed, automatically jump to next thousand
+                let maxStartNumber = 0;
+                for (let i = 0; i < startIndex; i++) {
+                    if (currentShotsData[i].startNumber > maxStartNumber) {
+                        maxStartNumber = currentShotsData[i].startNumber;
+                    }
+                }
+                
+                // Calculate next thousand increment
+                const nextThousand = Math.floor(maxStartNumber / 1000) * 1000 + 1000;
+                let currentStartNumber = nextThousand;
+                
+                // Update the changed field and apply to all subsequent rows
+                for (let i = startIndex; i < currentShotsData.length; i++) {
+                    const shot = currentShotsData[i];
+                    shot[field] = newValue;
+                    shot.startNumber = currentStartNumber;
+                    shot.modificationLevel = Math.max(shot.modificationLevel, 1);
+                    currentStartNumber += increment;
+                }
+            }
+        }        function updateTableDisplay() {
+            populateTable();
+        }
+
+        // Save and reset functionality
+        saveChangesBtn.addEventListener('click', () => {
+            // Regenerate files with updated shot data
+            const seqNumber = seqNumberInput.value.trim();
+            const seqCode = seqCodeInput.value.trim().toUpperCase();
+            const fps = getSelectedTimecodeBaseFps();
+            
+            generatedFiles = {
+                subcaps: generateSubcaps(currentShotsData),
+                locators: generateLocators(currentShotsData, fps),
+                prores: generateProResEdl(originalEdlContent, currentShotsData, fps),
+                james: generateJamesEdl(originalEdlContent, currentShotsData, fps)
+            };
+
+            showStatus(`Changes saved and files regenerated at ${fpsSelect.value} fps`, 'success');
+        });
+
+        resetTableBtn.addEventListener('click', () => {
+            currentShotsData = JSON.parse(JSON.stringify(originalShotsData));
+            updateTableDisplay();
+            showStatus('Table reset to original values', 'success');
+        });
+
+        // Download functionality
+        document.getElementById('downloadSubcaps').addEventListener('click', () => {
+            downloadFile(generatedFiles.subcaps, `${originalEdlFilename.replace(/\.(edl|txt)$/i, '')}_subcaps.txt`);
+        });
+
+        document.getElementById('downloadLocators').addEventListener('click', () => {
+            downloadFile(generatedFiles.locators, `${originalEdlFilename.replace(/\.(edl|txt)$/i, '')}_locators.txt`);
+        });
+
+        document.getElementById('downloadProRes').addEventListener('click', () => {
+            const seqNumber = seqNumberInput.value.trim();
+            const seqCode = seqCodeInput.value.trim().toUpperCase();
+            const datePart = originalEdlFilename.match(/(\d+)\.edl$/i)?.[1] || 'DATE';
+            downloadFile(generatedFiles.prores, `PRORES_${seqNumber}_${seqCode}_${datePart}.edl`);
+        });
+
+        document.getElementById('downloadJames').addEventListener('click', () => {
+            downloadFile(generatedFiles.james, originalEdlFilename);
+        });
+
+        document.getElementById('downloadZip').addEventListener('click', () => {
+            downloadAllAsZip();
+        });
+
+       function downloadFile(content, filename) {
+    let blob;
+    
+    if (filename.endsWith('.txt')) {
+        // Convert to UTF-16 LE with BOM for Avid compatibility
+        const encoder = new TextEncoder();
+        const utf16Array = [];
+        
+        // Add BOM (Byte Order Mark) for UTF-16 LE
+        utf16Array.push(0xFF, 0xFE);
+        
+        // Convert each character to UTF-16 LE
+        for (let i = 0; i < content.length; i++) {
+            const charCode = content.charCodeAt(i);
+            utf16Array.push(charCode & 0xFF);
+            utf16Array.push((charCode >> 8) & 0xFF);
+        }
+        
+        blob = new Blob([new Uint8Array(utf16Array)], { type: 'text/plain;charset=utf-16le' });
+    } else {
+        // EDL files use standard UTF-8
+        blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    }
+    
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+
+        function downloadAllAsZip() {
+            const zip = new JSZip();
+            const seqNumber = seqNumberInput.value.trim();
+            const seqCode = seqCodeInput.value.trim().toUpperCase();
+            const datePart = originalEdlFilename.match(/(\d+)\.edl$/i)?.[1] || 'DATE';
+            const baseName = originalEdlFilename.replace(/\.(edl|txt)$/i, '');
+
+            zip.file(`${baseName}_subcaps.txt`, generatedFiles.subcaps);
+            zip.file(`${baseName}_locators.txt`, generatedFiles.locators);
+            zip.file(`PRORES_${seqNumber}_${seqCode}_${datePart}.edl`, generatedFiles.prores);
+            zip.file(originalEdlFilename, generatedFiles.james);
+
+            zip.generateAsync({ type: 'blob' }).then(content => {
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${baseName}_generated_files.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `edl-status-message ${type} show`;
+            setTimeout(() => {
+                statusMessage.classList.remove('show');
+            }, 5000);
+        }
+        function updateFileDisplay(filename) {
+            const fileLabel = document.getElementById("edlFileLabel");
+            fileLabel.innerHTML = `
+                <div style="font-size: 1.2rem; margin-bottom: 10px; color: var(--success-color);">✅</div>
+                <div style="font-size: 1.1rem; margin-bottom: 10px; font-weight: 600;">File Uploaded Successfully</div>
+                <div style="font-size: 0.9rem; color: var(--text-dark); word-break: break-all;">${filename}</div>
+                <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 10px;">Click to upload a different file</div>
+            `;
+        }
+
+        function getSelectedTimecodeBaseFps() {
+            const option = fpsOptions[fpsSelect.value] || fpsOptions["24"];
+            return option.timecodeBase;
+        }
+
+        function updateFpsInfo() {
+            const option = fpsOptions[fpsSelect.value] || fpsOptions["24"];
+            fpsInfo.textContent = `Selected: ${option.label} (timecode math uses a ${option.timecodeBase}-frame base)`;
+        }
+    </script>
+    <script>document.documentElement.setAttribute('data-mood', localStorage.getItem('vfxtools_mood') || 'deep-focus');</script>
+</body>
+</html>

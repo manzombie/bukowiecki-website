@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrameShift — Workflow Tools for Post-Production</title>
+    <meta name="description" content="FrameShift by Bukowiecki develops workflow tools for post-production, editorial, and VFX professionals working in film and television.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎬</text></svg>">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Montserrat', sans-serif;
+            color: #fff;
+            background: #000;
+        }
+
+        body {
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #000000 0%, #555555 100%);
+            padding: 80px 24px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px 40px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .logo img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .description {
+            max-width: 600px;
+            font-size: 15px;
+            font-weight: 300;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 56px;
+            letter-spacing: 0.01em;
+        }
+
+        .coming-soon {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .signup-form {
+            display: flex;
+            gap: 0;
+            max-width: 480px;
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .signup-form input[type="email"] {
+            flex: 1;
+            padding: 14px 18px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 300;
+            color: #fff;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-right: none;
+            border-radius: 0;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .signup-form input[type="email"]::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .signup-form input[type="email"]:focus {
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .signup-form button {
+            padding: 14px 28px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #fff;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .signup-form button:hover {
+            background: #fff;
+            color: #111;
+            border-color: #fff;
+        }
+
+        .form-error {
+            color: #ff6b6b;
+            font-size: 12px;
+            font-weight: 400;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .confirmation {
+            font-size: 16px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.85);
+            letter-spacing: 0.02em;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 56px;
+            padding: 12px 32px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        footer {
+            padding: 24px;
+            text-align: center;
+        }
+
+        footer a {
+            color: rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        @media (max-width: 540px) {
+            .hero-section {
+                padding: 48px 20px 40px;
+            }
+
+            .content-section {
+                padding: 40px 20px 32px;
+            }
+
+            .logo {
+                max-width: 280px;
+            }
+
+            .description {
+                font-size: 14px;
+                margin-bottom: 40px;
+            }
+
+            .coming-soon {
+                font-size: 22px;
+                margin-bottom: 32px;
+            }
+
+            .signup-form {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .signup-form input[type="email"] {
+                border-right: 1px solid rgba(255, 255, 255, 0.4);
+                border-bottom: none;
+            }
+
+            .signup-form button {
+                border-top: 1px solid rgba(255, 255, 255, 0.4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-section">
+        <div class="logo">
+            <img src="images/frame_shift_logo_WHITE.png" alt="FrameShift">
+        </div>
+    </div>
+
+    <div class="content-section">
+        <p class="description">FrameShift by Bukowiecki develops workflow tools for post-production, editorial, and VFX professionals working in film and television. Founded by Lukasz Bukowiecki, a VFX Editor with 17 years of experience on productions including Avatar, Harry Potter, Gravity, and Black Mirror. We research real-world workflow pain points across the post-production pipeline to build practical, editorial-first tools that reduce manual work and improve accuracy.</p>
+
+        <h2 class="coming-soon">Coming Soon</h2>
+
+        <div id="form-container">
+            <form class="signup-form" id="signup-form" novalidate>
+                <input type="email" id="email-input" placeholder="Enter your email for early access" required autocomplete="email">
+                <button type="submit">Notify Me</button>
+            </form>
+            <p class="form-error" id="form-error">Please enter a valid email address.</p>
+        </div>
+
+        <a href="https://bukowiecki.co" class="back-link">bukowiecki.co</a>
+    </div>
+
+    <footer>
+        <a href="https://bukowiecki.co">&copy; 2026 Bukowiecki</a>
+    </footer>
+
+    <script>
+        (function() {
+            var form = document.getElementById('signup-form');
+            var emailInput = document.getElementById('email-input');
+            var formError = document.getElementById('form-error');
+            var formContainer = document.getElementById('form-container');
+
+            function isValidEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                var email = emailInput.value.trim();
+
+                if (!isValidEmail(email)) {
+                    formError.style.display = 'block';
+                    return;
+                }
+
+                formError.style.display = 'none';
+                form.querySelector('button').textContent = '...';
+
+                fetch('subscribe.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                })
+                .then(function(res) {
+                    return res.json().then(function(data) {
+                        data._status = res.status;
+                        return data;
+                    });
+                })
+                .then(function(data) {
+                    if (data.error) {
+                        formError.textContent = 'Server error: ' + data.error + (data.debug ? ' | ' + JSON.stringify(data.debug) : '');
+                        formError.style.display = 'block';
+                        form.querySelector('button').textContent = 'Notify Me';
+                        console.error('Subscribe error:', data);
+                        return;
+                    }
+                    formContainer.innerHTML = '<p class="confirmation">You\'re on the list. We\'ll be in touch.</p>';
+                })
+                .catch(function(err) {
+                    formError.textContent = 'Connection failed: ' + err.message + ' — saved locally as backup.';
+                    formError.style.display = 'block';
+                    form.querySelector('button').textContent = 'Notify Me';
+                    console.error('Fetch failed:', err);
+                    // Fallback to localStorage
+                    var emails = [];
+                    try { emails = JSON.parse(localStorage.getItem('frameshift_emails') || '[]'); } catch (e) { emails = []; }
+                    emails.push({ email: email, date: new Date().toISOString() });
+                    localStorage.setItem('frameshift_emails', JSON.stringify(emails));
+                });
+            });
+
+            emailInput.addEventListener('input', function() {
+                formError.style.display = 'none';
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smashed or Not? — BJJ Matchup Analyser</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--surface:#1a1a1a;--border:rgba(255,255,255,0.08);
+  --accent:#378ADD;--coral:#D85A30;--text:#e8e8e8;--text-dim:#888;
+  --green:#2ecc71;--blue:#378ADD;--amber:#f39c12;--coral-verdict:#e74c3c;--red:#c0392b;
+}
+html{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+body{min-height:100vh;display:flex;flex-direction:column}
+
+/* Header */
+header{text-align:center;background:#050414;border-bottom:1px solid var(--border);overflow:hidden}
+.banner-wrap{position:relative;background:radial-gradient(circle at center,#1a2230 0%,#0f0f0f 60%,#070707 100%)}
+.banner-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(to bottom,transparent,#050414);pointer-events:none}
+.banner{display:block;width:100%;max-height:420px;object-fit:contain;object-position:center top}
+.header-text{padding:1.2rem 1rem 1.5rem;background:linear-gradient(to bottom,#050414 0%,var(--bg) 100%)}
+header h1{font-size:2rem;font-weight:800;letter-spacing:-0.5px}
+header h1 span{color:var(--accent)}
+header p.tagline{color:var(--text-dim);font-size:0.95rem;margin-top:0.4rem;max-width:480px;margin-left:auto;margin-right:auto}
+header nav{margin-top:0.8rem}
+header nav a{color:var(--accent);text-decoration:none;font-size:0.85rem;transition:opacity 0.2s}
+header nav a:hover{opacity:0.7}
+
+/* Layout */
+main{flex:1;max-width:960px;width:100%;margin:0 auto;padding:1.5rem 1rem 3rem}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:640px){.columns{grid-template-columns:1fr}}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
+.card h2{font-size:1.1rem;font-weight:700;margin-bottom:1.2rem;display:flex;align-items:center;gap:0.5rem}
+.card h2 .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.card-you .dot{background:var(--accent)}
+.card-opp .dot{background:var(--coral)}
+
+/* Gender toggle */
+.gender-toggle{display:flex;gap:0;margin-bottom:1.2rem;border-radius:6px;overflow:hidden;border:1px solid var(--border)}
+.gender-btn{flex:1;padding:0.4rem 0;font-family:inherit;font-size:0.8rem;font-weight:600;border:none;background:transparent;color:var(--text-dim);cursor:pointer;transition:all 0.2s;text-align:center}
+.gender-btn.active{background:rgba(255,255,255,0.08);color:var(--text)}
+.card-you .gender-btn.active{color:var(--accent)}
+.card-opp .gender-btn.active{color:var(--coral)}
+
+/* Sliders */
+.slider-group{margin-bottom:1.2rem}
+.slider-group label{display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-dim);margin-bottom:0.4rem}
+.slider-group label span.val{color:var(--text);font-weight:600}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:#333;outline:none;transition:background 0.2s}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;transition:transform 0.15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.card-opp input[type=range]::-webkit-slider-thumb{background:var(--coral)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:none}
+.card-opp input[type=range]::-moz-range-thumb{background:var(--coral)}
+
+/* Belt bar */
+.belt-bar{height:20px;border-radius:3px;margin-top:0.3rem;display:flex;overflow:hidden;transition:all 0.3s;border:1px solid rgba(255,255,255,0.12)}
+.belt-color{flex:1;transition:background-color 0.3s}
+.belt-tip{display:flex;width:35%;background:#111}
+.belt-tip .stripe-slot{flex:1;display:flex;align-items:stretch}
+.belt-tip .stripe-slot .stripe-black{flex:1;background:#111}
+.belt-tip .stripe-slot .stripe-white{flex:1;transition:background-color 0.3s}
+.belt-tip .stripe-slot .stripe-white.earned{background:#fff}
+.belt-tip .stripe-slot .stripe-white.dim{background:#111}
+
+/* Verdict */
+.verdict-panel{margin-top:1.5rem;text-align:center;border-radius:12px;padding:1.8rem 1rem;transition:background-color 0.3s}
+.verdict-panel h3{font-size:1.6rem;font-weight:800;transition:color 0.3s}
+.verdict-panel p.score-line{font-size:0.9rem;color:var(--text-dim);margin-top:0.4rem}
+
+/* Stat pills */
+.stat-pills{display:flex;justify-content:center;gap:0.8rem;margin-top:1rem;flex-wrap:wrap}
+.pill{padding:0.4rem 1rem;border-radius:20px;font-size:0.8rem;font-weight:600;border:1px solid var(--border);background:var(--surface);transition:all 0.2s}
+.pill.positive{color:var(--accent);border-color:rgba(55,138,221,0.3)}
+.pill.negative{color:var(--coral);border-color:rgba(216,90,48,0.3)}
+
+/* Radar */
+.radar-section{margin-top:1.5rem}
+.radar-wrap{max-width:420px;margin:0 auto;position:relative}
+.custom-legend{display:flex;justify-content:center;gap:1.5rem;margin-bottom:0.8rem}
+.custom-legend span{font-size:0.8rem;display:flex;align-items:center;gap:0.4rem}
+.custom-legend .swatch{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+/* Buttons row */
+.btn-row{display:flex;justify-content:center;gap:0.8rem;margin-top:1.5rem;flex-wrap:wrap}
+button{font-family:inherit;font-size:0.85rem;font-weight:600;padding:0.6rem 1.4rem;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:all 0.2s}
+button:hover{background:#252525;border-color:rgba(255,255,255,0.15)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{opacity:0.85}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;max-width:520px;width:90%;max-height:80vh;overflow-y:auto;padding:2rem;position:relative}
+.modal h3{font-size:1.2rem;font-weight:700;margin-bottom:1rem}
+.modal ul{list-style:none;padding:0}
+.modal ul li{padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.9rem;line-height:1.5}
+.modal ul li:last-child{border-bottom:none}
+.modal ul li::before{content:"🥋 ";margin-right:0.3rem}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--text-dim);font-size:1.4rem;cursor:pointer;padding:0.2rem 0.5rem;line-height:1}
+.modal-close:hover{color:var(--text)}
+
+/* Flash */
+.flash{position:fixed;top:1rem;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:0.5rem 1.2rem;border-radius:8px;font-size:0.85rem;font-weight:600;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:200}
+.flash.show{opacity:1}
+
+/* Footer */
+footer{text-align:center;padding:1.5rem;font-size:0.8rem;color:var(--text-dim);border-top:1px solid var(--border)}
+footer a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="banner-wrap">
+    <img src="smashes_or_not_banner.png" alt="Smashed or Not? — BJJ Matchup Analyser" class="banner">
+  </div>
+  <div class="header-text">
+    <h1><span>Smashed</span> or Not?</h1>
+    <p class="tagline">Find out if you're about to get tapped — before you step on the mat.</p>
+    <nav><a href="/vfxtools/">&larr; Back to VFX Tools</a></nav>
+  </div>
+</header>
+
+<main>
+  <div class="columns">
+    <!-- YOU -->
+    <div class="card card-you">
+      <h2><span class="dot"></span> You</h2>
+      <div class="gender-toggle" id="myGenderToggle">
+        <button class="gender-btn active" data-gender="M">Male</button>
+        <button class="gender-btn" data-gender="F">Female</button>
+      </div>
+      <div class="slider-group">
+        <label>Age <span class="val" id="myAge-val">30</span></label>
+        <input type="range" id="myAge" min="16" max="85" value="30">
+      </div>
+      <div class="slider-group">
+        <label>Height (cm) <span class="val" id="myHeight-val">175</span></label>
+        <input type="range" id="myHeight" min="140" max="210" value="175">
+      </div>
+      <div class="slider-group">
+        <label>Weight (kg) <span class="val" id="myWeight-val">80</span></label>
+        <input type="range" id="myWeight" min="50" max="140" value="80">
+      </div>
+      <div class="slider-group">
+        <label>Belt <span class="val" id="myBelt-val">White</span></label>
+        <input type="range" id="myBelt" min="0" max="4" value="0">
+      </div>
+      <div class="slider-group">
+        <label>Stripes <span class="val" id="myStripes-val">0</span></label>
+        <input type="range" id="myStripes" min="0" max="4" value="0">
+      </div>
+      <div class="belt-bar" id="myBeltBar">
+        <div class="belt-color"></div>
+        <div class="belt-tip">
+          <div class="stripe-slot"><div class="stripe-black"></div><div class="stripe-white dim"></div></div>
+          <div class="stripe-slot"><div class="stripe-black"></div><div class="stripe-white dim"></div></div>
+          <div class="stripe-slot"><div class="stripe-black"></div><div class="stripe-white dim"></div></div>
+          <div class="stripe-slot"><div class="stripe-black"></div><div class="stripe-white dim"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPPONENT -->
+    <div class="card card-opp">
+      <h2><span class="dot"></span> Opponent</h2>
+      <div class="gender-toggle" id="opGenderToggle">
+        <button class="gender-btn active" data-gender="M">Male</button>
+        <button class="gender-btn" data-gender="F">Female</button>
+      </div>
+      <div class="slider-group">
+        <label>Age <span class="val" id="opAge-val">30</span></label>
+        <input type="range" id="opAge" min="16" max="85" value="30">
+      </div>
+      <div class="slider-group">
+        <label>Height (cm) <span class="val" id="opHeight-val">175</span></label>
+        <input type="range" id="opHeight" min="140" max="210" value="175">
+      </div>
+      <div class="slider-group">
+        <label>Weight (kg) <span class="val" id="opWeight-val">80</span></label>
+        <input type="range" id="opWeight" min="50" max="140" value="80">
+      </div>
+      <div class="slider-group">
+        <label>Belt <span class="val" id="opBelt-val">White</span></label>
+        <input type="range" id="opBelt" min="0" max="4" value="0">
+      </div>
+      <div class="slider-group">
+        <label>Stripes <span class="val" id="opStripes-val">0</span></label>
+        <input type="range" id="opStripes" min="0" max="4" value="0">
+      </div>
+      <div class="belt-bar" id="opBeltBar">
+        <div class="belt-color"></div>
+        <div class="belt-tip">
+          <div class="stripe-slot"><div class="stripe-black"></div><div class="stripe-white dim"></div></div>
+          <div class="stripe-slot"><div class="stripe-black"></div><div class="stripe-white dim"></div></div>
+          <div class="stripe-slot"><div class="stripe-black"></div><div class="stripe-white dim"></div></div>
+          <div class="stripe-slot"><div class="stripe-black"></div><div class="stripe-white dim"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verdict -->
+  <div class="verdict-panel" id="verdict">
+    <h3 id="verdict-text">Coin flip</h3>
+    <p class="score-line" id="score-line">You 50 — 50 Opponent</p>
+  </div>
+
+  <!-- Stat pills -->
+  <div class="stat-pills">
+    <div class="pill" id="pill-skill">Skill edge: 0</div>
+    <div class="pill" id="pill-height">Height edge: 0 cm</div>
+    <div class="pill" id="pill-weight">Weight edge: 0 kg</div>
+    <div class="pill" id="pill-age">Age edge: 0 yrs</div>
+  </div>
+
+  <!-- Radar -->
+  <div class="radar-section">
+    <div class="custom-legend">
+      <span><span class="swatch" style="background:#378ADD"></span> You</span>
+      <span><span class="swatch" style="background:#D85A30"></span> Opponent</span>
+    </div>
+    <div class="radar-wrap">
+      <canvas id="radarChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="btn-row">
+    <button id="btn-random">Random opponent</button>
+    <button id="btn-share">Share matchup</button>
+    <button class="primary" id="btn-gameplan">Game plan</button>
+  </div>
+</main>
+
+<!-- Game Plan Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close">&times;</button>
+    <h3>Your Game Plan</h3>
+    <ul id="tips-list"></ul>
+  </div>
+</div>
+
+<!-- Flash -->
+<div class="flash" id="flash">Copied!</div>
+
+<footer>Built by Lukasz Bukowiecki · <a href="https://bukowiecki.co">bukowiecki.co</a></footer>
+
+<script>
+/* ── Constants ── */
+const BELT_NAMES = ['White','Blue','Purple','Brown','Black'];
+const BELT_COLORS = ['#d4d4d4','#185FA5','#534AB7','#6B2A14','#000000'];
+const BELT_BASE = [0,20,42,65,88];
+const STRIPE_BONUS = [5,5.5,5.75,5.75,3];
+
+/* ── DOM refs ── */
+const $ = id => document.getElementById(id);
+const sliderIds = ['myAge','myHeight','myWeight','myBelt','myStripes','opAge','opHeight','opWeight','opBelt','opStripes'];
+const sliders = Object.fromEntries(sliderIds.map(id => [id, $(id)]));
+
+/* ── Gender state ── */
+let myGender = 'M';
+let opGender = 'M';
+
+function initGenderToggle(toggleId, setter) {
+  const toggle = $(toggleId);
+  toggle.querySelectorAll('.gender-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      toggle.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setter(btn.dataset.gender);
+      update();
+    });
+  });
+}
+initGenderToggle('myGenderToggle', g => myGender = g);
+initGenderToggle('opGenderToggle', g => opGender = g);
+
+/* ── Scoring functions ── */
+function skillScore(belt, stripes) {
+  return BELT_BASE[belt] + stripes * STRIPE_BONUS[belt];
+}
+
+function baseAthleticism(age) {
+  if (age <= 25) return 100;
+  if (age <= 30) return 95;
+  if (age <= 35) return 88;
+  if (age <= 40) return 78;
+  if (age <= 45) return 65;
+  if (age <= 50) return 52;
+  return Math.max(35, 52 - (age - 50) * 1.5);
+}
+
+/* Athleticism: female base is 85% of male (strength/explosiveness in grappling).
+   Cross-gender: weight carries differently due to body composition —
+   male effective weight gets a 1.15× multiplier vs female opponent. */
+function athleticism(age, gender) {
+  const base = baseAthleticism(age);
+  return gender === 'F' ? base * 0.85 : base;
+}
+
+function effectiveWeight(weight, myG, opG) {
+  // Cross-gender body composition adjustment
+  if (myG === 'M' && opG === 'F') return weight * 1.15;
+  if (myG === 'F' && opG === 'M') return weight * 0.87;
+  return weight;
+}
+
+function radarAxes(age, height, weight, belt, stripes, gender, opponentGender) {
+  const skill = skillScore(belt, stripes);
+  const ath = athleticism(age, gender);
+  const ew = effectiveWeight(weight, gender, opponentGender);
+  const w = (ew / 140) * 100;
+  const reach = ((height - 140) / 70) * 100; // 140cm=0, 210cm=100
+  const exp = Math.min(100, skill + belt * 4);
+  const cardio = ath * 0.65 + skill * 0.35;
+  return { skill, ath, weight: w, reach, exp, cardio };
+}
+
+function overall(axes) {
+  return axes.skill * 0.35 + axes.ath * 0.2 + axes.weight * 0.15 + axes.reach * 0.1 + axes.exp * 0.1 + axes.cardio * 0.1;
+}
+
+function verdict(diff) {
+  if (diff >= 15) return { text: "You've got this", color: '#2ecc71' };
+  if (diff >= 5) return { text: 'Slight edge', color: '#378ADD' };
+  if (diff >= -5) return { text: 'Coin flip', color: '#f39c12' };
+  if (diff >= -15) return { text: "They've got the edge", color: '#D85A30' };
+  return { text: "You're getting smashed", color: '#e74c3c' };
+}
+
+/* ── Chart setup ── */
+const ctx = $('radarChart').getContext('2d');
+const chart = new Chart(ctx, {
+  type: 'radar',
+  data: {
+    labels: ['Skill','Athleticism','Weight','Reach','Experience','Cardio'],
+    datasets: [
+      { label:'You', data:[0,0,0,0,0,0], borderColor:'#378ADD', backgroundColor:'rgba(55,138,221,0.15)', borderWidth:2, pointRadius:3, pointBackgroundColor:'#378ADD' },
+      { label:'Opponent', data:[0,0,0,0,0,0], borderColor:'#D85A30', backgroundColor:'rgba(216,90,48,0.15)', borderWidth:2, pointRadius:3, pointBackgroundColor:'#D85A30' }
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: { r: { min:0, max:100, ticks:{ display:false }, grid:{ color:'rgba(255,255,255,0.06)' }, angleLines:{ color:'rgba(255,255,255,0.06)' }, pointLabels:{ color:'#888', font:{ size:11 } } } },
+    plugins: { legend:{ display:false } },
+    animation: { duration: 300 }
+  }
+});
+
+/* ── Belt bar rendering ── */
+function renderBelt(barId, belt, stripes) {
+  const bar = $(barId);
+  bar.querySelector('.belt-color').style.backgroundColor = BELT_COLORS[belt];
+  const whites = bar.querySelectorAll('.stripe-white');
+  for (let i = 0; i < 4; i++) {
+    whites[i].className = 'stripe-white ' + (i < stripes ? 'earned' : 'dim');
+  }
+}
+
+/* ── Main update ── */
+function update() {
+  const my = { age: +sliders.myAge.value, height: +sliders.myHeight.value, weight: +sliders.myWeight.value, belt: +sliders.myBelt.value, stripes: +sliders.myStripes.value };
+  const op = { age: +sliders.opAge.value, height: +sliders.opHeight.value, weight: +sliders.opWeight.value, belt: +sliders.opBelt.value, stripes: +sliders.opStripes.value };
+
+  // Labels
+  $('myAge-val').textContent = my.age;
+  $('myHeight-val').textContent = my.height;
+  $('myWeight-val').textContent = my.weight;
+  $('myBelt-val').textContent = BELT_NAMES[my.belt];
+  $('myStripes-val').textContent = my.stripes;
+  $('opAge-val').textContent = op.age;
+  $('opHeight-val').textContent = op.height;
+  $('opWeight-val').textContent = op.weight;
+  $('opBelt-val').textContent = BELT_NAMES[op.belt];
+  $('opStripes-val').textContent = op.stripes;
+
+  // Belts
+  renderBelt('myBeltBar', my.belt, my.stripes);
+  renderBelt('opBeltBar', op.belt, op.stripes);
+
+  // Axes
+  const myAxes = radarAxes(my.age, my.height, my.weight, my.belt, my.stripes, myGender, opGender);
+  const opAxes = radarAxes(op.age, op.height, op.weight, op.belt, op.stripes, opGender, myGender);
+
+  // Chart
+  chart.data.datasets[0].data = [myAxes.skill, myAxes.ath, myAxes.weight, myAxes.reach, myAxes.exp, myAxes.cardio];
+  chart.data.datasets[1].data = [opAxes.skill, opAxes.ath, opAxes.weight, opAxes.reach, opAxes.exp, opAxes.cardio];
+  chart.update();
+
+  // Overall
+  const myTotal = overall(myAxes);
+  const opTotal = overall(opAxes);
+  const diff = myTotal - opTotal;
+  const v = verdict(diff);
+
+  $('verdict-text').textContent = v.text;
+  $('verdict-text').style.color = v.color;
+  $('verdict').style.backgroundColor = v.color + '1a';
+  $('score-line').textContent = `You ${myTotal.toFixed(1)} — ${opTotal.toFixed(1)} Opponent`;
+
+  // Pills
+  const skillDiff = myAxes.skill - opAxes.skill;
+  const heightDiff = my.height - op.height;
+  const weightDiff = my.weight - op.weight;
+  const ageDiff = op.age - my.age; // positive = you're younger
+
+  setPill('pill-skill', `Skill edge: ${skillDiff > 0 ? '+' : ''}${skillDiff.toFixed(1)}`, skillDiff);
+  setPill('pill-height', `Height edge: ${heightDiff > 0 ? '+' : ''}${heightDiff} cm`, heightDiff);
+  setPill('pill-weight', `Weight edge: ${weightDiff > 0 ? '+' : ''}${weightDiff} kg`, weightDiff);
+  setPill('pill-age', `Age edge: ${ageDiff > 0 ? '+' : ''}${ageDiff} yrs`, ageDiff);
+}
+
+function setPill(id, text, val) {
+  const el = $(id);
+  el.textContent = text;
+  el.className = 'pill ' + (val >= 0 ? 'positive' : 'negative');
+}
+
+/* ── Slider events ── */
+sliderIds.forEach(id => sliders[id].addEventListener('input', update));
+
+/* ── Random opponent ── */
+$('btn-random').addEventListener('click', () => {
+  const g = Math.random() < 0.5 ? 'M' : 'F';
+  opGender = g;
+  const toggle = $('opGenderToggle');
+  toggle.querySelectorAll('.gender-btn').forEach(b => b.classList.toggle('active', b.dataset.gender === g));
+  const targets = { opAge: rand(16,85), opHeight: g === 'F' ? rand(150,180) : rand(160,200), opWeight: g === 'F' ? rand(48,90) : rand(55,130), opBelt: rand(0,4), opStripes: rand(0,4) };
+  Object.entries(targets).forEach(([id, target]) => animateSlider(sliders[id], target));
+});
+
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function animateSlider(el, target) {
+  const start = +el.value;
+  const diff = target - start;
+  const duration = 400;
+  const t0 = performance.now();
+  function step(now) {
+    const p = Math.min((now - t0) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.value = Math.round(start + diff * ease);
+    update();
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ── Share ── */
+$('btn-share').addEventListener('click', () => {
+  const params = new URLSearchParams();
+  sliderIds.forEach(id => params.set(id, sliders[id].value));
+  params.set('myGender', myGender);
+  params.set('opGender', opGender);
+  const url = location.origin + location.pathname + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(() => {
+    const flash = $('flash');
+    flash.classList.add('show');
+    setTimeout(() => flash.classList.remove('show'), 1500);
+  });
+});
+
+/* ── URL params ── */
+(function loadParams() {
+  const params = new URLSearchParams(location.search);
+  sliderIds.forEach(id => {
+    if (params.has(id)) sliders[id].value = params.get(id);
+  });
+  if (params.has('myGender')) {
+    myGender = params.get('myGender');
+    $('myGenderToggle').querySelectorAll('.gender-btn').forEach(b => b.classList.toggle('active', b.dataset.gender === myGender));
+  }
+  if (params.has('opGender')) {
+    opGender = params.get('opGender');
+    $('opGenderToggle').querySelectorAll('.gender-btn').forEach(b => b.classList.toggle('active', b.dataset.gender === opGender));
+  }
+})();
+
+/* ── Game Plan ── */
+const tipBank = {
+  heavyOpp: [
+    "Play closed guard relentlessly — lock your ankles high on their back and break their posture to neutralise the weight.",
+    "Get to half guard butterfly and use underhooks to create frames — never let them settle chest-to-chest.",
+    "Attack from bottom with collar and sleeve grips to keep them at range; a bigger opponent flattening you is the worst-case scenario."
+  ],
+  weightNeutral: [
+    "Use spider guard or lasso to manage distance — long lever guards let you move a heavier body with your legs, not your arms.",
+    "If you end up on top, favour knee-on-belly over mount — it's easier to maintain against someone who can bench-press you off.",
+    "Chain sweeps from De La Riva and single-leg-X to get on top where the weight difference matters less."
+  ],
+  youngerOpp: [
+    "Expect explosive scrambles — stay calm and let them burn energy while you maintain your frames.",
+    "Don't chase the finish early. The longer the round goes, the more your experience outweighs their cardio.",
+    "Use collar ties and head control standing to slow down their pace before the grip fight even begins."
+  ],
+  cardioPace: [
+    "Breathe through your nose, especially in bottom position — conscious breathing keeps your heart rate 10–15 bpm lower.",
+    "Focus on grip efficiency: grip when you need to, release when you don't. Unnecessary gripping drains your forearms fast.",
+    "When you're on top and controlling, pause. There's no shot clock — resting in a dominant position is smart, not stalling."
+  ],
+  opHigherBelt: [
+    "Survival is the first goal — focus on inside position, elbows tight, and escaping bad spots rather than hunting submissions.",
+    "Tap early, reset, and go again. Ego-tapping against a higher belt just gets you injured with nothing to show for it.",
+    "Study their first attack. Higher belts usually have a bread-and-butter sequence; if you can shut down their A-game, you force them to improvise."
+  ],
+  youHigherBelt: [
+    "Apply constant pressure — don't let them breathe. Crossface, shoulder pressure, and chest-to-chest control will sap their energy.",
+    "Hunt for submissions in combinations: threaten the choke to open the arm, threaten the arm to expose the neck.",
+    "Use this as a chance to sharpen your B-game. Try the techniques you're building rather than just steamrolling with your strongest moves."
+  ],
+  stripeDiff: [
+    "Watch for habit patterns in the first minute — similar-belt opponents often telegraph their favourite guard pull or pass.",
+    "At the same belt, the small details decide: inside grips, first to establish head position, and who breaks posture first.",
+    "Frame every exchange as a micro-battle: win the grip fight, win the angle, win the position. Small edges stack up."
+  ],
+  mental: [
+    "Before you slap hands, take three deep belly breaths. A calm nervous system makes better decisions than an anxious one.",
+    "Visualise your first two moves before the roll starts — having a plan beats winging it every time.",
+    "If you get caught in a bad spot, reset mentally: 'posture, frames, escape.' Panic is the real submission."
+  ],
+  fVsM: [
+    "Leverage technique over strength — frames, hip escapes, and angles matter more than ever against a stronger opponent.",
+    "Attack with submissions that use your legs (triangles, armbars from guard) — your legs are your strongest weapon against a bigger, stronger body.",
+    "Focus on speed and transitions. Get in, attack, and move before they can settle their weight."
+  ],
+  tallerOpp: [
+    "Close the distance fast — the taller they are, the more dangerous their guard game. Get past their legs and stay tight.",
+    "Use underhooks and body locks to negate their reach. Once you're inside their long limbs, the height advantage disappears.",
+    "Attack with single legs and low takedowns — their longer legs make them easier to off-balance from underneath."
+  ],
+  shorterOpp: [
+    "Use your legs aggressively — spider guard, lasso, and triangle setups all benefit from your longer limbs.",
+    "Keep them at range with collar and sleeve grips. Your reach is an advantage when you don't let them close the distance.",
+    "From top position, use your length to flatten them with crossface and sprawl pressure. Longer limbs mean more leverage."
+  ],
+  mVsF: [
+    "Dial back the intensity and focus on technique — this is a chance to work your positional game and timing, not raw power.",
+    "Use controlled pressure, not explosiveness. Treat it as a flow roll with purpose — you'll both get more out of it.",
+    "Focus on defence and counters rather than smashing. Let your partner work and sharpen your reactions."
+  ]
+};
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function getTips(my, op) {
+  const tips = [];
+  const hDiff = op.height - my.height;
+  const wDiff = op.weight - my.weight;
+  const aDiff = my.age - op.age;
+  const bDiff = op.belt - my.belt;
+  const sDiff = Math.abs((my.belt * 5 + my.stripes) - (op.belt * 5 + op.stripes));
+
+  // Cross-gender tips
+  if (my.gender === 'F' && op.gender === 'M') { tips.push(pick(tipBank.fVsM)); }
+  if (my.gender === 'M' && op.gender === 'F') { tips.push(pick(tipBank.mVsF)); }
+
+  // Height tips
+  if (hDiff >= 10) { tips.push(pick(tipBank.tallerOpp)); }
+  if (hDiff <= -10) { tips.push(pick(tipBank.shorterOpp)); }
+
+  if (wDiff >= 10) { tips.push(pick(tipBank.heavyOpp)); tips.push(pick(tipBank.weightNeutral)); }
+  if (aDiff >= 8) { tips.push(pick(tipBank.youngerOpp)); tips.push(pick(tipBank.cardioPace)); }
+  if (bDiff >= 1) { tips.push(pick(tipBank.opHigherBelt)); tips.push(pick(tipBank.opHigherBelt.filter(t => !tips.includes(t))) || pick(tipBank.opHigherBelt)); }
+  if (bDiff <= -1) { tips.push(pick(tipBank.youHigherBelt)); tips.push(pick(tipBank.youHigherBelt.filter(t => !tips.includes(t))) || pick(tipBank.youHigherBelt)); }
+  if (bDiff === 0 && sDiff >= 2) { tips.push(pick(tipBank.stripeDiff)); }
+
+  // Fill to 6 minimum
+  const pools = [tipBank.cardioPace, tipBank.weightNeutral, tipBank.stripeDiff, tipBank.youngerOpp];
+  while (tips.length < 5) { tips.push(pick(pools[tips.length % pools.length])); }
+
+  // Always a mental tip
+  tips.push(pick(tipBank.mental));
+
+  // Dedupe and cap at 8
+  return [...new Set(tips)].slice(0, 8);
+}
+
+$('btn-gameplan').addEventListener('click', () => {
+  const my = { age: +sliders.myAge.value, height: +sliders.myHeight.value, weight: +sliders.myWeight.value, belt: +sliders.myBelt.value, stripes: +sliders.myStripes.value, gender: myGender };
+  const op = { age: +sliders.opAge.value, height: +sliders.opHeight.value, weight: +sliders.opWeight.value, belt: +sliders.opBelt.value, stripes: +sliders.opStripes.value, gender: opGender };
+  const tips = getTips(my, op);
+  const list = $('tips-list');
+  list.innerHTML = tips.map(t => `<li>${t}</li>`).join('');
+  $('modal-overlay').classList.add('open');
+});
+
+$('modal-close').addEventListener('click', () => $('modal-overlay').classList.remove('open'));
+$('modal-overlay').addEventListener('click', e => { if (e.target === $('modal-overlay')) $('modal-overlay').classList.remove('open'); });
+
+/* ── Init ── */
+update();
+</script>
+</body>
+</html>

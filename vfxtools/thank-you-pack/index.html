@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thank You Pack — Copy-Paste Kaomoji</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c14;
+  --surface:rgba(255,255,255,.04);
+  --glass:rgba(255,255,255,.06);
+  --glass-border:rgba(255,255,255,.08);
+  --text:#e8e6f0;
+  --text-dim:#8b87a0;
+  --cute:#ff7eb3;
+  --cute-glow:rgba(255,126,179,.15);
+  --smug:#7eb8ff;
+  --smug-glow:rgba(126,184,255,.15);
+  --chaotic:#ffb86c;
+  --chaotic-glow:rgba(255,184,108,.15);
+  --radius:14px;
+  --radius-sm:10px;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.6;
+}
+
+/* ── Ambient blobs ── */
+.blob{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(120px);
+  opacity:.35;
+  pointer-events:none;
+  z-index:0;
+  animation:blobFloat 20s ease-in-out infinite alternate;
+}
+.blob-1{width:500px;height:500px;background:var(--cute);top:-10%;left:-10%;animation-delay:0s}
+.blob-2{width:400px;height:400px;background:var(--smug);bottom:-5%;right:-8%;animation-delay:-7s}
+.blob-3{width:350px;height:350px;background:var(--chaotic);top:40%;left:50%;animation-delay:-14s}
+@keyframes blobFloat{
+  0%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(30px,-40px) scale(1.05)}
+  66%{transform:translate(-20px,30px) scale(.95)}
+  100%{transform:translate(10px,-10px) scale(1.02)}
+}
+
+/* ── Sparkles ── */
+.sparkle-field{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.sparkle{
+  position:absolute;
+  width:3px;height:3px;
+  background:#fff;
+  border-radius:50%;
+  opacity:0;
+  animation:sparkle 4s ease-in-out infinite;
+}
+@keyframes sparkle{
+  0%,100%{opacity:0;transform:scale(0)}
+  50%{opacity:.7;transform:scale(1)}
+}
+
+/* ── Layout ── */
+.wrapper{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:0 20px 60px}
+
+/* ── Nav ── */
+.back-nav{padding:16px 0}
+.back-nav a{
+  color:var(--text-dim);
+  text-decoration:none;
+  font-size:.85rem;
+  transition:color .2s;
+}
+.back-nav a:hover{color:var(--text)}
+
+/* ── Hero ── */
+.hero{text-align:center;padding:48px 0 32px;animation:fadeUp .6s ease-out both}
+.hero-logo{
+  max-width:416px;
+  width:100%;
+  height:auto;
+  display:block;
+  margin:0 auto;
+  filter:drop-shadow(0 0 30px rgba(255,126,179,.25));
+}
+.hero .subtitle{color:var(--text-dim);margin-top:8px;font-size:1rem}
+.hero .tap-note{color:var(--text-dim);margin-top:4px;font-size:.82rem;opacity:.7}
+
+/* ── Generator ── */
+.generator{
+  animation:fadeUp .6s .05s ease-out both;
+  margin-bottom:28px;
+}
+.gen-card{
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:28px 24px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.gen-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--cute-glow),var(--smug-glow),var(--chaotic-glow));
+  opacity:.4;
+  z-index:0;
+}
+.gen-label{
+  position:relative;z-index:1;
+  font-size:.72rem;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--text-dim);
+  margin-bottom:16px;
+  font-weight:600;
+}
+.gen-output{
+  position:relative;z-index:1;
+  font-size:1.6rem;
+  min-height:2.2em;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border-radius:var(--radius-sm);
+  padding:12px 16px;
+  transition:background .2s;
+  word-break:break-word;
+  line-height:1.4;
+}
+.gen-output:hover{background:rgba(255,255,255,.05)}
+.gen-output:active{transform:scale(.98)}
+.gen-output.flash{animation:genFlash .4s ease-out}
+@keyframes genFlash{
+  0%{background:rgba(111,234,111,.18)}
+  100%{background:transparent}
+}
+.gen-hint{
+  position:relative;z-index:1;
+  color:var(--text-dim);font-size:.72rem;margin-top:8px;opacity:.6;
+}
+.gen-actions{
+  position:relative;z-index:1;
+  display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap;
+}
+.gen-btn{
+  padding:10px 22px;
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-size:.88rem;
+  cursor:pointer;
+  transition:all .2s;
+  font-weight:600;
+}
+.gen-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.18)}
+.gen-btn:active{transform:scale(.95)}
+.gen-btn.primary{
+  background:linear-gradient(135deg,var(--cute),var(--smug));
+  border-color:transparent;
+  color:#fff;
+}
+.gen-btn.primary:hover{opacity:.9}
+.gen-dice{font-size:1.1em;margin-right:4px}
+
+@keyframes genPop{
+  0%{opacity:0;transform:scale(.85)}
+  60%{opacity:1;transform:scale(1.03)}
+  100%{transform:scale(1)}
+}
+@media(max-width:520px){
+  .gen-output{font-size:1.2rem}
+}
+
+/* ── Sticky controls ── */
+.controls{
+  position:sticky;top:0;z-index:10;
+  background:rgba(12,12,20,.85);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  padding:14px 0;
+  border-bottom:1px solid var(--glass-border);
+  animation:fadeUp .6s .1s ease-out both;
+}
+.search-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search-input{
+  flex:1;min-width:180px;
+  padding:10px 14px;
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);
+  color:var(--text);
+  font-size:.95rem;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.search-input::placeholder{color:var(--text-dim)}
+.search-input:focus{border-color:var(--cute);box-shadow:0 0 0 3px var(--cute-glow)}
+
+.btn{
+  padding:9px 16px;
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);
+  background:var(--glass);
+  color:var(--text);
+  font-size:.82rem;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+  font-weight:500;
+}
+.btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15)}
+.btn:active{transform:scale(.96)}
+
+.filter-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.filter-btn{
+  padding:6px 14px;
+  border:1px solid var(--glass-border);
+  border-radius:20px;
+  background:var(--glass);
+  color:var(--text-dim);
+  font-size:.8rem;
+  cursor:pointer;
+  transition:all .25s;
+  font-weight:500;
+}
+.filter-btn:hover{color:var(--text);background:rgba(255,255,255,.08)}
+.filter-btn.active{color:#fff;border-color:currentColor}
+.filter-btn.active[data-filter="all"]{color:var(--text);background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2)}
+.filter-btn.active[data-filter="cute"]{color:var(--cute);background:var(--cute-glow)}
+.filter-btn.active[data-filter="smug"]{color:var(--smug);background:var(--smug-glow)}
+.filter-btn.active[data-filter="chaotic"]{color:var(--chaotic);background:var(--chaotic-glow)}
+.counter{margin-left:auto;color:var(--text-dim);font-size:.78rem}
+
+/* ── Sections ── */
+.pack-section{margin-top:32px;animation:fadeUp .6s ease-out both}
+.pack-header{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:14px;padding-bottom:10px;
+  border-bottom:1px solid var(--glass-border);
+}
+.pack-dot{width:10px;height:10px;border-radius:50%}
+.pack-header h2{font-size:1.15rem;font-weight:700;letter-spacing:-.01em}
+.pack-header .pack-count{color:var(--text-dim);font-size:.78rem;margin-left:auto}
+
+.pack-section[data-pack="cute"] .pack-dot{background:var(--cute);box-shadow:0 0 8px var(--cute)}
+.pack-section[data-pack="cute"] h2{color:var(--cute)}
+.pack-section[data-pack="smug"] .pack-dot{background:var(--smug);box-shadow:0 0 8px var(--smug)}
+.pack-section[data-pack="smug"] h2{color:var(--smug)}
+.pack-section[data-pack="chaotic"] .pack-dot{background:var(--chaotic);box-shadow:0 0 8px var(--chaotic)}
+.pack-section[data-pack="chaotic"] h2{color:var(--chaotic)}
+
+/* ── Line cards ── */
+.line-card{
+  display:flex;align-items:center;
+  padding:12px 16px;
+  margin-bottom:6px;
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  transition:all .2s;
+  user-select:none;
+  -webkit-user-select:none;
+  position:relative;
+  overflow:hidden;
+}
+.line-card::before{
+  content:'';position:absolute;inset:0;
+  opacity:0;transition:opacity .2s;
+  border-radius:inherit;
+}
+.line-card[data-pack="cute"]::before{background:var(--cute-glow)}
+.line-card[data-pack="smug"]::before{background:var(--smug-glow)}
+.line-card[data-pack="chaotic"]::before{background:var(--chaotic-glow)}
+.line-card:hover::before{opacity:1}
+.line-card:hover{border-color:rgba(255,255,255,.12);transform:translateX(4px)}
+.line-card:active{transform:scale(.985)}
+
+.line-text{
+  flex:1;
+  font-size:1.05rem;
+  position:relative;
+  z-index:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.line-copy-hint{
+  color:var(--text-dim);
+  font-size:.7rem;
+  opacity:0;
+  transition:opacity .2s;
+  position:relative;z-index:1;
+  white-space:nowrap;
+  margin-left:10px;
+}
+.line-card:hover .line-copy-hint{opacity:1}
+
+.line-card.copied{animation:copyFlash .4s ease-out}
+.line-card.copied .line-copy-hint{opacity:1;color:#6fea6f}
+@keyframes copyFlash{
+  0%{background:rgba(111,234,111,.15)}
+  100%{background:var(--glass)}
+}
+
+/* stagger */
+.line-card{opacity:0;animation:staggerIn .35s ease-out forwards}
+@keyframes staggerIn{to{opacity:1;transform:translateY(0)}}
+
+.hidden{display:none!important}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(30,30,50,.92);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--glass-border);
+  color:#6fea6f;
+  padding:10px 22px;
+  border-radius:var(--radius);
+  font-size:.88rem;
+  font-weight:600;
+  opacity:0;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+  z-index:100;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Footer ── */
+.footer{
+  text-align:center;
+  padding:40px 0 20px;
+  color:var(--text-dim);
+  font-size:.78rem;
+  opacity:.6;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ── Responsive ── */
+@media(max-width:520px){
+  .hero h1{font-size:1.7rem}
+  .line-text{font-size:.92rem}
+  .line-copy-hint{display:none}
+  .search-row{flex-direction:column}
+  .search-input{width:100%}
+  .btn-group{display:flex;gap:6px;width:100%}
+  .btn-group .btn{flex:1;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+<div class="sparkle-field" id="sparkleField"></div>
+
+<div class="wrapper">
+  <nav class="back-nav"><a href="../">&larr; Back to VFX Tools</a></nav>
+
+  <header class="hero">
+    <img src="thankyoupack_logo.png" alt="Thank You Pack" class="hero-logo">
+    <p class="subtitle">Cute, smug &amp; chaotic thank-you lines — ready to copy</p>
+    <p class="tap-note">Tap any line to copy it instantly</p>
+  </header>
+
+  <div class="generator">
+    <div class="gen-card">
+      <div class="gen-label">Random Thank You Generator</div>
+      <div class="gen-output" id="genOutput" title="Click to copy"></div>
+      <div class="gen-hint">click the result to copy</div>
+      <div class="gen-actions">
+        <button class="gen-btn primary" id="genBtn"><span class="gen-dice">🎲</span> Generate</button>
+        <button class="gen-btn" id="genCopyBtn">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="search-row">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search lines..." autocomplete="off" spellcheck="false">
+      <div class="btn-group">
+        <button class="btn" id="copyAllBtn">Copy all visible</button>
+        <button class="btn" id="randomBtn">Random pick</button>
+      </div>
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="all">✨ All</button>
+      <button class="filter-btn" data-filter="cute">🌸 Cute</button>
+      <button class="filter-btn" data-filter="smug">😏 Smug</button>
+      <button class="filter-btn" data-filter="chaotic">🔥 Chaotic</button>
+      <span class="counter" id="counter"></span>
+    </div>
+  </div>
+
+  <main id="main"></main>
+
+  <footer class="footer">Made for fast copy-paste</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PACKS = {
+  cute: [
+    '(˶ᵔ ᵕ ᵔ˶) 𝓽𝓱𝓪𝓷𝓴 𝔂𝓸𝓾',
+    '(づ｡◕‿‿◕｡)づ 𝐭𝐡𝐚𝐧𝐤 𝐲𝐨𝐮',
+    '(◕‿◕✿) 𝘵𝘩𝘢𝘯𝘬 𝘺𝘰𝘶𝘶',
+    '(๑>ᴗ<๑) ⓣⓗⓐⓝⓚⓢ',
+    '(⊃｡•́‿•̀｡)⊃ 𝖙𝖍𝖆𝖓𝖐 𝖞𝖔𝖚',
+    '(づ> v <)づ 𝙩𝙝𝙖𝙣𝙠𝙮𝙤𝙪',
+    '(✿◠‿◠) 𝐭𝐡𝐚𝐧𝐤𝐬',
+    '(◍•ᴗ•◍) 𝓽𝓱𝓪𝓷𝓴 𝔂𝓸𝓾',
+    '(っ◕‿◕)っ 𝚝𝚑𝚊𝚗𝚔 𝚢𝚘𝚞',
+    '(≧▽≦) 𝐭𝐡𝐚𝐧𝐤 𝐲𝐨𝐮!',
+    '(˘͈ ᵕ ˘͈♡) 𝘵𝘩𝘢𝘯𝘬𝘴',
+    '(๑˃ᴗ˂)ﻭ 𝓽𝓱𝓪𝓷𝓴 𝔂𝓸𝓾',
+    '(づ￣ ³￣)づ 𝖙𝖍𝖆𝖓𝖐𝖘𝖘',
+    '(〃＾▽＾〃) ⓣⓗⓐⓝⓚ ⓨⓞⓤ',
+    'ヽ(✿ﾟ▽ﾟ)ノ 𝙩𝙝𝙖𝙣𝙠𝙨',
+    '(人◕ω◕) 𝐭𝐡𝐚𝐧𝐤 𝐲𝐨𝐮',
+    '(づ◡﹏◡)づ 𝓽𝓱𝓪𝓷𝓴𝓼',
+    '(∩˃o˂∩)♡ 𝘵𝘩𝘢𝘯𝘬 𝘺𝘰𝘶',
+    '٩(◕‿◕｡)۶ 𝖙𝖍𝖆𝖓𝖐𝖘',
+    '(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ 𝓽𝓱𝓪𝓷𝓴 𝔂𝓸𝓾'
+  ],
+  smug: [
+    '( ͡° ͜ʖ ͡°) 𝖙𝖍𝖆𝖓𝖐𝖘',
+    '(☞ ͡° ͜ʖ ͡°)☞ 𝐭𝐡𝐚𝐧𝐤 𝐲𝐨𝐮',
+    '( ͡~ ͜ʖ ͡°) 𝓽𝓱𝓪𝓷𝓴𝓼 𝓶𝓪𝓽𝓮',
+    '(¬‿¬) 𝘵𝘩𝘢𝘯𝘬 𝘺𝘰𝘶',
+    '(¬◡¬) ⓣⓗⓐⓝⓚⓢ',
+    '(￣ー￣) 𝙩𝙝𝙖𝙣𝙠 𝙮𝙤𝙪',
+    '(¬_¬ ) 𝐭𝐡𝐚𝐧𝐤𝐬',
+    '(⌐■_■) 𝚝𝚑𝚊𝚗𝚔 𝚢𝚘𝚞',
+    '(▀̿Ĺ̯▀̿ ̿) 𝖙𝖍𝖆𝖓𝖐𝖘',
+    '(¬‿¬ ) 𝓽𝓱𝓪𝓷𝓴𝓼𝓼',
+    '(￣▽￣) 𝐭𝐡𝐚𝐧𝐤𝐬',
+    '(¬ᴗ¬) 𝘵𝘩𝘢𝘯𝘬 𝘺𝘰𝘶',
+    '(•̀ᴗ•́)و 𝖙𝖍𝖆𝖓𝖐𝖘',
+    '(｡•̀ᴗ-)✧ 𝓽𝓱𝓪𝓷𝓴 𝔂𝓸𝓾',
+    '( •̀ ω •́ )✧ 𝐭𝐡𝐚𝐧𝐤𝐬',
+    '(☞ﾟヮﾟ)☞ 𝙩𝙝𝙖𝙣𝙠 𝙮𝙤𝙪',
+    '(▀̿Ĺ̯▀̿ ̿)ノ ⓣⓗⓐⓝⓚⓢ',
+    '(¬‿¬*) 𝓽𝓱𝓪𝓷𝓴𝔂𝓸𝓾',
+    '(￣ω￣) 𝖙𝖍𝖆𝖓𝖐𝖘',
+    '(↼_↼) 𝘵𝘩𝘢𝘯𝘬 𝘺𝘰𝘶'
+  ],
+  chaotic: [
+    'ヽ(°〇°)ﾉ 𝐓𝐇𝐀𝐍𝐊 𝐘𝐎𝐔',
+    '༼ つ ◕_◕ ༽つ 𝕋ℍ𝔸ℕ𝕂𝕊',
+    '(╯°□°）╯︵ ┻━┻ 𝖙𝖍𝖆𝖓𝖐 𝖞𝖔𝖚',
+    '┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻ 𝐭𝐡𝐚𝐧𝐤𝐬',
+    '(ノಠ益ಠ)ノ彡 𝙩𝙝𝙖𝙣𝙠 𝙮𝙤𝙪',
+    '(☞ﾟ∀ﾟ)☞ 𝐓𝐇𝐀𝐍𝐊𝐒𝐒𝐒𝐒',
+    'ヽ(｀Д´)ﾉ 𝓽𝓱𝓪𝓷𝓴 𝔂𝓸𝓾!!!',
+    '(ﾉಥ益ಥ)ﾉ 𝖙𝖍𝖆𝖓𝖐𝖘',
+    '(づ｡◕‿‿◕｡)づ 𝘛𝘏𝘈𝘕𝘒 𝘠𝘖𝘜𝘜𝘜',
+    '(ง\'̀-\'́)ง 𝐭𝐡𝐚𝐧𝐤𝐬',
+    '(ノ^o^)ノ ⓣⓗⓐⓝⓚ ⓨⓞⓤ',
+    '(ﾉ≧∀≦)ﾉ 𝙩𝙝𝙖𝙣𝙠𝙨!!',
+    '＼(〇_ｏ)／ 𝐓𝐇𝐀𝐍𝐊 𝐘𝐎𝐔',
+    '(☉_☉) 𝚝𝚑𝚊𝚗𝚔𝚜',
+    '(੭ु｡╹▿╹｡)੭ु⁾⁾ 𝓽𝓱𝓪𝓷𝓴 𝔂𝓸𝓾',
+    '(ﾉﾟ0ﾟ)ﾉ~ 𝖙𝖍𝖆𝖓𝖐𝖘',
+    '(☞ಢ_ಢ)☞ 𝐭𝐡𝐚𝐧𝐤 𝐲𝐨𝐮',
+    'Σ(°ロ°) ⓣⓗⓐⓝⓚⓢ',
+    '(ノ￣ω￣)ノ 𝙩𝙝𝙖𝙣𝙠𝙨',
+    '୧༼ಠ益ಠ༽୨ 𝐓𝐇𝐀𝐍𝐊 𝐘𝐎𝐔'
+  ]
+};
+
+const PACK_LABELS = {cute:'🌸 Cute Pack',smug:'😏 Smug Pack',chaotic:'🔥 Chaotic Pack'};
+const main = document.getElementById('main');
+const searchInput = document.getElementById('searchInput');
+const counter = document.getElementById('counter');
+const toast = document.getElementById('toast');
+const copyAllBtn = document.getElementById('copyAllBtn');
+const randomBtn = document.getElementById('randomBtn');
+const filterBtns = document.querySelectorAll('.filter-btn');
+
+let activeFilter = 'all';
+let allCards = [];
+
+// Build DOM
+function buildSections() {
+  for (const [pack, lines] of Object.entries(PACKS)) {
+    const section = document.createElement('section');
+    section.className = 'pack-section';
+    section.dataset.pack = pack;
+    section.innerHTML = `
+      <div class="pack-header">
+        <span class="pack-dot"></span>
+        <h2>${PACK_LABELS[pack]}</h2>
+        <span class="pack-count">${lines.length} lines</span>
+      </div>`;
+    const container = document.createElement('div');
+    container.className = 'lines-container';
+
+    lines.forEach((line, i) => {
+      const card = document.createElement('div');
+      card.className = 'line-card';
+      card.dataset.pack = pack;
+      card.dataset.text = line;
+      card.style.animationDelay = `${i * 30}ms`;
+      card.innerHTML = `<span class="line-text">${escapeHTML(line)}</span><span class="line-copy-hint">click to copy</span>`;
+      card.addEventListener('click', () => copyLine(line, card));
+      container.appendChild(card);
+      allCards.push(card);
+    });
+
+    section.appendChild(container);
+    main.appendChild(section);
+  }
+  updateCounter();
+}
+
+function escapeHTML(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// Copy
+function copyLine(text, card) {
+  navigator.clipboard.writeText(text).then(() => {
+    card.classList.remove('copied');
+    void card.offsetWidth;
+    card.classList.add('copied');
+    const hint = card.querySelector('.line-copy-hint');
+    hint.textContent = 'Copied!';
+    setTimeout(() => { hint.textContent = 'click to copy'; card.classList.remove('copied'); }, 1200);
+    showToast('Copied!');
+  });
+}
+
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toast.classList.remove('show'), 1400);
+}
+
+// Filter & search
+function applyFilters() {
+  const q = searchInput.value.toLowerCase();
+  let visible = 0;
+
+  const sections = document.querySelectorAll('.pack-section');
+  sections.forEach(sec => {
+    const pack = sec.dataset.pack;
+    const sectionMatch = activeFilter === 'all' || activeFilter === pack;
+    let sectionVisible = 0;
+
+    sec.querySelectorAll('.line-card').forEach(card => {
+      const text = card.dataset.text.toLowerCase();
+      const show = sectionMatch && (!q || text.includes(q));
+      card.classList.toggle('hidden', !show);
+      if (show) { visible++; sectionVisible++; }
+    });
+
+    sec.classList.toggle('hidden', !sectionVisible);
+    const countEl = sec.querySelector('.pack-count');
+    if (countEl) countEl.textContent = `${sectionVisible} lines`;
+  });
+
+  counter.textContent = `${visible} lines`;
+}
+
+function updateCounter() {
+  const visible = allCards.filter(c => !c.classList.contains('hidden')).length;
+  counter.textContent = `${visible} lines`;
+}
+
+// Filter buttons
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    applyFilters();
+  });
+});
+
+// Search
+searchInput.addEventListener('input', applyFilters);
+
+// Copy all visible
+copyAllBtn.addEventListener('click', () => {
+  const visible = allCards.filter(c => !c.classList.contains('hidden'));
+  if (!visible.length) return;
+  const text = visible.map(c => c.dataset.text).join('\n');
+  navigator.clipboard.writeText(text).then(() => showToast(`Copied ${visible.length} lines!`));
+});
+
+// Random pick
+randomBtn.addEventListener('click', () => {
+  const visible = allCards.filter(c => !c.classList.contains('hidden'));
+  if (!visible.length) return;
+  const pick = visible[Math.floor(Math.random() * visible.length)];
+  copyLine(pick.dataset.text, pick);
+  pick.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
+// Sparkles
+function createSparkles() {
+  const field = document.getElementById('sparkleField');
+  for (let i = 0; i < 30; i++) {
+    const s = document.createElement('div');
+    s.className = 'sparkle';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.animationDelay = Math.random() * 4 + 's';
+    s.style.animationDuration = (3 + Math.random() * 3) + 's';
+    field.appendChild(s);
+  }
+}
+
+// ── Random Generator ──
+const FACES = [
+  '(˶ᵔ ᵕ ᵔ˶)','(づ｡◕‿‿◕｡)づ','(◕‿◕✿)','(๑>ᴗ<๑)','(⊃｡•́‿•̀｡)⊃',
+  '(づ> v <)づ','(✿◠‿◠)','(◍•ᴗ•◍)','(っ◕‿◕)っ','(≧▽≦)',
+  '(˘͈ ᵕ ˘͈♡)','(๑˃ᴗ˂)ﻭ','(づ￣ ³￣)づ','(〃＾▽＾〃)','ヽ(✿ﾟ▽ﾟ)ノ',
+  '(人◕ω◕)','(づ◡﹏◡)づ','(∩˃o˂∩)♡','٩(◕‿◕｡)۶','(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧',
+  '( ͡° ͜ʖ ͡°)','(☞ ͡° ͜ʖ ͡°)☞','( ͡~ ͜ʖ ͡°)','(¬‿¬)','(¬◡¬)',
+  '(￣ー￣)','(⌐■_■)','(▀̿Ĺ̯▀̿ ̿)','(￣▽￣)','(¬ᴗ¬)',
+  '(•̀ᴗ•́)و','(｡•̀ᴗ-)✧','( •̀ ω •́ )✧','(☞ﾟヮﾟ)☞','(↼_↼)',
+  'ヽ(°〇°)ﾉ','༼ つ ◕_◕ ༽つ','(╯°□°）╯︵ ┻━┻','(ノಠ益ಠ)ノ彡',
+  '(☞ﾟ∀ﾟ)☞','ヽ(｀Д´)ﾉ','(ﾉಥ益ಥ)ﾉ','(ง\'̀-\'́)ง','(ノ^o^)ノ',
+  '(ﾉ≧∀≦)ﾉ','＼(〇_ｏ)／','(☉_☉)','(੭ु｡╹▿╹｡)੭ु⁾⁾','Σ(°ロ°)',
+  '(ノ￣ω￣)ノ','୧༼ಠ益ಠ༽୨','(¬‿¬*)','(￣ω￣)','(ﾉﾟ0ﾟ)ﾉ~'
+];
+
+const WORDS = [
+  'thank you','thanks','thankyou','thankss','thanksss','thank youuu',
+  'THANK YOU','THANKS','THANKSSSS','thank you!','thanks!','thank you!!!',
+  'thanks mate','thanku','thx','tysm','ty','thank u'
+];
+
+// Unicode font maps (basic latin a-z, A-Z mapped to styled codepoints)
+const FONT_MAPS = {
+  bold: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x1D400+i) : String.fromCodePoint(0x1D41A+(i-26)); return m;
+  }, {}),
+  italic: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x1D434+i) : String.fromCodePoint(0x1D44E+(i-26)); return m;
+  }, {}),
+  boldItalic: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x1D468+i) : String.fromCodePoint(0x1D482+(i-26)); return m;
+  }, {}),
+  script: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x1D4D0+i) : String.fromCodePoint(0x1D4EA+(i-26)); return m;
+  }, {}),
+  fraktur: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x1D56C+i) : String.fromCodePoint(0x1D586+(i-26)); return m;
+  }, {}),
+  sansSerif: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x1D5A0+i) : String.fromCodePoint(0x1D5BA+(i-26)); return m;
+  }, {}),
+  sansBold: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x1D5D4+i) : String.fromCodePoint(0x1D5EE+(i-26)); return m;
+  }, {}),
+  sansItalic: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x1D608+i) : String.fromCodePoint(0x1D622+(i-26)); return m;
+  }, {}),
+  monospace: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x1D670+i) : String.fromCodePoint(0x1D68A+(i-26)); return m;
+  }, {}),
+  doubleStruck: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x1D538+i) : String.fromCodePoint(0x1D552+(i-26)); return m;
+  }, {}),
+  circled: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    m[c] = i < 26 ? String.fromCodePoint(0x24B6+i) : String.fromCodePoint(0x24D0+(i-26)); return m;
+  }, {}),
+  fullwidth: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('').reduce((m,c,i) => {
+    const base = c.charCodeAt(0);
+    m[c] = String.fromCodePoint(base - 0x0021 + 0xFF01); return m;
+  }, {}),
+};
+
+const fontKeys = Object.keys(FONT_MAPS);
+
+function applyFont(text, fontMap) {
+  return text.split('').map(c => fontMap[c] || c).join('');
+}
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+let currentGenText = '';
+
+function generateRandom() {
+  const face = pick(FACES);
+  const word = pick(WORDS);
+  const font = FONT_MAPS[pick(fontKeys)];
+  const styled = applyFont(word, font);
+  // Randomly add trailing decorators sometimes
+  const decorators = ['','','','','', ' ✧', ' ♡', ' ~', '!!', ' *:･ﾟ✧'];
+  currentGenText = face + ' ' + styled + pick(decorators);
+  const output = document.getElementById('genOutput');
+  output.textContent = currentGenText;
+  // animate
+  output.style.animation = 'none';
+  void output.offsetWidth;
+  output.style.animation = 'genPop .35s ease-out';
+}
+
+const genOutput = document.getElementById('genOutput');
+const genBtn = document.getElementById('genBtn');
+const genCopyBtn = document.getElementById('genCopyBtn');
+
+genOutput.addEventListener('click', () => {
+  if (!currentGenText) return;
+  navigator.clipboard.writeText(currentGenText).then(() => {
+    genOutput.classList.remove('flash');
+    void genOutput.offsetWidth;
+    genOutput.classList.add('flash');
+    showToast('Copied!');
+  });
+});
+
+genBtn.addEventListener('click', generateRandom);
+
+genCopyBtn.addEventListener('click', () => {
+  if (!currentGenText) return;
+  navigator.clipboard.writeText(currentGenText).then(() => {
+    genOutput.classList.remove('flash');
+    void genOutput.offsetWidth;
+    genOutput.classList.add('flash');
+    showToast('Copied!');
+  });
+});
+
+// Generate one on load
+generateRandom();
+
+// Init
+buildSections();
+applyFilters();
+createSparkles();
+</script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>🚀 Mr. Lobster Mission Control</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E1726'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="lockscreen" class="lockscreen">
+      <form id="loginForm" class="login-panel">
+        <p class="eyebrow">PRIVATE OPS</p>
+        <h1>Mr. Lobster Mission Control</h1>
+        <p class="muted">Enter your passcode to open the rebuild cockpit.</p>
+        <label>
+          <span>Passcode</span>
+          <input id="passcodeInput" type="password" autocomplete="current-password" />
+        </label>
+        <button type="submit">Unlock</button>
+        <p id="loginError" class="login-error" role="alert"></p>
+      </form>
+    </div>
+
+    <main id="app" class="app is-hidden">
+      <header class="topline">
+        <div class="brand-mark">
+          <span class="status-dot"></span>
+          <strong>MR. LOBSTER OS</strong>
+          <span>// v3.0</span>
+        </div>
+        <div class="top-meta">
+          <span id="todayLabel"></span>
+          <span>MISSION: TERRY v3.0</span>
+          <button id="lockButton" class="ghost-button" type="button">Lock</button>
+        </div>
+      </header>
+
+      <section class="grid">
+        <aside class="panel operator">
+          <p class="panel-code">01 // OPERATOR</p>
+          <div class="operator-card">
+            <div class="avatar-wrap">
+              <button id="avatarButton" class="avatar" type="button" aria-label="Upload profile photo">
+                <span id="avatarInitials">LB</span>
+                <img id="avatarImage" alt="Lukasz profile" class="is-hidden" />
+              </button>
+              <input id="avatarInput" type="file" accept="image/*" hidden />
+            </div>
+            <div>
+              <h2>Lukasz</h2>
+              <p>Founder · Builder · Reviewer</p>
+            </div>
+          </div>
+          <dl class="mini-stats">
+            <div>
+              <dt>Focus</dt>
+              <dd id="focusLabel">Ready</dd>
+            </div>
+            <div>
+              <dt>Mode</dt>
+              <dd>Deep Work</dd>
+            </div>
+            <div>
+              <dt>Source</dt>
+              <dd>v3 Master Plan</dd>
+            </div>
+          </dl>
+        </aside>
+
+        <section class="panel hero">
+          <p class="panel-code hero-code">02 //<br />SESSION</p>
+          <div>
+            <h1>Good morning, Lukasz.</h1>
+            <p>Pick the next useful task. Finish it manually, or link it back to GitHub when the repo catches up.</p>
+          </div>
+          <div class="hero-clock">
+            <strong id="timeLabel">--:--</strong>
+            <span>LOCAL TIME</span>
+          </div>
+          <div id="agentModule" class="agent-module">
+            <div class="agent-meta">
+              <span id="agentModelLabel">HAIKU 4.5</span>
+              <span class="agent-live-indicator"><span class="agent-live-dot"></span>LIVE</span>
+              <button id="agentRefresh" type="button" title="Refresh briefing">↻</button>
+            </div>
+            <div class="agent-output">
+              <p id="agentText">Complete a task to generate the next guide, or press ↻ for a manual refresh.</p>
+            </div>
+          </div>
+          <div id="calendarWidget" class="calendar-widget"></div>
+        </section>
+
+        <section class="panel vitals">
+          <p class="panel-code">03 // VITALS</p>
+          <strong id="progressPercent">0%</strong>
+          <span>PROJECT PROGRESS</span>
+          <div class="progress-track"><div id="progressBar"></div></div>
+          <div class="ring-row">
+            <div><span id="doneCount">0</span><small>Done</small></div>
+            <div><span id="activeCount">0</span><small>Active</small></div>
+            <div><span id="blockedCount">0</span><small>Blocked</small></div>
+          </div>
+          <div class="conditions-widget" aria-label="Southend weather, daylight, and tide guidance">
+            <div class="conditions-head">
+              <label for="conditionsLocation">Location</label>
+              <select id="conditionsLocation" aria-label="Weather location">
+                <option value="southend">Southend-on-Sea</option>
+                <option value="shepperton">Shepperton, UK</option>
+                <option value="new-york">New York</option>
+                <option value="los-angeles">Los Angeles</option>
+                <option value="tokyo">Tokyo</option>
+                <option value="wellington">Wellington</option>
+              </select>
+              <small id="conditionsUpdated">Loading</small>
+            </div>
+            <div class="conditions-grid">
+              <div>
+                <span class="condition-icon" aria-hidden="true">🌦️</span>
+                <strong id="weatherSummary">--</strong>
+                <small id="weatherDetail">Weather</small>
+              </div>
+              <div>
+                <span class="condition-icon" aria-hidden="true">🌅</span>
+                <strong id="sunriseTime">--:--</strong>
+                <small>Sunrise</small>
+              </div>
+              <div>
+                <span class="condition-icon" aria-hidden="true">🌇</span>
+                <strong id="sunsetTime">--:--</strong>
+                <small>Sunset</small>
+              </div>
+            </div>
+            <div class="tide-widget">
+              <div class="tide-title"><span aria-hidden="true">🌊</span> Tide guidance</div>
+              <div id="tideList" class="tide-list">Loading tide curve…</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel current-task">
+          <p class="panel-code">04 // ACTIVE TASK</p>
+          <div id="currentTaskEmpty" class="empty-state">No active task. Pick one from the phase board.</div>
+          <div id="currentTask" class="is-hidden">
+            <div class="task-kicker" id="currentPhase"></div>
+            <h2 id="currentTitle"></h2>
+            <p id="currentDescription"></p>
+            <div class="action-row">
+              <button id="copyPromptButton" type="button">Copy Codex / Claude Prompt</button>
+              <button id="completeCurrentButton" type="button" class="secondary">Mark Done</button>
+              <button id="putBackButton" type="button" class="secondary">Put Back</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel prompt-panel">
+          <p class="panel-code">05 // HANDOFF PROMPT</p>
+          <textarea id="promptBox" readonly></textarea>
+        </section>
+
+        <section class="panel github-panel">
+          <p class="panel-code">06 // GITHUB LINK</p>
+          <h2 class="repo-title">manzombie/mr_lobster_rebuild</h2>
+          <p>This MVP keeps the dashboard simple and uses GitHub as the cross-machine project trail.</p>
+          <div class="github-links">
+            <a href="https://github.com/manzombie/mr_lobster_rebuild" target="_blank" rel="noreferrer">Open Repo</a>
+            <a href="https://github.com/manzombie/mr_lobster_rebuild/issues" target="_blank" rel="noreferrer">Open Issues</a>
+            <a href="https://github.com/manzombie/mr_lobster_rebuild/pulls" target="_blank" rel="noreferrer">Open PRs</a>
+          </div>
+          <p id="githubStatus" class="muted">Live GitHub completion sync is planned for v0.2.</p>
+        </section>
+
+        <section class="panel phase-board">
+          <div class="board-head">
+            <div>
+              <p class="panel-code">07 // PHASE BOARD</p>
+              <h2>Build Plan Tasks</h2>
+            </div>
+            <div class="board-tools">
+              <div class="board-create">
+                <button id="newTaskButton" type="button">New Task</button>
+                <button id="newStageButton" type="button">New Stage</button>
+              </div>
+              <div class="filters" id="phaseFilters"></div>
+            </div>
+          </div>
+          <div id="tasks"></div>
+        </section>
+      </section>
+    </main>
+
+    <!-- Local-only overrides (gitignored, 404s harmlessly on the public build) -->
+    <script src="./mission-config.local.js"></script>
+    <script src="./mission-data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

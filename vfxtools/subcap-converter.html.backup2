@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subcaps to Locators Converter - VFX Tools</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="https://bukowiecki.co/" class="logo-link">
+                        <span class="logo-text">LUKASZ BUKOWIECKI</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">← Back to VFX Tools</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="tool-header">
+        <div class="container">
+            <h1>Subcaps to Locators Converter</h1>
+            <p>Convert Avid subcaps files to locators format with customizable frame rates</p>
+        </div>
+    </div>
+
+    <main class="main">
+        <div class="container">
+            <div class="back-nav">
+                <a href="index.html" class="back-link">← Back to VFX Tools</a>
+            </div>
+
+            <div class="tool-content">
+                <div class="tool-section">
+                    <div class="instructions">
+                        <h3>How to use:</h3>
+                        <ul>
+                            <li>Select your project's frame rate from the dropdown</li>
+                            <li>Upload a subcaps file (.txt format)</li>
+                            <li>The tool will calculate the middle point of each subcap time range</li>
+                            <li>Download the converted locators file</li>
+                            <li>All locators will be set to V1 track with Yellow color</li>
+                        </ul>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Project Settings</h3>
+                        <div class="setting-group">
+                            <label for="fpsSelect" class="setting-label">Frame Rate:</label>
+                            <select id="fpsSelect" class="fps-select">
+                                <option value="23.976">23.976 fps (Film Standard)</option>
+                                <option value="24" selected>24 fps (Film Standard)</option>
+                                <option value="25">25 fps (PAL Standard)</option>
+                                <option value="29.97">29.97 fps (NTSC Standard)</option>
+                                <option value="30">30 fps (NTSC Standard)</option>
+                                <option value="50">50 fps (PAL High Frame Rate)</option>
+                                <option value="59.94">59.94 fps (NTSC High Frame Rate)</option>
+                                <option value="60">60 fps (High Frame Rate)</option>
+                            </select>
+                        </div>
+                        <div class="fps-info">
+                            <span id="fpsInfo">Selected: 24 fps - Standard film frame rate</span>
+                        </div>
+                    </div>
+
+                    <div class="upload-section">
+                        <div class="file-input-wrapper">
+                            <input type="file" id="fileInput" class="file-input" accept=".txt" />
+                            <label for="fileInput" class="file-input-label" id="fileLabel">
+                                <div style="font-size: 1.5rem; margin-bottom: 15px;">📁</div>
+                                <div style="font-size: 1.1rem; margin-bottom: 10px;">Click to upload or drag & drop your subcaps file</div>
+                                <div style="font-size: 0.9rem; color: #666;">Supports .txt files</div>
+                            </label>
+                        </div>
+                        <div class="file-info" id="fileInfo">
+                            <strong>Selected file:</strong> <span id="fileName"></span><br>
+                            <strong>Size:</strong> <span id="fileSize"></span>
+                        </div>
+                    </div>
+
+                    <div class="convert-section">
+                        <button class="btn" id="convertBtn" disabled>Convert to Locators</button>
+                    </div>
+
+                    <div class="status-message" id="statusMessage"></div>
+
+                    <div class="preview-section" id="previewSection">
+                        <h3>Preview (first 10 lines):</h3>
+                        <div class="preview-content" id="previewContent"></div>
+                    </div>
+
+                    <div class="download-section" id="downloadSection">
+                        <button class="btn btn-secondary" id="downloadBtn">Download Locators File</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Lukasz Bukowiecki. All rights reserved.</p>
+                <p>Part of <a href="https://bukowiecki.co/" class="footer-link">bukowiecki.co</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let uploadedFile = null;
+        let convertedContent = '';
+        let selectedFps = 24;
+
+        // Frame rate information
+        const fpsInfo = {
+            23.976: "23.976 fps - Standard film frame rate (24p pulldown)",
+            24: "24 fps - Standard film frame rate",
+            25: "25 fps - PAL standard frame rate",
+            29.97: "29.97 fps - NTSC standard frame rate (30p pulldown)",
+            30: "30 fps - NTSC standard frame rate",
+            50: "50 fps - PAL high frame rate",
+            59.94: "59.94 fps - NTSC high frame rate (60p pulldown)",
+            60: "60 fps - High frame rate standard"
+        };
+
+        // DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const fileLabel = document.getElementById('fileLabel');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const convertBtn = document.getElementById('convertBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const previewSection = document.getElementById('previewSection');
+        const previewContent = document.getElementById('previewContent');
+        const downloadSection = document.getElementById('downloadSection');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const fpsSelect = document.getElementById('fpsSelect');
+        const fpsInfoElement = document.getElementById('fpsInfo');
+
+        // Frame rate selection handler
+        fpsSelect.addEventListener('change', (e) => {
+            selectedFps = parseFloat(e.target.value);
+            fpsInfoElement.textContent = `Selected: ${fpsInfo[selectedFps]}`;
+        });
+
+        // Drag and drop functionality
+        fileLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileLabel.classList.add('dragover');
+        });
+
+        fileLabel.addEventListener('dragleave', () => {
+            fileLabel.classList.remove('dragover');
+        });
+
+        fileLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileLabel.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.toLowerCase().endsWith('.txt')) {
+                showStatus('Please select a .txt file', 'error');
+                return;
+            }
+
+            uploadedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.classList.add('show');
+            convertBtn.disabled = false;
+            hideStatus();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Convert time string to frames (dynamic fps)
+        function timeToFrames(timeStr, fps) {
+            const [hours, minutes, seconds, frames] = timeStr.split(':').map(Number);
+            return (hours * 3600 + minutes * 60 + seconds) * fps + frames;
+        }
+
+        // Convert frames to time string (dynamic fps)
+        function framesToTime(frames, fps) {
+            const totalSeconds = Math.floor(frames / fps);
+            const frame = Math.floor(frames % fps);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${frame.toString().padStart(2, '0')}`;
+        }
+
+        // Calculate middle point between two timecodes
+        function calculateMiddlePoint(startTime, endTime, fps) {
+            const startFrames = timeToFrames(startTime, fps);
+            const endFrames = timeToFrames(endTime, fps);
+            const middleFrames = Math.floor((startFrames + endFrames) / 2);
+            return framesToTime(middleFrames, fps);
+        }
+
+        // Convert subcaps to locators
+        function convertSubcapsToLocators(content, fps) {
+            const lines = content.split('\n');
+            const locators = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // Skip empty lines and comments
+                if (!line || line.startsWith('@') || line.startsWith('<')) {
+                    continue;
+                }
+                
+                // Check if this line contains time range
+                const timeRangeMatch = line.match(/^(\d{2}:\d{2}:\d{2}:\d{2})\s+(\d{2}:\d{2}:\d{2}:\d{2})$/);
+                if (timeRangeMatch) {
+                    const startTime = timeRangeMatch[1];
+                    const endTime = timeRangeMatch[2];
+                    
+                    // Get the subcap name from the next line
+                    const nextLineIndex = i + 1;
+                    if (nextLineIndex < lines.length) {
+                        const subcapName = lines[nextLineIndex].trim();
+                        if (subcapName && !subcapName.match(/^\d{2}:\d{2}:\d{2}:\d{2}/)) {
+                            const middleTime = calculateMiddlePoint(startTime, endTime, fps);
+                            
+                            // Create locator line in the required format
+                            const locatorLine = `LUKASZ_V2\t${middleTime}\tV1\tYellow\t${subcapName}\t1\t\tYellow`;
+                            locators.push(locatorLine);
+                            
+                            // Skip the subcap name line
+                            i = nextLineIndex;
+                        }
+                    }
+                }
+            }
+            
+            return locators.join('\n');
+        }
+
+        // Generate intelligent download filename
+        function generateDownloadFilename(originalName, fps) {
+            const fpsSuffix = fps === 24 ? '' : `_${fps}fps`;
+            
+            // Check if filename contains "subcaps" (case insensitive)
+            if (originalName.toLowerCase().includes('subcaps')) {
+                // Replace "subcaps" with "locators" (case sensitive replacement)
+                const baseName = originalName.replace(/subcaps/gi, 'locators');
+                return baseName.replace(/\.txt$/, `${fpsSuffix}.txt`);
+            } else {
+                // Add "_locators" before the file extension
+                return originalName.replace(/\.txt$/, `_locators${fpsSuffix}.txt`);
+            }
+        }
+
+        // Convert button click handler
+        convertBtn.addEventListener('click', () => {
+            if (!uploadedFile) {
+                showStatus('Please select a file first', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const content = e.target.result;
+                    convertedContent = convertSubcapsToLocators(content, selectedFps);
+                    
+                    if (convertedContent.trim()) {
+                        const locatorCount = convertedContent.split('\n').length;
+                        showStatus(`Successfully converted ${locatorCount} locators at ${selectedFps} fps`, 'success');
+                        showPreview();
+                        downloadSection.classList.add('show');
+                    } else {
+                        showStatus('No valid subcaps found in the file', 'error');
+                    }
+                } catch (error) {
+                    showStatus('Error processing file: ' + error.message, 'error');
+                }
+            };
+            
+            reader.readAsText(uploadedFile);
+        });
+
+        function showPreview() {
+            const lines = convertedContent.split('\n');
+            const previewLines = lines.slice(0, 10);
+            previewContent.textContent = previewLines.join('\n');
+            if (lines.length > 10) {
+                previewContent.textContent += `\n... and ${lines.length - 10} more lines`;
+            }
+            previewSection.classList.add('show');
+        }
+
+        // Download button click handler
+        downloadBtn.addEventListener('click', () => {
+            if (!convertedContent) {
+                showStatus('No content to download', 'error');
+                return;
+            }
+
+            const blob = new Blob([convertedContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = generateDownloadFilename(uploadedFile.name, selectedFps);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus(`File downloaded successfully! (${selectedFps} fps)`, 'success');
+        });
+
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type} show`;
+        }
+
+        function hideStatus() {
+            statusMessage.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
