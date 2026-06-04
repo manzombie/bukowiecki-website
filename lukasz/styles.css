@@ -823,6 +823,37 @@ textarea {
   text-align: right;
 }
 
+.conditions-refresh {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 252, 245, 0.78);
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.conditions-refresh:hover {
+  border-color: rgba(255, 107, 91, 0.5);
+  color: var(--ink);
+}
+
+.conditions-refresh:disabled {
+  opacity: 0.45;
+  cursor: progress;
+}
+
+.conditions-refresh:focus-visible {
+  outline: 2px solid rgba(255, 107, 91, 0.34);
+  outline-offset: 2px;
+}
+
 .conditions-grid {
   display: grid;
   grid-template-columns: 1fr;

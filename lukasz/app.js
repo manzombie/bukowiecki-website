@@ -32,6 +32,7 @@
     activeCount: document.getElementById("activeCount"),
     blockedCount: document.getElementById("blockedCount"),
     conditionsUpdated: document.getElementById("conditionsUpdated"),
+    conditionsRefresh: document.getElementById("conditionsRefresh"),
     conditionsLocation: document.getElementById("conditionsLocation"),
     weatherSummary: document.getElementById("weatherSummary"),
     weatherDetail: document.getElementById("weatherDetail"),
@@ -80,6 +81,7 @@
       saveState();
       fetchConditions();
     });
+    if (els.conditionsRefresh) els.conditionsRefresh.addEventListener("click", fetchConditions);
 
     state = await loadState();
     if (!state.collapsed) state.collapsed = {};
@@ -482,34 +484,149 @@
     els.focusLabel.textContent = state.currentTask ? "Active" : "Ready";
   }
 
+  const CONDITIONS_CACHE_KEY = "mr_lobster_conditions_cache";
+
+  // Open-Meteo's forecast host occasionally returns 503; without this the widget
+  // would blank to "Offline". We add a timeout, a few retries, and fall back to the
+  // last good reading from localStorage so the panel always shows the latest info it has.
+  function fetchJsonWithRetry(url, { tries = 3, timeout = 8000, gap = 1500 } = {}) {
+    const attempt = (n) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeout);
+      return fetch(url, { cache: "no-store", signal: controller.signal })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .catch((err) => {
+          if (n >= tries) throw err;
+          return new Promise((r) => setTimeout(r, gap * n)).then(() => attempt(n + 1));
+        })
+        .finally(() => clearTimeout(timer));
+    };
+    return attempt(1);
+  }
+
+  function readConditionsCache(locationKey) {
+    try {
+      return JSON.parse(localStorage.getItem(CONDITIONS_CACHE_KEY) || "{}")[locationKey] || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeConditionsCache(locationKey, payload) {
+    try {
+      const all = JSON.parse(localStorage.getItem(CONDITIONS_CACHE_KEY) || "{}");
+      all[locationKey] = { ...payload, ts: Date.now() };
+      localStorage.setItem(CONDITIONS_CACHE_KEY, JSON.stringify(all));
+    } catch {
+      /* localStorage unavailable — skip caching */
+    }
+  }
+
+  function relativeTime(ts) {
+    const mins = Math.round((Date.now() - ts) / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.round(hrs / 24)}d ago`;
+  }
+
+  // Map wttr.in's WWO weather codes onto the WMO codes weatherCodeLabel() understands.
+  function wwoToWmo(code) {
+    if (code === 113) return 0; // clear
+    if (code === 116) return 2; // partly cloudy
+    if ([119, 122].includes(code)) return 3; // cloudy / overcast
+    if ([143, 248, 260].includes(code)) return 45; // fog/mist
+    if ([176, 263, 266, 281, 284, 293, 311, 317, 350, 362, 365].includes(code)) return 51; // drizzle/light
+    if ([296, 299, 302, 353, 356].includes(code)) return 61; // rain
+    if ([305, 308, 314, 359].includes(code)) return 65; // heavy rain
+    if ([179, 227, 230, 320, 323, 326, 329, 332, 335, 338, 368, 371, 374, 377, 392, 395].includes(code)) return 71; // snow
+    if ([200, 386, 389].includes(code)) return 95; // thunderstorm
+    return -1; // unknown -> generic icon
+  }
+
+  // Convert a wttr.in j1 response into the same shape Open-Meteo returns, so
+  // renderWeather() can stay unchanged. Used as a fallback when Open-Meteo is down.
+  function wttrToConditions(j1) {
+    const cur = (j1.current_condition && j1.current_condition[0]) || {};
+    const astro = (((j1.weather || [])[0] || {}).astronomy || [])[0] || {};
+    const today = new Date().toISOString().slice(0, 10);
+    const to24 = (t) => {
+      const m = String(t || "").trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+      if (!m) return null;
+      let h = parseInt(m[1], 10);
+      const ap = (m[3] || "").toUpperCase();
+      if (ap === "PM" && h < 12) h += 12;
+      if (ap === "AM" && h === 12) h = 0;
+      return `${today}T${String(h).padStart(2, "0")}:${m[2]}`;
+    };
+    return {
+      current: {
+        temperature_2m: Number(cur.temp_C),
+        weather_code: wwoToWmo(Number(cur.weatherCode)),
+        wind_speed_10m: Number(cur.windspeedKmph)
+      },
+      daily: {
+        sunrise: [to24(astro.sunrise)].filter(Boolean),
+        sunset: [to24(astro.sunset)].filter(Boolean)
+      }
+    };
+  }
+
   async function fetchConditions() {
-    const location = conditionLocations[state.conditionsLocation] || conditionLocations.southend;
+    const locationKey = state.conditionsLocation;
+    const location = conditionLocations[locationKey] || conditionLocations.southend;
     const { lat, lon } = location;
     if (els.conditionsUpdated) els.conditionsUpdated.textContent = "Loading";
+    if (els.conditionsRefresh) els.conditionsRefresh.disabled = true;
+
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&daily=sunrise,sunset&timezone=auto&forecast_days=1`;
+    const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=sea_level_height_msl&timezone=auto&forecast_days=2`;
 
     try {
-      const weatherPromise = fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&daily=sunrise,sunset&timezone=auto&forecast_days=1`, { cache: "no-store" });
-      const marinePromise = location.marine
-        ? fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=sea_level_height_msl&timezone=auto&forecast_days=2`, { cache: "no-store" })
-        : Promise.resolve(null);
-      const [weatherRes, marineRes] = await Promise.all([weatherPromise, marinePromise]);
+      let weather;
+      try {
+        weather = await fetchJsonWithRetry(weatherUrl, { tries: 2 });
+      } catch {
+        // Open-Meteo forecast host is down — fall back to wttr.in (same data, different shape).
+        const j1 = await fetchJsonWithRetry(`https://wttr.in/${lat},${lon}?format=j1`, { tries: 2 });
+        weather = wttrToConditions(j1);
+      }
+      renderWeather(weather);
 
-      if (!weatherRes.ok) throw new Error("weather unavailable");
-      renderWeather(await weatherRes.json());
-
-      if (marineRes?.ok) {
-        renderTides(await marineRes.json());
-      } else if (location.marine) {
-        renderTideFallback();
+      let marine = null;
+      if (location.marine) {
+        try {
+          marine = await fetchJsonWithRetry(marineUrl, { tries: 2 });
+          renderTides(marine);
+        } catch {
+          renderTideFallback();
+        }
       } else {
         renderTideNotApplicable(location.label);
       }
 
+      writeConditionsCache(locationKey, { weather, marine, marineApplicable: location.marine });
       if (els.conditionsUpdated) {
         els.conditionsUpdated.textContent = `Updated ${new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
       }
     } catch {
-      renderConditionsError();
+      // Live fetch failed (e.g. Open-Meteo 503) — show the last good reading if we have one.
+      const cached = readConditionsCache(locationKey);
+      if (cached?.weather) {
+        renderWeather(cached.weather);
+        if (cached.marineApplicable && cached.marine) renderTides(cached.marine);
+        else if (cached.marineApplicable) renderTideFallback();
+        else renderTideNotApplicable(location.label);
+        if (els.conditionsUpdated) els.conditionsUpdated.textContent = `Stale · ${relativeTime(cached.ts)}`;
+      } else {
+        renderConditionsError();
+      }
+    } finally {
+      if (els.conditionsRefresh) els.conditionsRefresh.disabled = false;
     }
   }
 
