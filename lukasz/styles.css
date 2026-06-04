@@ -1107,6 +1107,46 @@ textarea:focus {
   color: #ffffff;
 }
 
+/* "＋ New project" tab */
+.filters button.new-project-tab {
+  color: var(--accent);
+  border-style: dashed;
+  font-size: 12px;
+  padding: 6px 11px;
+}
+
+/* Per-task action colours (project board) */
+.task-actions button[data-action="edit"] { color: var(--accent); }
+.task-actions button.task-delete { color: var(--danger); }
+.task-actions button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Inline task-title editing */
+.task-edit-input {
+  width: 100%;
+  margin: 0;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 4px 8px;
+  background: rgba(255, 252, 245, 0.9);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.34;
+  font-weight: 600;
+}
+
+.task-edit-input:focus {
+  outline: 2px solid rgba(255, 107, 91, 0.34);
+  outline-offset: 1px;
+}
+
+.board-empty {
+  margin-top: 4px;
+}
+
 .phase {
   display: grid;
   grid-template-columns: 280px 1fr;

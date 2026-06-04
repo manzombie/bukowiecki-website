@@ -58,7 +58,7 @@
     agentRefresh: document.getElementById("agentRefresh")
   };
 
-  let activePhase = "All";
+  let idCounter = 0;
   let state = defaultState();
   let saveTimer = null;
   let lastRenderedDate = "";
@@ -75,7 +75,7 @@
     els.putBackButton.addEventListener("click", putBackCurrent);
     els.agentRefresh.addEventListener("click", fetchAgentBriefing);
     els.newTaskButton.addEventListener("click", openNewTaskPrompt);
-    els.newStageButton.addEventListener("click", openNewStagePrompt);
+    els.newStageButton.addEventListener("click", openNewProjectPrompt);
     els.conditionsLocation.addEventListener("change", () => {
       state.conditionsLocation = els.conditionsLocation.value;
       saveState();
@@ -84,44 +84,24 @@
     if (els.conditionsRefresh) els.conditionsRefresh.addEventListener("click", fetchConditions);
 
     state = await loadState();
-    if (!state.collapsed) state.collapsed = {};
-    if (!state.taskDates) state.taskDates = {};
-    if (!state.amendments) state.amendments = {};
-    if (!state.customTasks) state.customTasks = {};
-    if (!state.customPhases) state.customPhases = [];
+    if (!Array.isArray(state.projects) || state.projects.length === 0) {
+      state.projects = seedProjects();
+    }
+    // Make sure every task has a stable id and a status (guards hand-edited seeds).
+    state.projects.forEach((project) => {
+      if (!project.id) project.id = newId("p");
+      project.tasks = (project.tasks || []).map((task) => ({
+        id: task.id || newId("t"),
+        title: task.title || "",
+        status: task.status || "ready",
+        doneDate: task.doneDate || ""
+      }));
+    });
+    if (!state.activeProjectId || !state.projects.some((p) => p.id === state.activeProjectId)) {
+      state.activeProjectId = state.projects[0].id;
+    }
     if (!state.conditionsLocation) state.conditionsLocation = "southend";
     if (state.calendarOffset === undefined) state.calendarOffset = 0;
-    // Migrate old parked → moved, then unify
-    if (!state.moved) {
-      state.moved = {};
-      if (state.parked) {
-        Object.keys(state.parked).forEach(id => { state.moved[id] = "Deferred"; });
-      }
-    }
-    delete state.parked; // no longer used
-
-    // One-time migration: backfill taskDates for done tasks that predate date tracking.
-    // Also force-corrects week-1-* dates in case they were wrongly set to today on first run.
-    let migrated = false;
-    Object.entries(state.tasks).forEach(([id, taskState]) => {
-      if (taskState === "done") {
-        if (id.startsWith("week-1-") && state.taskDates[id] !== "2026-05-02") {
-          state.taskDates[id] = "2026-05-02";
-          migrated = true;
-        } else if (!state.taskDates[id]) {
-          state.taskDates[id] = id.startsWith("week-2-") ? "2026-05-03" : todayStr();
-          migrated = true;
-        }
-      }
-    });
-    if (migrated) saveState();
-
-    // Collapse all phases by default except Week 1
-    if (Object.keys(state.collapsed).length === 0) {
-      allPhases().forEach((phase) => {
-        state.collapsed[phase.phase] = phase.phase !== "Week 1";
-      });
-    }
 
     // Auto-open when no passcode is configured (public build); otherwise honor the session.
     if (!window.MISSION_CONFIG.passcode || sessionStorage.getItem(authKey) === "true") unlock();
@@ -172,139 +152,77 @@
   }
 
   function renderFilters() {
-    const phases = ["All"].concat(allPhases().map((phase) => phase.phase));
-    els.phaseFilters.innerHTML = phases.map((phase) => (
-      `<button type="button" class="${phase === activePhase ? "is-active" : ""}" data-phase="${phase}">${phase}</button>`
-    )).join("");
+    const tabs = state.projects.map((project) => {
+      const isActive = project.id === state.activeProjectId ? "is-active" : "";
+      return `<button type="button" class="${isActive}" data-project="${project.id}">${escapeHtml(project.name)}</button>`;
+    }).join("");
+    els.phaseFilters.innerHTML = tabs +
+      `<button type="button" class="new-project-tab" data-new-project aria-label="New project" title="New project">＋</button>`;
     els.phaseFilters.querySelectorAll("button").forEach((button) => {
       button.addEventListener("click", () => {
-        activePhase = button.dataset.phase;
+        if (button.dataset.newProject !== undefined) {
+          openNewProjectPrompt();
+          return;
+        }
+        state.activeProjectId = button.dataset.project;
+        saveState();
         render();
       });
     });
   }
 
   function renderTasks() {
-    const phasesSource = allPhases();
-    const allPhaseNames = phasesSource.map(p => p.phase);
-    const phases = activePhase === "All"
-      ? phasesSource
-      : phasesSource.filter((phase) => phase.phase === activePhase);
+    const project = activeProject();
+    if (!project) { els.tasks.innerHTML = ""; return; }
+    const tasks = project.tasks;
 
-    els.tasks.innerHTML = phases.map((phase) => {
-      const homePhaseName = phase.phase;
+    if (!tasks.length) {
+      els.tasks.innerHTML = `<div class="empty-state board-empty">No tasks yet in “${escapeHtml(project.name)}”. Use “New Task” to add one.</div>`;
+      return;
+    }
 
-      // Build move dropdown options — every phase except this task's home
-      function moveMenu(id, originPhaseName = homePhaseName) {
-        const options = allPhaseNames
-          .filter(n => n !== originPhaseName)
-          .map(n => `<button type="button" class="move-option" data-action="move-to" data-target="${n}">${n}</button>`)
-          .join("");
-        return `
-          <details class="move-wrapper" data-id="${id}">
-            <summary>Move</summary>
-            <div class="move-menu">${options}</div>
-          </details>`;
-      }
-
-      // Home tasks — skip any that have been moved elsewhere
-      const taskRows = phase.tasks.map((task, index) => {
-        const id = taskId(homePhaseName, index);
-        if (state.moved[id] && state.moved[id] !== homePhaseName) return "";
-
-        return renderTaskArticle({
-          id,
-          task,
-          phase,
-          meta: phase.owner,
-          moveMenuHtml: moveMenu(id),
-          showAmend: true,
-          isMoved: false
-        }) + renderAmendmentsFor(id, phase, homePhaseName);
-      }).join("");
-
-      // Guest tasks — tasks from other phases moved into this one
-      const guestRows = flatTasks()
-        .filter(item => state.moved[item.id] === homePhaseName && item.phase.phase !== homePhaseName)
-        .map(item => {
-          const id = item.id;
-          // Move menu for guest tasks — all phases except current host
-          const guestOptions = allPhaseNames
-            .filter(n => n !== homePhaseName)
-            .map(n => `<button type="button" class="move-option" data-action="move-to" data-target="${n}">${n}</button>`)
-            .join("");
-          const guestMoveMenu = `
-            <details class="move-wrapper" data-id="${id}">
-              <summary>Move</summary>
-              <div class="move-menu">
-                <button type="button" class="move-option move-home" data-action="move-home">↩ Back to ${item.phase.phase}</button>
-                ${guestOptions}
-              </div>
-            </details>`;
-          return renderTaskArticle({
-            id,
-            task: item.task,
-            phase: item.phase,
-            meta: `<span class="moved-from">↩ ${item.phase.phase}</span>`,
-            moveMenuHtml: guestMoveMenu,
-            showAmend: true,
-            isMoved: true
-          }) + renderAmendmentsFor(id, item.phase, homePhaseName);
-        }).join("");
-
-      const isCollapsed = state.collapsed[homePhaseName] ? "is-collapsed" : "";
-      return `
-        <section class="phase ${isCollapsed}" data-phase="${homePhaseName}">
-          <div class="phase-head" data-toggle="${homePhaseName}">
-            <p>${homePhaseName}</p>
-            <h2>${phase.title}<span class="phase-toggle">▾</span></h2>
-            <span>${phase.outcome}</span>
-          </div>
-          <div class="task-list">${guestRows}${taskRows}</div>
-        </section>`;
-    }).join("");
-
-    els.tasks.querySelectorAll("[data-toggle]").forEach((head) => {
-      head.addEventListener("click", () => {
-        const phase = head.dataset.toggle;
-        state.collapsed[phase] = !state.collapsed[phase];
-        render();
-      });
-    });
+    els.tasks.innerHTML = `<div class="task-list">${
+      tasks.map((task, index) => renderTaskArticle(task, index, tasks.length)).join("")
+    }</div>`;
 
     els.tasks.querySelectorAll("[data-action]").forEach((control) => {
       control.addEventListener("click", (event) => {
         const card = event.target.closest(".task");
-        const id = card.dataset.id;
+        if (!card) return;
+        const proj = activeProject();
+        const idx = proj.tasks.findIndex((t) => t.id === card.dataset.id);
+        if (idx === -1) return;
+        const task = proj.tasks[idx];
         const action = event.target.dataset.action;
         let completedTask = false;
+
         if (action === "done") {
-          if (state.tasks[id] === "done") {
-            state.tasks[id] = "ready";
-            delete state.taskDates[id];
+          if (task.status === "done") {
+            task.status = "ready";
+            task.doneDate = "";
           } else {
-            state.tasks[id] = "done";
-            state.taskDates[id] = todayStr();
+            task.status = "done";
+            task.doneDate = todayStr();
+            if (state.currentTask === task.id) state.currentTask = "";
             completedTask = true;
           }
         }
-        if (action === "blocked") state.tasks[id] = state.tasks[id] === "blocked" ? "ready" : "blocked";
-        if (action === "amend") {
-          openAmendPrompt(id);
-          return;
-        }
-        if (action === "move-to") {
-          const target = event.target.dataset.target;
-          state.moved[id] = target;
-          state.collapsed[target] = false; // expand destination so you see it land
-          event.target.closest("details").removeAttribute("open");
-        }
-        if (action === "move-home") {
-          delete state.moved[id];
-        }
+        if (action === "blocked") task.status = task.status === "blocked" ? "ready" : "blocked";
         if (action === "now") {
-          state.currentTask = id;
-          state.tasks[id] = "active";
+          state.currentTask = task.id;
+          task.status = "active";
+        }
+        if (action === "edit") { startInlineEdit(card, task); return; }
+        if (action === "up" && idx > 0) {
+          [proj.tasks[idx - 1], proj.tasks[idx]] = [proj.tasks[idx], proj.tasks[idx - 1]];
+        }
+        if (action === "down" && idx < proj.tasks.length - 1) {
+          [proj.tasks[idx + 1], proj.tasks[idx]] = [proj.tasks[idx], proj.tasks[idx + 1]];
+        }
+        if (action === "delete") {
+          if (!confirm(`Delete this task?\n\n${task.title}`)) return;
+          proj.tasks.splice(idx, 1);
+          if (state.currentTask === task.id) state.currentTask = "";
         }
         render();
         if (completedTask) refreshAgentAfterTaskDone();
@@ -312,169 +230,127 @@
     });
   }
 
-  function renderTaskArticle({ id, task, phase, meta, moveMenuHtml, showAmend, isMoved }) {
-    const taskState = state.tasks[id] || "ready";
-    const doneDate = taskState === "done" && state.taskDates[id]
-      ? `<span class="task-date">${formatDate(state.taskDates[id])}</span>` : "";
+  function renderTaskArticle(task, index, total) {
+    const status = task.status || "ready";
+    const doneDate = status === "done" && task.doneDate
+      ? `<span class="task-date">${formatDate(task.doneDate)}</span>` : "";
+    const statusLabel = status === "active" ? "In progress"
+      : status === "blocked" ? "Blocked"
+      : status === "done" ? "Done" : "Ready";
     return `
-      <article class="task ${taskState}${isMoved ? " is-moved" : ""}" data-id="${id}">
-        <button class="check" type="button" data-action="done" aria-label="Mark done">${taskState === "done" ? "✓" : ""}</button>
+      <article class="task ${status}" data-id="${task.id}">
+        <button class="check" type="button" data-action="done" aria-label="Mark done">${status === "done" ? "✓" : ""}</button>
         <div>
-          <h3>${escapeHtml(task)}</h3>
-          <p>${meta}${doneDate}</p>
+          <h3>${escapeHtml(task.title)}</h3>
+          <p><span class="task-status">${statusLabel}</span>${doneDate}</p>
         </div>
         <div class="task-actions">
+          <button type="button" data-action="up" aria-label="Move up" title="Move up"${index === 0 ? " disabled" : ""}>↑</button>
+          <button type="button" data-action="down" aria-label="Move down" title="Move down"${index === total - 1 ? " disabled" : ""}>↓</button>
           <button type="button" data-action="now">Now</button>
           <button type="button" data-action="blocked">Block</button>
-          ${showAmend ? `<button type="button" data-action="amend">Amend</button>` : ""}
-          ${moveMenuHtml}
-          <a href="${githubIssueUrl(phase, task)}" target="_blank" rel="noreferrer">Issue</a>
+          <button type="button" data-action="edit">Edit</button>
+          <button type="button" data-action="delete" class="task-delete">Delete</button>
+          <a href="${githubIssueUrl(task)}" target="_blank" rel="noreferrer">Issue</a>
         </div>
       </article>`;
   }
 
-  function renderAmendmentsFor(parentId, phase, hostPhaseName) {
-    const items = state.amendments[parentId] || [];
-    if (!items.length) return "";
+  // Inline edit: swap the task title <h3> for an input; Enter/blur saves, Esc cancels.
+  function startInlineEdit(card, task) {
+    const titleEl = card.querySelector("h3");
+    if (!titleEl || card.querySelector(".task-edit-input")) return;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "task-edit-input";
+    input.value = task.title;
+    titleEl.replaceWith(input);
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
 
-    return `
-      <div class="amendment-list" data-parent="${parentId}">
-        ${items.map((item, index) => {
-          const id = amendmentId(parentId, index);
-          const meta = `<span class="amendment-kind">${item.kind === "done" ? "Tick off" : item.kind === "parked" ? "Park" : "Still to do"}</span>${item.note ? ` ${escapeHtml(item.note)}` : ""}`;
-          const moveHtml = item.kind === "parked"
-            ? `<details class="move-wrapper" data-id="${id}">
-                <summary>Move</summary>
-                <div class="move-menu">
-                  <button type="button" class="move-option" data-action="move-to" data-target="Deferred">Parked by design</button>
-                </div>
-              </details>`
-            : `<details class="move-wrapper" data-id="${id}">
-                <summary>Move</summary>
-                <div class="move-menu">
-                  <button type="button" class="move-option move-home" data-action="move-to" data-target="${hostPhaseName}">Keep in ${hostPhaseName}</button>
-                  <button type="button" class="move-option" data-action="move-to" data-target="Deferred">Parked by design</button>
-                </div>
-              </details>`;
-          return renderTaskArticle({
-            id,
-            task: item.task,
-            phase,
-            meta,
-            moveMenuHtml: moveHtml,
-            showAmend: false,
-            isMoved: true
-          });
-        }).join("")}
-      </div>`;
-  }
-
-  function openAmendPrompt(parentId) {
-    const original = flatTasks().find((item) => item.id === parentId);
-    if (!original) return;
-
-    const completed = prompt("What smaller completed task should be ticked off?", suggestedCompletedTask(original.task));
-    if (!completed) return;
-
-    const remaining = prompt("What task should remain on the board?", suggestedRemainingTask(original.task));
-    if (!remaining) return;
-
-    const park = confirm("Move the remaining task to Parked by design? Press Cancel to keep it in the same week.");
-    state.amendments[parentId] = state.amendments[parentId] || [];
-
-    const doneId = amendmentId(parentId, state.amendments[parentId].length);
-    state.amendments[parentId].push({
-      kind: "done",
-      task: completed.trim(),
-      note: "split from original task"
+    let settled = false;
+    const commit = (save) => {
+      if (settled) return;
+      settled = true;
+      if (save) {
+        const v = input.value.trim();
+        if (v) task.title = v;
+      }
+      saveState();
+      render();
+    };
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); commit(true); }
+      else if (e.key === "Escape") { e.preventDefault(); commit(false); }
     });
-    state.tasks[doneId] = "done";
-    state.taskDates[doneId] = todayStr();
-
-    const remainingId = amendmentId(parentId, state.amendments[parentId].length);
-    state.amendments[parentId].push({
-      kind: park ? "parked" : "todo",
-      task: remaining.trim(),
-      note: park ? "parked by design" : "remaining scope"
-    });
-    state.tasks[remainingId] = park ? "blocked" : "ready";
-    if (park) state.moved[remainingId] = "Deferred";
-
-    render();
-    refreshAgentAfterTaskDone();
-  }
-
-  function suggestedCompletedTask(task) {
-    if (/synthetic test tenant/i.test(task)) return "Create synthetic dry-run end-to-end pipeline check.";
-    return `Complete the shipped subset of: ${task}`;
-  }
-
-  function suggestedRemainingTask(task) {
-    if (/synthetic test tenant/i.test(task)) return "Create dedicated synthetic test tenant that runs end-to-end every 5 minutes.";
-    return `Finish remaining scope of: ${task}`;
+    input.addEventListener("blur", () => commit(true));
   }
 
   function openNewTaskPrompt() {
-    const phases = allPhases();
-    const phaseNames = phases.map((phase) => phase.phase).join(", ");
-    const target = prompt(`Which week or stage should this task go in?\n\nOptions: ${phaseNames}`, activePhase !== "All" ? activePhase : "Week 7");
-    if (!target) return;
-
-    const phase = phases.find((item) => item.phase.toLowerCase() === target.trim().toLowerCase());
-    if (!phase) {
-      alert("I could not find that week or stage. Create the stage first, or use one of the names shown.");
-      return;
-    }
-
-    const task = prompt("Write the task.", "");
-    if (!task || !task.trim()) return;
-
-    state.customTasks[phase.phase] = state.customTasks[phase.phase] || [];
-    state.customTasks[phase.phase].push(task.trim());
-    state.collapsed[phase.phase] = false;
-    activePhase = phase.phase;
+    const project = activeProject();
+    if (!project) { openNewProjectPrompt(); return; }
+    const title = prompt(`New task in “${project.name}”.`, "");
+    if (!title || !title.trim()) return;
+    project.tasks.push({ id: newId("t"), title: title.trim(), status: "ready", doneDate: "" });
     render();
   }
 
-  function openNewStagePrompt() {
-    const phase = prompt("Stage name, for example v3.4 or Week 9.", "v3.4");
-    if (!phase || !phase.trim()) return;
-
-    const phaseName = phase.trim();
-    if (allPhases().some((item) => item.phase.toLowerCase() === phaseName.toLowerCase())) {
-      alert("That stage already exists.");
-      return;
+  function openNewProjectPrompt() {
+    const name = prompt("New project name.", "");
+    if (!name || !name.trim()) return;
+    const project = { id: newId("p"), name: name.trim(), tasks: [] };
+    state.projects.push(project);
+    state.activeProjectId = project.id;
+    const firstTask = prompt("First task for this project? Leave blank to start empty.", "");
+    if (firstTask && firstTask.trim()) {
+      project.tasks.push({ id: newId("t"), title: firstTask.trim(), status: "ready", doneDate: "" });
     }
-
-    const title = prompt("Stage title.", "");
-    if (!title || !title.trim()) return;
-
-    const outcome = prompt("What should be true when this stage is complete?", "");
-    if (!outcome || !outcome.trim()) return;
-
-    const owner = prompt("Owner / mode.", "Lukasz + Codex");
-    if (!owner || !owner.trim()) return;
-
-    state.customPhases.push({
-      phase: phaseName,
-      title: title.trim(),
-      outcome: outcome.trim(),
-      owner: owner.trim()
-    });
-    state.customTasks[phaseName] = state.customTasks[phaseName] || [];
-    const firstTask = prompt("First task for this stage? Leave blank if you only want to create the stage.", "");
-    if (firstTask && firstTask.trim()) state.customTasks[phaseName].push(firstTask.trim());
-    state.collapsed[phaseName] = false;
-    activePhase = phaseName;
     render();
+  }
+
+  // Deep-clone the seed so edits never mutate window.MISSION_PROJECTS.
+  function seedProjects() {
+    const seed = Array.isArray(window.MISSION_PROJECTS) ? window.MISSION_PROJECTS : [];
+    const cloned = seed.map((project) => ({
+      id: project.id || newId("p"),
+      name: project.name || "Project",
+      tasks: (project.tasks || []).map((task) => ({
+        id: task.id || newId("t"),
+        title: typeof task === "string" ? task : (task.title || ""),
+        status: (task && task.status) || "ready",
+        doneDate: (task && task.doneDate) || ""
+      }))
+    }));
+    return cloned.length ? cloned : [{ id: newId("p"), name: "Database Work", tasks: [] }];
+  }
+
+  function newId(prefix) {
+    idCounter += 1;
+    return `${prefix}-${Date.now().toString(36)}-${idCounter}-${Math.random().toString(36).slice(2, 6)}`;
+  }
+
+  function activeProject() {
+    return state.projects.find((p) => p.id === state.activeProjectId) || state.projects[0] || null;
+  }
+
+  // Every task across all projects, each tagged with its project (for calendar + current task).
+  function allTasks() {
+    return state.projects.flatMap((project) =>
+      project.tasks.map((task) => ({ task, project }))
+    );
+  }
+
+  function findTaskRef(taskId) {
+    return allTasks().find((ref) => ref.task.id === taskId) || null;
   }
 
   function renderProgress() {
-    const allTaskIds = flatTasks().map((item) => item.id);
-    const done = allTaskIds.filter((id) => state.tasks[id] === "done").length;
-    const active = allTaskIds.filter((id) => state.tasks[id] === "active").length;
-    const blocked = allTaskIds.filter((id) => state.tasks[id] === "blocked").length;
-    const percent = Math.round((done / allTaskIds.length) * 100);
+    const project = activeProject();
+    const tasks = project ? project.tasks : [];
+    const done = tasks.filter((t) => t.status === "done").length;
+    const active = tasks.filter((t) => t.status === "active").length;
+    const blocked = tasks.filter((t) => t.status === "blocked").length;
+    const percent = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
 
     els.progressPercent.textContent = `${percent}%`;
     els.progressBar.style.width = `${percent}%`;
@@ -717,7 +593,7 @@
   }
 
   function renderCurrentTask() {
-    const current = flatTasks().find((item) => item.id === state.currentTask);
+    const current = state.currentTask ? findTaskRef(state.currentTask) : null;
     if (!current) {
       els.currentTask.classList.add("is-hidden");
       els.currentTaskEmpty.classList.remove("is-hidden");
@@ -727,24 +603,26 @@
 
     els.currentTask.classList.remove("is-hidden");
     els.currentTaskEmpty.classList.add("is-hidden");
-    els.currentPhase.textContent = `${current.phase.phase} // ${current.phase.owner}`;
-    els.currentTitle.textContent = current.task;
-    els.currentDescription.textContent = current.phase.outcome;
+    els.currentPhase.textContent = current.project.name;
+    els.currentTitle.textContent = current.task.title;
+    els.currentDescription.textContent = `Project: ${current.project.name}`;
     els.promptBox.value = taskPrompt(current);
   }
 
   function completeCurrent() {
-    if (!state.currentTask) return;
-    state.tasks[state.currentTask] = "done";
-    state.taskDates[state.currentTask] = todayStr();
+    const current = state.currentTask ? findTaskRef(state.currentTask) : null;
+    if (!current) return;
+    current.task.status = "done";
+    current.task.doneDate = todayStr();
     state.currentTask = "";
     render();
     refreshAgentAfterTaskDone();
   }
 
   function putBackCurrent() {
-    if (!state.currentTask) return;
-    state.tasks[state.currentTask] = "ready";
+    const current = state.currentTask ? findTaskRef(state.currentTask) : null;
+    if (!current) return;
+    current.task.status = "ready";
     state.currentTask = "";
     render();
   }
@@ -811,58 +689,6 @@
     }
   }
 
-  function flatTasks() {
-    const base = allPhases().flatMap((phase) => phase.tasks.map((task, index) => ({
-      id: taskId(phase.phase, index),
-      phase,
-      task
-    })));
-    const amendments = base.flatMap((item) =>
-      (state.amendments[item.id] || []).map((amendment, index) => ({
-        id: amendmentId(item.id, index),
-        phase: item.phase,
-        task: amendment.task,
-        parentId: item.id,
-        amendment
-      }))
-    );
-    return base.concat(amendments);
-  }
-
-  function taskId(phase, index) {
-    return `${phase.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${index + 1}`;
-  }
-
-  function allPhases() {
-    const customPhases = (state.customPhases || []).map((phase) => ({
-      ...phase,
-      tasks: state.customTasks[phase.phase] || []
-    }));
-
-    const customOnlyNames = Object.keys(state.customTasks || {})
-      .filter((name) => !window.MISSION_TASKS.some((phase) => phase.phase === name))
-      .filter((name) => !customPhases.some((phase) => phase.phase === name));
-
-    const orphanedCustomPhases = customOnlyNames.map((name) => ({
-      phase: name,
-      title: "Custom stage",
-      outcome: "Custom tasks added from Mission Control.",
-      owner: "Lukasz",
-      tasks: state.customTasks[name] || []
-    }));
-
-    return window.MISSION_TASKS
-      .map((phase) => ({
-        ...phase,
-        tasks: phase.tasks.concat(state.customTasks[phase.phase] || [])
-      }))
-      .concat(customPhases, orphanedCustomPhases);
-  }
-
-  function amendmentId(parentId, index) {
-    return `${parentId}-amend-${index + 1}`;
-  }
-
   function escapeHtml(value) {
     return String(value)
       .replace(/&/g, "&amp;")
@@ -872,14 +698,16 @@
       .replace(/'/g, "&#039;");
   }
 
-  function githubIssueUrl(phase, task) {
-    const title = encodeURIComponent(`[${phase.phase}] ${task}`);
-    const body = encodeURIComponent(`Mission Control task\n\nPhase: ${phase.phase}\nOutcome: ${phase.outcome}\n\nDefinition of done:\n- ${task}`);
+  function githubIssueUrl(task) {
+    const project = activeProject();
+    const projectName = project ? project.name : "Mission Control";
+    const title = encodeURIComponent(`[${projectName}] ${task.title}`);
+    const body = encodeURIComponent(`Mission Control task\n\nProject: ${projectName}\n\nDefinition of done:\n- ${task.title}`);
     return `https://github.com/${window.MISSION_CONFIG.githubRepo}/issues/new?title=${title}&body=${body}`;
   }
 
-  function taskPrompt(item) {
-    return `You are working on Mr. Lobster v3 rebuild.\n\nCurrent Mission Control task:\n${item.task}\n\nPhase:\n${item.phase.phase} - ${item.phase.title}\n\nTarget outcome:\n${item.phase.outcome}\n\nOwner/mode:\n${item.phase.owner}\n\nInstructions:\n1. Read the existing repo before changing files.\n2. Keep the implementation modular and aligned with the v3 master plan.\n3. Add or update tests where the change affects behaviour.\n4. Update BUILD_LOG.md with what shipped, decisions, risks, and the next action.\n5. When done, include the Mission Control task name in the commit or PR description.\n\nDefinition of done:\n- The task above is complete.\n- Tests or smoke checks have run.\n- BUILD_LOG.md has the next action for the following session.`;
+  function taskPrompt(ref) {
+    return `Project: ${ref.project.name}\n\nCurrent task:\n${ref.task.title}\n\nInstructions:\n1. Read the existing repo / context before changing files.\n2. Keep the work modular and focused on this task.\n3. Add or update tests where the change affects behaviour.\n4. Note what shipped, decisions, risks, and the next action.\n5. When done, reference this task in the commit or PR description.\n\nDefinition of done:\n- The task above is complete.\n- Checks have run.\n- The next action is recorded.`;
   }
 
   function defaultPrompt() {
@@ -899,30 +727,24 @@
     const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const allTasks = flatTasks();
-      const done = allTasks.filter((t) => state.tasks[t.id] === "done").length;
-      const total = allTasks.length;
+      const tasksRefs = allTasks();
+      const done = tasksRefs.filter((r) => r.task.status === "done").length;
+      const total = tasksRefs.length || 1;
       const percent = Math.round((done / total) * 100);
-      const activeItem = allTasks.find((t) => state.tasks[t.id] === "active");
-      const nextReady = allTasks.find((t) => !state.tasks[t.id] || state.tasks[t.id] === "ready");
+      const activeItem = tasksRefs.find((r) => r.task.status === "active");
+      const nextReady = tasksRefs.find((r) => r.task.status === "ready" || !r.task.status);
       const focus = activeItem || nextReady;
 
-      const phases = allPhases().map((p) =>
-        `${p.phase}: ${p.title} — ${p.outcome}`
-      ).join("\n");
+      const projectsOverview = state.projects.map((p) => `${p.name} (${p.tasks.length} tasks)`).join("\n");
 
-      const system = `You are the Mission Control AI for Mr. Lobster OS — Lukasz Bukowiecki's private ops dashboard. He is a solo founder building Mr. Lobster v3, an AI receptionist SaaS for UK trade businesses. Build plan:\n${phases}\n\nRespond with exactly 2 sentences separated by a single newline character. No greetings, no labels, no markdown. Sentence 1: sharp motivational line. Sentence 2: specific tactical advice on the next task. Be direct and energising.`;
+      const system = `You are the Mission Control AI for Lukasz Bukowiecki's private ops dashboard. Active projects:\n${projectsOverview}\n\nRespond with exactly 2 sentences separated by a single newline character. No greetings, no labels, no markdown. Sentence 1: sharp motivational line. Sentence 2: specific tactical advice on the next task. Be direct and energising.`;
 
-      const taskSummary = allPhases().map((p) => {
-        const rows = p.tasks.map((task, i) => {
-          const id = taskId(p.phase, i);
-          const s = state.tasks[id] || "ready";
-          return `  [${s.toUpperCase()}] ${task}`;
-        }).join("\n");
-        return `${p.phase}: ${p.title}\n${rows}`;
+      const taskSummary = state.projects.map((p) => {
+        const rows = p.tasks.map((task) => `  [${(task.status || "ready").toUpperCase()}] ${task.title}`).join("\n");
+        return `${p.name}:\n${rows}`;
       }).join("\n\n");
 
-      const userMsg = `Date: ${todayStr()}. Progress: ${percent}% (${done}/${total} tasks done).\n\nFull task board:\n${taskSummary}\n\n${focus ? `Current focus: "${focus.task}" — ${focus.phase.phase}: ${focus.phase.title}.` : "All tasks complete."}`;
+      const userMsg = `Date: ${todayStr()}. Progress: ${percent}% (${done}/${tasksRefs.length} tasks done).\n\nFull board:\n${taskSummary}\n\n${focus ? `Current focus: "${focus.task.title}" — ${focus.project.name}.` : "All tasks complete."}`;
 
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -1078,29 +900,16 @@
   }
 
   function completedTasksByDate() {
-    const taskLookup = new Map(flatTasks().map((item) => [item.id, item]));
     const grouped = new Map();
-
-    Object.entries(state.taskDates || {}).forEach(([id, date]) => {
-      if (state.tasks[id] !== "done" || !date) return;
-      const item = taskLookup.get(id);
-      const entry = {
-        id,
-        label: taskLabel(item),
-        phase: item?.phase?.phase || "Mission Control"
-      };
-      if (!grouped.has(date)) grouped.set(date, []);
-      grouped.get(date).push(entry);
+    state.projects.forEach((project) => {
+      project.tasks.forEach((task) => {
+        if (task.status !== "done" || !task.doneDate) return;
+        const entry = { id: task.id, label: task.title || "Completed task", phase: project.name };
+        if (!grouped.has(task.doneDate)) grouped.set(task.doneDate, []);
+        grouped.get(task.doneDate).push(entry);
+      });
     });
-
     return grouped;
-  }
-
-  function taskLabel(item) {
-    if (!item) return "Completed task";
-    const task = item.task;
-    if (typeof task === "string") return task;
-    return task?.title || task?.name || task?.label || task?.task || "Completed task";
   }
 
   function getCalendarTooltip() {
@@ -1264,16 +1073,11 @@
   function defaultState() {
     return {
       version: boardVersion,
-      tasks: {},
-      taskDates: {},
+      projects: seedProjects(),
+      activeProjectId: "",
       currentTask: "",
       avatar: "",
-      collapsed: {},
       calendarOffset: 0,
-      moved: {},
-      amendments: {},
-      customTasks: {},
-      customPhases: [],
       conditionsLocation: "southend",
       agentBriefing: [],
       agentBriefingAt: "",
@@ -1287,13 +1091,7 @@
     return {
       ...base,
       ...saved,
-      tasks: { ...(base.tasks || {}), ...(saved.tasks || {}) },
-      taskDates: { ...(base.taskDates || {}), ...(saved.taskDates || {}) },
-      collapsed: { ...(base.collapsed || {}), ...(saved.collapsed || {}) },
-      moved: { ...(base.moved || {}), ...(saved.moved || {}) },
-      amendments: { ...(base.amendments || {}), ...(saved.amendments || {}) },
-      customTasks: { ...(base.customTasks || {}), ...(saved.customTasks || {}) },
-      customPhases: saved.customPhases || base.customPhases || [],
+      projects: Array.isArray(saved.projects) && saved.projects.length ? saved.projects : base.projects,
       conditionsLocation: saved.conditionsLocation || base.conditionsLocation || "southend",
       agentBriefing: saved.agentBriefing || base.agentBriefing || [],
       agentBriefingAt: saved.agentBriefingAt || base.agentBriefingAt || "",
