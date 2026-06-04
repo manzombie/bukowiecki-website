@@ -153,8 +153,13 @@
 
   function renderFilters() {
     const tabs = state.projects.map((project) => {
-      const isActive = project.id === state.activeProjectId ? "is-active" : "";
-      return `<button type="button" class="${isActive}" data-project="${project.id}">${escapeHtml(project.name)}</button>`;
+      const isActive = project.id === state.activeProjectId;
+      const pill = `<button type="button" class="${isActive ? "is-active" : ""}" data-project="${project.id}">${escapeHtml(project.name)}</button>`;
+      // Only the open project shows a delete control, to keep the strip uncluttered.
+      const del = isActive && state.projects.length > 1
+        ? `<button type="button" class="project-del" data-del-project="${project.id}" aria-label="Delete project" title="Delete this project">✕</button>`
+        : "";
+      return pill + del;
     }).join("");
     els.phaseFilters.innerHTML = tabs +
       `<button type="button" class="new-project-tab" data-new-project aria-label="New project" title="New project">＋</button>`;
@@ -164,11 +169,31 @@
           openNewProjectPrompt();
           return;
         }
+        if (button.dataset.delProject !== undefined) {
+          deleteProject(button.dataset.delProject);
+          return;
+        }
         state.activeProjectId = button.dataset.project;
         saveState();
         render();
       });
     });
+  }
+
+  function deleteProject(id) {
+    const project = state.projects.find((p) => p.id === id);
+    if (!project) return;
+    if (state.projects.length <= 1) {
+      alert("You need at least one project. Create another before deleting this one.");
+      return;
+    }
+    const count = project.tasks.length;
+    const detail = count ? ` and its ${count} task${count === 1 ? "" : "s"}` : "";
+    if (!confirm(`Delete project “${project.name}”${detail}? This cannot be undone.`)) return;
+    if (project.tasks.some((t) => t.id === state.currentTask)) state.currentTask = "";
+    state.projects = state.projects.filter((p) => p.id !== id);
+    if (state.activeProjectId === id) state.activeProjectId = state.projects[0].id;
+    render();
   }
 
   function renderTasks() {
