@@ -192,7 +192,8 @@
 
     <!-- Local-only overrides (gitignored, 404s harmlessly on the public build) -->
     <script src="./mission-config.local.js"></script>
-    <script src="./mission-data.js"></script>
-    <script src="./app.js"></script>
+    <!-- bump ?v= when mission-data.js/app.js change so browsers fetch the new file -->
+    <script src="./mission-data.js?v=20260604"></script>
+    <script src="./app.js?v=20260604"></script>
   </body>
 </html>
