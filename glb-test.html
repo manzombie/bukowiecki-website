@@ -28,6 +28,9 @@
   .hud h1 { font-family:Georgia,serif; font-size:1.4rem; font-weight:600; margin:0 0 .3rem; letter-spacing:-.01em; }
   .hud p { margin:0; font-size:.72rem; letter-spacing:.06em; color:var(--ink-dim); }
   .hud .accent { color:var(--accent); }
+  .hud select { margin-top:10px; pointer-events:auto; background:#121212; color:var(--ink);
+    border:1px solid #333; border-radius:5px; padding:6px 10px; font-family:var(--mono);
+    font-size:.74rem; cursor:pointer; }
 
   .panel { position:fixed; right:20px; top:20px; z-index:5;
     background:rgba(18,18,18,.7); border:1px solid #232323; border-radius:8px;
@@ -53,8 +56,15 @@
   <div id="stage"></div>
 
   <div class="hud">
-    <h1>Alien: Covenant</h1>
-    <p>GLB TEST · <span class="accent">DRAG TO ROTATE</span> · AUTO-SPIN</p>
+    <h1>Film objects — GLB test</h1>
+    <p><span class="accent">DRAG TO ROTATE</span> · AUTO-SPIN</p>
+    <select id="modelSel">
+      <option value="alien">Alien: Covenant</option>
+      <option value="avatar">Avatar (mech)</option>
+      <option value="gravity">Gravity (helmet)</option>
+      <option value="hp">Harry Potter (glasses)</option>
+      <option value="blackmirror">Black Mirror (phone)</option>
+    </select>
   </div>
 
   <div class="panel">
@@ -88,10 +98,18 @@
 <script type="module">
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
-const MODEL_URL = "films/alien+creature+3d+model.glb";
+const MODELS = {
+  alien:       "films/alien.glb",
+  avatar:      "films/avatar.glb",
+  gravity:     "films/gravity.glb",
+  hp:          "films/hp.glb",
+  blackmirror: "films/blackmirror.glb",
+};
+let MODEL_URL = MODELS.alien;
 
 const stage = document.getElementById("stage");
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
@@ -138,43 +156,76 @@ controls.enablePan = false;
 controls.autoRotate = true;
 controls.autoRotateSpeed = 0.8;
 
-// --- Load model ---------------------------------------------------------
-let model = null;
-const mats = [];
+// --- Loader (with Draco decoder for the compressed GLBs) ----------------
+const draco = new DRACOLoader();
+draco.setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/");
 const loader = new GLTFLoader();
-loader.load(MODEL_URL, (gltf) => {
-  model = gltf.scene;
+loader.setDRACOLoader(draco);
 
-  // Center on origin and scale longest dimension to ~1.6 units.
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
-  model.position.sub(center);
-  const maxDim = Math.max(size.x, size.y, size.z);
-  model.scale.setScalar(1.6 / maxDim);
+let model = null;       // current THREE.Object3D
+let mats = [];          // current material list (for slider control)
 
-  model.traverse((o) => {
-    if (o.isMesh && o.material) {
-      o.material.metalness = 0.6;
-      o.material.roughness = 0.45;
-      o.material.envMapIntensity = 0.7;
-      mats.push(o.material);
+function disposeCurrent() {
+  if (!window.__pivot) return;
+  scene.remove(window.__pivot);
+  window.__pivot.traverse((o) => {
+    if (o.isMesh) {
+      o.geometry?.dispose();
+      const m = o.material;
+      (Array.isArray(m) ? m : [m]).forEach((mm) => {
+        for (const k in mm) { if (mm[k]?.isTexture) mm[k].dispose(); }
+        mm.dispose?.();
+      });
     }
   });
+  window.__pivot = null;
+  model = null;
+  mats = [];
+}
 
-  const pivot = new THREE.Group();      // pivot for the float bob
-  pivot.add(model);
-  scene.add(pivot);
-  window.__pivot = pivot;
+function loadModel(url) {
+  const loaderEl = document.getElementById("loader");
+  loaderEl.classList.remove("hidden");
+  loaderEl.textContent = "LOADING MODEL…";
+  disposeCurrent();
 
-  document.getElementById("loader").classList.add("hidden");
-}, (e) => {
-  const pct = e.total ? Math.round(e.loaded/e.total*100) : 0;
-  document.getElementById("loader").textContent = "LOADING MODEL… " + pct + "%";
-}, (err) => {
-  document.getElementById("loader").textContent = "FAILED TO LOAD: " + err;
-  console.error(err);
-});
+  loader.load(url, (gltf) => {
+    model = gltf.scene;
+
+    // Center on origin and scale longest dimension to ~1.6 units.
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    model.position.sub(center);
+    model.scale.setScalar(1.6 / Math.max(size.x, size.y, size.z));
+
+    // Apply current slider values to the new materials.
+    const metal = +document.getElementById("metal").value;
+    const rough = +document.getElementById("rough").value;
+    const envI  = +document.getElementById("env").value;
+    model.traverse((o) => {
+      if (o.isMesh && o.material) {
+        o.material.metalness = metal;
+        o.material.roughness = rough;
+        o.material.envMapIntensity = envI;
+        mats.push(o.material);
+      }
+    });
+
+    const pivot = new THREE.Group();   // pivot for the float bob
+    pivot.add(model);
+    scene.add(pivot);
+    window.__pivot = pivot;
+    loaderEl.classList.add("hidden");
+  }, (e) => {
+    const pct = e.total ? Math.round(e.loaded/e.total*100) : 0;
+    loaderEl.textContent = "LOADING MODEL… " + pct + "%";
+  }, (err) => {
+    loaderEl.textContent = "FAILED TO LOAD: " + err;
+    console.error(err);
+  });
+}
+loadModel(MODEL_URL);
 
 // --- UI bindings --------------------------------------------------------
 const $ = (id) => document.getElementById(id);
@@ -206,6 +257,9 @@ bind("env",    v => mats.forEach(m => m.envMapIntensity = v));
 bind("spin",   v => controls.autoRotateSpeed = v);
 $("rimColor").addEventListener("input", e => { const c=new THREE.Color(e.target.value); rim.color.copy(c); rim2.color.copy(c); });
 let floatOn = true; $("float").addEventListener("change", e => floatOn = e.target.checked);
+
+// Model switcher
+$("modelSel").addEventListener("change", e => { MODEL_URL = MODELS[e.target.value]; loadModel(MODEL_URL); });
 
 // Background swatch — canvas is transparent, so just recolour the page behind it.
 function setBg(hex){ document.body.style.background = hex; $("bgColor").value = hex; }

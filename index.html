@@ -32,7 +32,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=3d1" />
+
+  <!-- Three.js (vanilla, CDN, no build step) for the real-time 3D film objects -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
 </head>
 
 <body>
@@ -94,7 +104,11 @@
   </section>
 
   <!-- ============================================================= -->
-  <!-- THE WORK — five film nodes (looping floating-object videos)    -->
+  <!-- THE WORK — five film nodes (real-time floating 3D objects)     -->
+  <!--   Each node: a transparent Three.js canvas (object) sitting     -->
+  <!--   BEHIND the caption; text is allowed to overlap the object     -->
+  <!--   for depth (hero-style). Order = chronological, Avatar first.  -->
+  <!--   3D handled by js/films3d.js; no-WebGL → static poster.        -->
   <!-- ============================================================= -->
   <section class="section films" id="work">
     <div class="section__head reveal">
@@ -102,16 +116,11 @@
       <p class="section__intro mono">A selection from seventeen years in feature &amp; episodic VFX.</p>
     </div>
 
-    <!-- AVATAR -->
-    <article class="film film--left reveal" data-film="avatar">
-      <div class="film__object">
-        <video class="film__video" data-film-video muted playsinline preload="none"
-               poster="films/avatar.poster.webp"
-               aria-label="A heavy piloted mech walker, shadowed pilot in an open cockpit, worn metal armor with an orange rim light raking the left plating, floating in a black void.">
-          <source data-src="films/avatar.webm" type="video/webm" />
-          <source data-src="films/avatar.mp4" type="video/mp4" />
-        </video>
-      </div>
+    <!-- AVATAR · 2009 -->
+    <article class="film film--left reveal" data-film="avatar" data-glb="films/avatar.glb">
+      <div class="film__viewer" aria-hidden="true"></div>
+      <img class="film__poster" src="films/avatar.poster.webp" loading="lazy"
+           alt="A heavy piloted mech walker, shadowed pilot in an open cockpit, worn metal armor with an orange rim light raking the left plating, floating in a void." />
       <div class="film__caption">
         <h3 class="film__title">Avatar</h3>
         <p class="film__meta mono">VFX Editor · 2009 · Framestore</p>
@@ -119,16 +128,23 @@
       </div>
     </article>
 
-    <!-- GRAVITY -->
-    <article class="film film--right reveal" data-film="gravity">
-      <div class="film__object">
-        <video class="film__video" data-film-video muted playsinline preload="none"
-               poster="films/gravity.poster.webp"
-               aria-label="An empty Russian cosmonaut space helmet with a reflective visor and an 'L. DEMIDOV' name tag, orange glinting on the glass, floating in a black void.">
-          <source data-src="films/gravity.webm" type="video/webm" />
-          <source data-src="films/gravity.mp4" type="video/mp4" />
-        </video>
+    <!-- HARRY POTTER · 2010–11 -->
+    <article class="film film--right reveal" data-film="hp" data-glb="films/hp.glb">
+      <div class="film__viewer" aria-hidden="true"></div>
+      <img class="film__poster" src="films/hp.poster.webp" loading="lazy"
+           alt="Round wire-frame eyeglasses with an orange rim light catching the thin metal and temple arms, floating in a void." />
+      <div class="film__caption">
+        <h3 class="film__title">Harry Potter and the Deathly Hallows</h3>
+        <p class="film__meta mono">Lead VFX Editor · 2010–11 · Framestore</p>
+        <p class="film__line">The only person who knew the project structure from the earlier films. I ran editorial.</p>
       </div>
+    </article>
+
+    <!-- GRAVITY · 2013 -->
+    <article class="film film--left reveal" data-film="gravity" data-glb="films/gravity.glb">
+      <div class="film__viewer" aria-hidden="true"></div>
+      <img class="film__poster" src="films/gravity.poster.webp" loading="lazy"
+           alt="An empty Russian cosmonaut space helmet with a reflective visor and an 'L. DEMIDOV' name tag, orange glinting on the glass, floating in a void." />
       <div class="film__caption">
         <h3 class="film__title">Gravity</h3>
         <p class="film__meta mono">VFX Editor · 2013 · Framestore</p>
@@ -137,55 +153,28 @@
       </div>
     </article>
 
-    <!-- HARRY POTTER -->
-    <article class="film film--left reveal" data-film="hp">
-      <div class="film__object">
-        <video class="film__video" data-film-video muted playsinline preload="none"
-               poster="films/hp.poster.webp"
-               aria-label="Round wire-frame eyeglasses with an orange rim light catching the thin metal and temple arms, floating in a black void.">
-          <source data-src="films/hp.webm" type="video/webm" />
-          <source data-src="films/hp.mp4" type="video/mp4" />
-        </video>
-      </div>
-      <div class="film__caption">
-        <h3 class="film__title">Harry Potter and the Deathly Hallows</h3>
-        <p class="film__meta mono">Lead VFX Editor · 2010–11 · Framestore</p>
-        <p class="film__line">The only person who knew the project structure from the earlier films. I ran editorial.</p>
-      </div>
-    </article>
-
-    <!-- BLACK MIRROR -->
-    <article class="film film--right reveal" data-film="blackmirror">
-      <div class="film__object">
-        <video class="film__video" data-film-video muted playsinline preload="none"
-               poster="films/blackmirror.poster.webp"
-               aria-label="A switched-off smartphone with a cracked screen, orange glowing faintly through the spiderweb of cracks, floating in a black void.">
-          <source data-src="films/blackmirror.webm" type="video/webm" />
-          <source data-src="films/blackmirror.mp4" type="video/mp4" />
-        </video>
-      </div>
-      <div class="film__caption">
-        <h3 class="film__title">Black Mirror</h3>
-        <p class="film__meta mono">VFX Editor · Framestore</p>
-        <p class="film__line">Charlie Brooker demands invisible effects — harder to pull off than the spectacular ones.</p>
-      </div>
-    </article>
-
-    <!-- ALIEN: COVENANT -->
-    <article class="film film--left reveal" data-film="alien">
-      <div class="film__object">
-        <video class="film__video" data-film-video muted playsinline preload="none"
-               poster="films/alien.poster.webp"
-               aria-label="A biomechanical facehugger-style creature with bony finger-legs and a curled segmented tail, orange raking the spine, floating in a black void.">
-          <source data-src="films/alien.webm" type="video/webm" />
-          <source data-src="films/alien.mp4" type="video/mp4" />
-        </video>
-      </div>
+    <!-- ALIEN: COVENANT · 2017 -->
+    <article class="film film--right reveal" data-film="alien" data-glb="films/alien.glb">
+      <div class="film__viewer" aria-hidden="true"></div>
+      <img class="film__poster" src="films/alien.poster.webp" loading="lazy"
+           alt="A biomechanical facehugger-style creature with bony finger-legs and a curled segmented tail, orange raking the spine, floating in a void." />
       <div class="film__caption">
         <h3 class="film__title">Alien: Covenant</h3>
         <p class="film__meta mono">VFX Editor · 2017 · Framestore</p>
         <!-- [PLACEHOLDER: one line — your specific contribution to Alien: Covenant] -->
         <p class="film__line" data-placeholder="alien-line">[PLACEHOLDER: one line — your specific contribution]</p>
+      </div>
+    </article>
+
+    <!-- BLACK MIRROR · (last) -->
+    <article class="film film--left reveal" data-film="blackmirror" data-glb="films/blackmirror.glb">
+      <div class="film__viewer" aria-hidden="true"></div>
+      <img class="film__poster" src="films/blackmirror.poster.webp" loading="lazy"
+           alt="A switched-off smartphone with a cracked screen, orange glowing faintly through the spiderweb of cracks, floating in a void." />
+      <div class="film__caption">
+        <h3 class="film__title">Black Mirror</h3>
+        <p class="film__meta mono">VFX Editor · Framestore</p>
+        <p class="film__line">Charlie Brooker demands invisible effects — harder to pull off than the spectacular ones.</p>
       </div>
     </article>
 
@@ -323,6 +312,7 @@
     <footer class="footer mono">© 2026 Lukasz Bukowiecki · bukowiecki.co</footer>
   </section>
 
-  <script src="js/main.js"></script>
+  <script src="js/main.js?v=3d1"></script>
+  <script type="module" src="js/films3d.js?v=3d1"></script>
 </body>
 </html>
