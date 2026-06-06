@@ -1,276 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lukasz Bukowiecki - VFX Editor & Workflow Builder</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎬</text></svg>">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ============================================================= -->
+  <!-- SEO / META                                                    -->
+  <!-- ============================================================= -->
+  <title>Lukasz Bukowiecki — The AI-native VFX Editor</title>
+  <meta name="description" content="VFX Editor & AI tool builder. 17 years cutting shots on Avatar, Gravity, Harry Potter, Black Mirror and Alien: Covenant — now building the AI-native editorial tools post-production still doesn't have." />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Lukasz Bukowiecki — The AI-native VFX Editor" />
+  <meta property="og:description" content="17 years on the biggest films ever made. Now building the AI tools post-production doesn't have yet." />
+  <meta property="og:url" content="https://bukowiecki.co/" />
+  <!-- OG image = hero end frame (Oscar presented) on black -->
+  <meta property="og:image" content="images/og-image.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Lukasz Bukowiecki — The AI-native VFX Editor" />
+  <meta name="twitter:description" content="17 years on the biggest films ever made. Now building the AI tools post-production doesn't have yet." />
+  <meta name="twitter:image" content="images/og-image.jpg" />
+
+  <!-- ============================================================= -->
+  <!-- FONTS — serif (story) + mono (machine)                         -->
+  <!--   Fraunces  = serif display / prose (human craft)              -->
+  <!--   JetBrains Mono = nav, data, captions, CTAs (the machine)     -->
+  <!--   Inter     = optional neutral body sans                       -->
+  <!-- ============================================================= -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
-    <div class="container">
-        <!-- Hero Section -->
-        <section class="hero" id="home">
-            <div class="hero-content">
-                <div class="hero-image">
-                    <img src="images/oscar_BW.jpg" alt="Lukasz Bukowiecki - VFX Editor & Workflow Builder">
-                    <div class="outline-figure"></div>
-                </div>
-                <div class="hero-text">
-                    <h1>LUKASZ BUKOWIECKI</h1>
-                    <h2>VFX EDITOR<br>& WORKFLOW BUILDER</h2>
-                    <a href="mailto:lukasz@bukowiecki.co" class="cta-button">COLLABORATE WITH ME</a>
-                </div>
-            </div>
-        </section>
 
-        <!-- Navigation -->
-        <nav class="main-nav">
-            <ul>
-                <li><a href="#about">ABOUT ME</a></li>
-                <li><a href="#building">BUILDING</a></li>
-                <li><a href="vfxtools/index.html">TOOLS</a></li>
-                <li><a href="#vision">VISION</a></li>
-                <li><a href="#collaboration">COLLABORATION</a></li>
-                <li><a href="#speaking">SPEAKING & WORKSHOPS</a></li>
-            </ul>
-        </nav>
+  <!-- ============================================================= -->
+  <!-- NAV — fixed, minimal, mono                                     -->
+  <!-- ============================================================= -->
+  <header class="nav" id="nav">
+    <a href="#top" class="nav__brand">bukowiecki.co</a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#work" data-nav="work">Work<span class="nav__dot" aria-hidden="true"></span></a>
+      <a href="#frameshift" data-nav="frameshift">FRAME/SHIFT<span class="nav__dot" aria-hidden="true"></span></a>
+      <a href="#vfx-tools" data-nav="vfx-tools">VFX Tools<span class="nav__dot" aria-hidden="true"></span></a>
+      <a href="#now" data-nav="now">Now<span class="nav__dot" aria-hidden="true"></span></a>
+      <a href="#contact" data-nav="contact">Contact<span class="nav__dot" aria-hidden="true"></span></a>
+    </nav>
+  </header>
 
-        <!-- About Section -->
-        <section class="section" id="about" data-aos="fade-up">
-            <h2 class="section-title">ABOUT ME</h2>
-            <div class="section-content">
-                <style>
-                @media screen and (max-width: 768px) {
-                    #about .section-content {
-                        text-align: left;
-                    }
-                    #about .about-block {
-                        text-align: left;
-                    }
-                    #about .about-block h3 {
-                        text-align: left;
-                    }
-                    #about .about-block p {
-                        text-align: left;
-                    }
-                }
-                </style>
-                <div class="about-block" data-aos="fade-up" data-aos-delay="100">
-                    <h3>VFX</h3>
-                    <p>I've been working in film and TV since 2007, shaping stories through visual effects on some of the most ambitious productions in modern cinema—Avatar, Gravity, Harry Potter and the Deathly Hallows: Part 2, Everest, Paddington, and Alien: Covenant, among others.</p>
-                </div>
-                <div class="about-block" data-aos="fade-up" data-aos-delay="200">
-                    <h3>Freelance</h3>
-                    <p>For the last seven years, I've worked as a freelance VFX Editor, collaborating with leading studios on high-profile streaming shows like Black Mirror, Dracula, The Witcher: Blood Origin, and Kaos.</p>
-                </div>
-                <div class="about-block" data-aos="fade-up" data-aos-delay="300">
-                    <h3>Focus</h3>
-                    <p>My role has always been about making the invisible work—bridging creative vision with the technical realities of post-production.</p>
-                </div>
-            </div>
-            <div style="width: 100%; display: flex; justify-content: center; margin-top: 40px;">
-                <a href="https://www.imdb.com/name/nm3164979/" target="_blank" rel="noopener" class="imdb-tooltip-wrapper" style="position: relative; display: inline-block;">
-                    <img src="images/ALL_FILM_IMAGES.png" alt="All Film Projects" loading="lazy" style="max-width: 100%; height: auto; display: block; border-radius: 8px;" />
-                    <span class="imdb-tooltip" style="visibility: hidden; opacity: 0; width: max-content; background: #222; color: #fff; text-align: center; border-radius: 8px; padding: 12px 24px; position: absolute; left: 50%; top: 100%; transform: translateX(-50%) scale(1); font-weight: bold; font-size: 11px; transition: opacity 0.2s, transform 0.2s; z-index: 10; white-space: nowrap;">Visit my IMDB page</span>
-                </a>
-                <style>
-                .imdb-tooltip-wrapper:hover .imdb-tooltip {
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                    transform: translateX(-50%) scale(1.05) !important;
-                }
-                </style>
-            </div>
-        </section>
+  <span id="top"></span>
 
-        <!-- Building section -->
-        <section class="section" id="building" data-aos="fade-up">
-            <h2 class="section-title">BUILDING</h2>
-            <div class="section-content">
-                <div class="building-block" data-aos="fade-up" data-aos-delay="100">
-                    <a href="vfxtools/index.html" class="vfxtools-tooltip-wrapper" style="position: relative; display: inline-block;">
-                        <div style="font-size: 48px; margin-bottom: 15px;">🛠️</div>
-                        <span class="vfxtools-tooltip" style="visibility: hidden; opacity: 0; width: max-content; background: #222; color: #fff; text-align: center; border-radius: 8px; padding: 12px 24px; position: absolute; left: 50%; top: 100%; transform: translateX(-50%) scale(1); font-weight: bold; font-size: 11px; transition: opacity 0.2s, transform 0.2s; z-index: 10; white-space: nowrap;">Explore VFX Tools</span>
-                    </a>
-                    <style>
-                    .vfxtools-tooltip-wrapper:hover .vfxtools-tooltip {
-                        visibility: visible !important;
-                        opacity: 1 !important;
-                        transform: translateX(-50%) scale(1.05) !important;
-                    }
-                    </style>
-                    <h3>VFX Workflow Tools</h3>
-                    <p>I build practical tools for VFX and post-production workflows—EDL parsing, shot comparison, turnover automation. These solve real problems I encounter daily, saving hours of manual work and reducing errors when it matters most.</p>
-                    <p style="margin-top: 15px;"><a href="vfxtools/index.html" style="color: #888; text-decoration: none; border-bottom: 1px solid #888;">Explore VFX Tools →</a></p>
-                </div>
-                <div class="building-block" data-aos="fade-up" data-aos-delay="200">
-                    <a href="frameshift/index.html" class="frameshift-tooltip-wrapper" style="position: relative; display: inline-block;">
-                        <img src="frameshift/images/frame_shift_logo_WHITE.png" alt="FrameShift Logo" loading="lazy" style="max-width: 300px; width: 100%; height: auto; display: block; margin-bottom: 20px;" />
-                        <span class="frameshift-tooltip" style="visibility: hidden; opacity: 0; width: max-content; background: #222; color: #fff; text-align: center; border-radius: 8px; padding: 12px 24px; position: absolute; left: 50%; top: 100%; transform: translateX(-50%) scale(1); font-weight: bold; font-size: 11px; transition: opacity 0.2s, transform 0.2s; z-index: 10; white-space: nowrap;">Visit FrameShift</span>
-                    </a>
-                    <style>
-                    .frameshift-tooltip-wrapper:hover .frameshift-tooltip {
-                        visibility: visible !important;
-                        opacity: 1 !important;
-                        transform: translateX(-50%) scale(1.05) !important;
-                    }
-                    </style>
-                    <h3>FrameShift</h3>
-                    <p>FrameShift by Bukowiecki develops workflow tools for post-production, editorial, and VFX professionals working in film and television — practical, editorial-first tools that reduce manual work and improve accuracy.</p>
-                    <p style="margin-top: 15px;"><a href="frameshift/index.html" style="color: #888; text-decoration: none; border-bottom: 1px solid #888;">Explore FrameShift →</a></p>
-                </div>
+  <!-- ============================================================= -->
+  <!-- HERO — scroll-scrubbed frame sequence (sticky canvas)          -->
+  <!-- ============================================================= -->
+  <section class="hero" id="hero">
+    <!-- The section is taller than the viewport; the extra height is
+         the scroll runway that drives the frame playhead. -->
+    <div class="hero__sticky">
+      <div class="hero__stage">
+        <!-- Canvas: the scrubbed sequence is drawn here.
+             mix-blend:screen makes the pure-black frame bg vanish into --void. -->
+        <canvas class="hero__canvas" id="hero-canvas" aria-hidden="true"></canvas>
+        <!-- Static fallback (mobile / reduced-motion / pre-load): end pose -->
+        <img class="hero__fallback" id="hero-fallback"
+             src="hero/frame_0061.webp"
+             alt="Lukasz Bukowiecki presenting a chrome award statuette, rendered in black and white against a black void." />
 
-                <div class="building-block" data-aos="fade-up" data-aos-delay="300">
-                    <a href="https://www.decentstudio.io/" target="_blank" rel="noopener" class="decentstudio-tooltip-wrapper" style="position: relative; display: inline-block;">
-                        <img src="images/DECENTSTUDIO_LOGO_V2.png" alt="DecentStudio Logo" loading="lazy" style="max-width: 300px; width: 100%; height: auto; display: block; margin-bottom: 20px;" />
-                        <span class="decentstudio-tooltip" style="visibility: hidden; opacity: 0; width: max-content; background: #222; color: #fff; text-align: center; border-radius: 8px; padding: 12px 24px; position: absolute; left: 50%; top: 100%; transform: translateX(-50%) scale(1); font-weight: bold; font-size: 11px; transition: opacity 0.2s, transform 0.2s; z-index: 10; white-space: nowrap;">Visit DecentStudio.io</span>
-                    </a>
-                    <style>
-                    .decentstudio-tooltip-wrapper:hover .decentstudio-tooltip {
-                        visibility: visible !important;
-                        opacity: 1 !important;
-                        transform: translateX(-50%) scale(1.05) !important;
-                    }
-                    </style>
-                    <h3>DecentStudio</h3>
-                    <p>I co-founded DecentStudio—a platform for decentralised storytelling where emerging tech meets creative experimentation, enabling new forms of co-creation between filmmakers and audiences.</p>
-                </div>
-            </div>
-        </section>
+        <!-- Text overlaid on the frame's empty black regions -->
+        <div class="hero__copy">
+          <p class="hero__eyebrow mono">VFX EDITOR · AI TOOL BUILDER</p>
+          <h1 class="hero__headline">I build the systems<br />behind the scenes.</h1>
+          <p class="hero__subhead">
+            17 years cutting shots on Avatar, Gravity, Harry Potter, Black Mirror
+            and Alien: Covenant. Now building the AI-native editorial tools
+            post-production still doesn't have.
+          </p>
+          <div class="hero__cta-row">
+            <a href="#frameshift" class="btn btn--accent mono">&rarr; See the tools</a>
+          </div>
+        </div>
 
-        <!-- Vision Section -->
-        <section class="section" id="vision" data-aos="fade-up">
-            <h2 class="section-title">VISION</h2>
-            <div class="section-content">
-                <div class="vision-block" data-aos="fade-up" data-aos-delay="100">
-                    <h3>Participation</h3>
-                    <p>My work starts with story—shaped by craft, detail, and collaboration.</p>
-                </div>
-                <div class="vision-block" data-aos="fade-up" data-aos-delay="200">
-                    <h3>Shift</h3>
-                    <p>I'm not just looking back at how things were made. I'm building what's next.</p>
-                </div>
-                <div class="vision-block" data-aos="fade-up" data-aos-delay="300">
-                    <h3>Access</h3>
-                    <p>I believe the future of entertainment is non-gated, audience-driven, and powered by emerging tools—where everyone has a voice in the story.</p>
-                </div>
-                <div class="vision-block" data-aos="fade-up" data-aos-delay="400">
-                    <h3>Platform</h3>
-                    <p>From blockbusters to blockchain—I work where story meets infrastructure.</p>
-                </div>
-            </div>
-        </section>
+        <!-- Thin mono proof line -->
+        <p class="hero__proof mono">
+          17 YEARS · THOUSANDS OF SHOTS ·
+          <!-- [PLACEHOLDER: IMDb URL] -->
+          <a href="#" class="proof__link" data-placeholder="imdb-url">IMDB &nearr;</a>
+        </p>
+      </div>
+    </div>
+  </section>
 
-        <!-- Collaboration Section -->
-        <section class="section" id="collaboration" data-aos="fade-up">
-            <h2 class="section-title">COLLABORATION</h2>
-            <div class="section-content">
-                <div class="collaboration-block" data-aos="fade-up" data-aos-delay="100">
-                    <h3>Creative Strategy & Advisory</h3>
-                    <p>Tailored creative direction and strategic advisory for visionary storytelling projects, catering to individual creators and professional studios alike.</p>
-                </div>
-                <div class="collaboration-block" data-aos="fade-up" data-aos-delay="200">
-                    <h3>AI Integration Consulting</h3>
-                    <p>Personalised consulting services designed to help businesses and creative teams effectively integrate AI technologies into production pipelines.</p>
-                </div>
-                <div class="collaboration-block" data-aos="fade-up" data-aos-delay="300">
-                    <h3>Project Development Workshops</h3>
-                    <p>Short-term, targeted consultations facilitating the successful launch of visually and conceptually groundbreaking media projects.</p>
-                </div>
-                <div class="collaboration-block" data-aos="fade-up" data-aos-delay="400">
-                    <h3>Project Collaborations</h3>
-                    <p>Selective freelance engagements, collaborating closely on unique, ambitious projects aligned with personal creative interests.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Speaking Section -->
-        <section class="section" id="speaking" data-aos="fade-up">
-            <h2 class="section-title">SPEAKING & WORKSHOPS</h2>
-            <div class="section-content">
-                <style>
-                @media screen and (max-width: 768px) {
-                    #speaking .section-content {
-                        text-align: left;
-                    }
-                    #speaking .speaking-block {
-                        text-align: left;
-                    }
-                    #speaking .speaking-block h3 {
-                        text-align: left;
-                    }
-                    #speaking .speaking-block p {
-                        text-align: left;
-                    }
-                }
-                </style>
-                <div class="speaking-block" data-aos="fade-up" data-aos-delay="100">
-                    <h3>Keynote Speaking</h3>
-                    <p>Insightful and engaging keynote presentations focused on the future of storytelling, filmmaking innovations, and practical integration of AI into creative practices.</p>
-                </div>
-                <div class="speaking-block" data-aos="fade-up" data-aos-delay="200">
-                    <h3>Panel Participation</h3>
-                    <p>Experienced participant in high-profile industry panels discussing the future intersections of VFX, AI, Web3, and the evolving media landscape.</p>
-                </div>
-                <div class="speaking-block" data-aos="fade-up" data-aos-delay="300">
-                    <h3>Workshops & Masterclasses</h3>
-                    <p>Interactive, specialized short-format workshops designed to teach and inspire creators in AI-driven filmmaking, animation, and visionary storytelling techniques.</p>
-                </div>
-                <div class="speaking-block" data-aos="fade-up" data-aos-delay="400">
-                    <h3>Media Appearances</h3>
-                    <p>Frequent appearances in media, offering interviews and informed discussions about industry trends, personal career insights, and the future of visual storytelling.</p>
-                </div>
-            </div>
-            <div style="width: 100%; display: flex; justify-content: center; margin-top: 40px;">
-                <a href="https://linktr.ee/bukowiecki" target="_blank" rel="noopener" class="linktree-tooltip-wrapper" style="position: relative; display: inline-block;">
-                    <img src="images/PANELS.png" alt="Panels and Workshops" loading="lazy" style="max-width: 100%; height: auto; display: block; border-radius: 8px;" />
-                    <span class="linktree-tooltip" style="visibility: hidden; opacity: 0; width: max-content; background: #222; color: #fff; text-align: center; border-radius: 8px; padding: 12px 24px; position: absolute; left: 50%; top: 100%; transform: translateX(-50%) scale(1); font-weight: bold; font-size: 11px; transition: opacity 0.2s, transform 0.2s; z-index: 10; white-space: nowrap;">Visit my LinkTree</span>
-                </a>
-                <style>
-                .linktree-tooltip-wrapper:hover .linktree-tooltip {
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                    transform: translateX(-50%) scale(1.05) !important;
-                }
-                </style>
-            </div>
-        </section>
-
-        <!-- Contact Section -->
-        <section class="section" id="contact" data-aos="fade-up">
-            <h2 class="section-title">CONTACT</h2>
-            <div class="section-content">
-                <div class="contact-block">
-                    <p>Ready to collaborate on groundbreaking visual projects or discuss innovative storytelling approaches?</p>
-                    <div class="cta-container">
-                        <a href="mailto:lukasz@bukowiecki.co" class="cta-button">COLLABORATE WITH ME</a>
-                        <a href="#building" class="cta-button secondary">EXPLORE MY VISION</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer>
-            <div class="footer-content">
-                <p>&copy; 2025 Bukowiecki.co  All rights reserved.</p>
-                <div class="social-links">
-                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-vimeo-v"></i></a>
-                </div>
-            </div>
-        </footer>
+  <!-- ============================================================= -->
+  <!-- THE WORK — five film nodes (looping floating-object videos)    -->
+  <!-- ============================================================= -->
+  <section class="section films" id="work">
+    <div class="section__head reveal">
+      <h2 class="section__title">The work.</h2>
+      <p class="section__intro mono">A selection from seventeen years in feature &amp; episodic VFX.</p>
     </div>
 
-    <script src="js/main.js"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>AOS.init({ duration: 800, easing: 'ease-out-cubic', once: true, offset: 50 });</script>
+    <!-- AVATAR -->
+    <article class="film film--left reveal" data-film="avatar">
+      <div class="film__object">
+        <video class="film__video" data-film-video muted playsinline preload="none"
+               poster="films/avatar.poster.webp"
+               aria-label="A heavy piloted mech walker, shadowed pilot in an open cockpit, worn metal armor with an orange rim light raking the left plating, floating in a black void.">
+          <source data-src="films/avatar.webm" type="video/webm" />
+          <source data-src="films/avatar.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="film__caption">
+        <h3 class="film__title">Avatar</h3>
+        <p class="film__meta mono">VFX Editor · 2009 · Framestore</p>
+        <p class="film__line">A year of sixteen-hour days. Every shot through the pipeline, artist to screen.</p>
+      </div>
+    </article>
+
+    <!-- GRAVITY -->
+    <article class="film film--right reveal" data-film="gravity">
+      <div class="film__object">
+        <video class="film__video" data-film-video muted playsinline preload="none"
+               poster="films/gravity.poster.webp"
+               aria-label="An empty Russian cosmonaut space helmet with a reflective visor and an 'L. DEMIDOV' name tag, orange glinting on the glass, floating in a black void.">
+          <source data-src="films/gravity.webm" type="video/webm" />
+          <source data-src="films/gravity.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="film__caption">
+        <h3 class="film__title">Gravity</h3>
+        <p class="film__meta mono">VFX Editor · 2013 · Framestore</p>
+        <!-- [PLACEHOLDER: one line — your specific contribution to Gravity] -->
+        <p class="film__line" data-placeholder="gravity-line">[PLACEHOLDER: one line — your specific contribution]</p>
+      </div>
+    </article>
+
+    <!-- HARRY POTTER -->
+    <article class="film film--left reveal" data-film="hp">
+      <div class="film__object">
+        <video class="film__video" data-film-video muted playsinline preload="none"
+               poster="films/hp.poster.webp"
+               aria-label="Round wire-frame eyeglasses with an orange rim light catching the thin metal and temple arms, floating in a black void.">
+          <source data-src="films/hp.webm" type="video/webm" />
+          <source data-src="films/hp.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="film__caption">
+        <h3 class="film__title">Harry Potter and the Deathly Hallows</h3>
+        <p class="film__meta mono">Lead VFX Editor · 2010–11 · Framestore</p>
+        <p class="film__line">The only person who knew the project structure from the earlier films. I ran editorial.</p>
+      </div>
+    </article>
+
+    <!-- BLACK MIRROR -->
+    <article class="film film--right reveal" data-film="blackmirror">
+      <div class="film__object">
+        <video class="film__video" data-film-video muted playsinline preload="none"
+               poster="films/blackmirror.poster.webp"
+               aria-label="A switched-off smartphone with a cracked screen, orange glowing faintly through the spiderweb of cracks, floating in a black void.">
+          <source data-src="films/blackmirror.webm" type="video/webm" />
+          <source data-src="films/blackmirror.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="film__caption">
+        <h3 class="film__title">Black Mirror</h3>
+        <p class="film__meta mono">VFX Editor · Framestore</p>
+        <p class="film__line">Charlie Brooker demands invisible effects — harder to pull off than the spectacular ones.</p>
+      </div>
+    </article>
+
+    <!-- ALIEN: COVENANT -->
+    <article class="film film--left reveal" data-film="alien">
+      <div class="film__object">
+        <video class="film__video" data-film-video muted playsinline preload="none"
+               poster="films/alien.poster.webp"
+               aria-label="A biomechanical facehugger-style creature with bony finger-legs and a curled segmented tail, orange raking the spine, floating in a black void.">
+          <source data-src="films/alien.webm" type="video/webm" />
+          <source data-src="films/alien.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="film__caption">
+        <h3 class="film__title">Alien: Covenant</h3>
+        <p class="film__meta mono">VFX Editor · 2017 · Framestore</p>
+        <!-- [PLACEHOLDER: one line — your specific contribution to Alien: Covenant] -->
+        <p class="film__line" data-placeholder="alien-line">[PLACEHOLDER: one line — your specific contribution]</p>
+      </div>
+    </article>
+
+    <!-- Additional credits strip (text only, no objects) -->
+    <p class="films__also mono reveal">
+      ALSO: The Dark Crystal · Paddington · Guardians of the Galaxy · Everest ·
+      Jupiter Ascending · RoboCop · Geostorm · The Golden Compass
+    </p>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- WHAT I DO — expertise bridge                                   -->
+  <!-- ============================================================= -->
+  <section class="section expertise" id="expertise">
+    <div class="section__head reveal">
+      <h2 class="section__title">What I actually do.</h2>
+    </div>
+    <div class="expertise__body reveal">
+      <p class="prose">
+        My job was always the same: make the invisible work. Bridge the creative
+        vision and the technical reality of getting it on screen — thousands of
+        shots, moving cleanly from artist to final.
+      </p>
+      <ul class="caps mono">
+        <li>EDL / ALE workflows</li>
+        <li>Shot tracking &amp; turnover</li>
+        <li>Editorial–VFX pipeline design</li>
+        <li>Avid / conform / online</li>
+        <li>Database &amp; automation tooling</li>
+        <li>AI integration for post</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- FRAME/SHIFT — the database project (placeholder block)         -->
+  <!--   Spelling is FIXED: always "FRAME/SHIFT" — all caps + slash.  -->
+  <!--   CTA target = FRAMESHIFT_URL constant (see js/main.js).        -->
+  <!-- ============================================================= -->
+  <section class="section product" id="frameshift">
+    <div class="product__inner reveal">
+      <div class="product__object">
+        <img class="product__logo" src="images/frame_shift_logo_WHITE.png"
+             alt="FRAME/SHIFT logo." loading="lazy" />
+      </div>
+      <div class="product__copy">
+        <h2 class="section__title">FRAME/SHIFT.</h2>
+        <!-- [PLACEHOLDER — short line on what FRAME/SHIFT is: an editorial/VFX database project] -->
+        <p class="product__line" data-placeholder="frameshift-line">
+          [PLACEHOLDER — short line on what FRAME/SHIFT is: an editorial/VFX database project.]
+        </p>
+        <!-- href injected from FRAMESHIFT_URL constant at runtime -->
+        <a class="btn btn--accent mono" data-link="frameshift" target="_blank" rel="noopener">
+          &rarr; Visit FRAME/SHIFT &nearr;
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- VFX TOOLS — the tools collection (placeholder block)           -->
+  <!--   Separate from FRAME/SHIFT.                                    -->
+  <!--   CTA target = VFXTOOLS_URL constant (see js/main.js).          -->
+  <!-- ============================================================= -->
+  <section class="section product product--alt" id="vfx-tools">
+    <div class="product__inner product__inner--reverse reveal">
+      <div class="product__copy">
+        <h2 class="section__title">VFX Tools.</h2>
+        <!-- [PLACEHOLDER — short line: a selection of editorial/VFX tools I build and share on LinkedIn] -->
+        <p class="product__line" data-placeholder="vfxtools-line">
+          [PLACEHOLDER — short line: a selection of editorial/VFX tools I build and share on LinkedIn.]
+        </p>
+        <!-- href injected from VFXTOOLS_URL constant at runtime -->
+        <a class="btn btn--accent mono" data-link="vfxtools">
+          &rarr; Explore the tools &nearr;
+        </a>
+      </div>
+      <div class="product__object">
+        <div class="product__placeholder mono" aria-hidden="true">VFX&nbsp;TOOLS</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- NOW — current projects                                         -->
+  <!-- ============================================================= -->
+  <section class="section now" id="now">
+    <div class="section__head reveal">
+      <h2 class="section__title">What I'm building now.</h2>
+    </div>
+
+    <div class="now__grid">
+      <article class="now__card reveal">
+        <img class="now__logo" src="images/VFX_Tools.png"
+             alt="VFX Tools logo." loading="lazy" />
+        <h3 class="now__title">AI tools for VFX editorial</h3>
+        <!-- [PLACEHOLDER — short blurb on the AI editorial tools you're building now] -->
+        <p class="now__line" data-placeholder="now-ai-blurb">
+          [PLACEHOLDER — short blurb on the AI editorial tools you're building now.]
+        </p>
+      </article>
+
+      <!-- Mr. Lobster — evidence I ship, not a second pitch -->
+      <article class="now__card now__card--lobster reveal">
+        <img class="now__lobster" src="images/mr_lobster_PFP.png"
+             alt="Mr. Lobster — a brushed-metal lobster brand mark." loading="lazy" />
+        <h3 class="now__title">Mr. Lobster</h3>
+        <p class="now__line">
+          Proof I ship AI products outside film: an AI WhatsApp automation for
+          local businesses that can't afford to miss an enquiry.
+        </p>
+        <a class="link-mono mono" href="https://mrlobster.co.uk" target="_blank" rel="noopener">&rarr; mrlobster.co.uk &nearr;</a>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- CONTACT — end card                                             -->
+  <!-- ============================================================= -->
+  <section class="section contact" id="contact">
+    <div class="contact__inner reveal">
+      <h2 class="section__title">Let's talk.</h2>
+      <p class="contact__sub">For AI integration in post pipelines, editorial tooling, or speaking.</p>
+      <div class="contact__links mono">
+        <!-- [PLACEHOLDER: email address] -->
+        <a href="#" data-placeholder="email">EMAIL &nearr;</a>
+        <!-- [PLACEHOLDER: LinkedIn URL] -->
+        <a href="#" data-placeholder="linkedin">LINKEDIN &nearr;</a>
+        <!-- [PLACEHOLDER: IMDb URL] -->
+        <a href="#" data-placeholder="imdb">IMDB &nearr;</a>
+        <!-- [PLACEHOLDER: X / Twitter URL] -->
+        <a href="#" data-placeholder="x">X &nearr;</a>
+      </div>
+    </div>
+    <footer class="footer mono">© 2026 Lukasz Bukowiecki · bukowiecki.co</footer>
+  </section>
+
+  <script src="js/main.js"></script>
 </body>
 </html>

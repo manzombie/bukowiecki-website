@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GLB Test — Alien (FRAME/SHIFT look)</title>
+
+<!-- Import map: plain Three.js from CDN, no build step. -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<style>
+  :root { --void:#000; --ink:#F4F2EE; --ink-dim:#8A8A8A; --accent:#FF4D00; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; background:var(--void); color:var(--ink);
+    font-family:"JetBrains Mono",ui-monospace,Menlo,monospace; overflow:hidden; }
+  #stage { position:fixed; inset:0; }
+  canvas { display:block; cursor:grab; }
+  canvas:active { cursor:grabbing; }
+
+  .hud { position:fixed; left:24px; top:20px; z-index:5; pointer-events:none; }
+  .hud h1 { font-family:Georgia,serif; font-size:1.4rem; font-weight:600; margin:0 0 .3rem; letter-spacing:-.01em; }
+  .hud p { margin:0; font-size:.72rem; letter-spacing:.06em; color:var(--ink-dim); }
+  .hud .accent { color:var(--accent); }
+
+  .panel { position:fixed; right:20px; top:20px; z-index:5;
+    background:rgba(18,18,18,.7); border:1px solid #232323; border-radius:8px;
+    padding:14px 16px; backdrop-filter:blur(8px); font-size:.7rem; min-width:210px; }
+  .panel label { display:flex; align-items:center; justify-content:space-between;
+    gap:10px; color:var(--ink-dim); margin:7px 0; }
+  .panel input[type=range]{ width:110px; accent-color:var(--accent); }
+  .panel .val { color:var(--ink); width:34px; text-align:right; }
+  .panel .row { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:7px 0; color:var(--ink-dim);}
+  .swatches { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .swatches button { width:22px; height:22px; border-radius:4px; border:1px solid #333;
+    cursor:pointer; padding:0; outline:none; }
+  .swatches button:hover { border-color:var(--accent); transform:scale(1.1); }
+
+  #loader { position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    z-index:10; font-size:.78rem; letter-spacing:.1em; color:var(--ink-dim); }
+  #loader.hidden { display:none; }
+  .hint { position:fixed; left:24px; bottom:18px; z-index:5; font-size:.68rem;
+    letter-spacing:.08em; color:var(--ink-dim); }
+</style>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div class="hud">
+    <h1>Alien: Covenant</h1>
+    <p>GLB TEST · <span class="accent">DRAG TO ROTATE</span> · AUTO-SPIN</p>
+  </div>
+
+  <div class="panel">
+    <div class="row"><span>RIM COLOR</span><input id="rimColor" type="color" value="#ff4d00" /></div>
+    <label>RIM POWER <span><input id="rimPow" type="range" min="0" max="12" step="0.5" value="2.5"><span class="val" id="rimPowV">2.5</span></span></label>
+    <label>RIM AZIMUTH <span><input id="rimAz" type="range" min="-180" max="180" step="1" value="-39"><span class="val" id="rimAzV">-39</span></span></label>
+    <label>RIM ELEV <span><input id="rimEl" type="range" min="-90" max="90" step="1" value="27"><span class="val" id="rimElV">27</span></span></label>
+    <label>BOTTOM LIGHT <span><input id="botInt" type="range" min="0" max="20" step="0.5" value="1"><span class="val" id="botIntV">1</span></span></label>
+    <label>KEY LIGHT <span><input id="keyInt" type="range" min="0" max="4" step="0.1" value="0.8"><span class="val" id="keyIntV">0.8</span></span></label>
+    <label>METALNESS <span><input id="metal" type="range" min="0" max="1" step="0.05" value="0.35"><span class="val" id="metalV">0.35</span></span></label>
+    <label>ROUGHNESS <span><input id="rough" type="range" min="0" max="1" step="0.05" value="0.45"><span class="val" id="roughV">0.45</span></span></label>
+    <label>ENV SHEEN <span><input id="env" type="range" min="0" max="2" step="0.05" value="0.7"><span class="val" id="envV">0.7</span></span></label>
+    <label>AUTO-SPIN <span><input id="spin" type="range" min="0" max="3" step="0.1" value="0.1"><span class="val" id="spinV">0.1</span></span></label>
+    <div class="row"><span>FLOAT</span><input id="float" type="checkbox" checked></div>
+    <div class="row"><span>BG COLOR</span><input id="bgColor" type="color" value="#000000"></div>
+    <div class="swatches" id="swatches">
+      <button data-bg="#000000" title="pure black" style="background:#000000"></button>
+      <button data-bg="#0A0A0A" title="--void" style="background:#0A0A0A"></button>
+      <button data-bg="#121212" title="--void-2" style="background:#121212"></button>
+      <button data-bg="#2b2b2b" title="dark grey" style="background:#2b2b2b"></button>
+      <button data-bg="#808080" title="mid grey" style="background:#808080"></button>
+      <button data-bg="#F4F2EE" title="--ink (off-white)" style="background:#F4F2EE"></button>
+      <button data-bg="#ffffff" title="white" style="background:#ffffff"></button>
+      <button data-bg="#13243a" title="cool navy" style="background:#13243a"></button>
+    </div>
+  </div>
+
+  <div id="loader">LOADING MODEL…</div>
+  <div class="hint">scroll/pinch does nothing (zoom locked) · this is a throwaway test page</div>
+
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+const MODEL_URL = "films/alien+creature+3d+model.glb";
+
+const stage = document.getElementById("stage");
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, innerWidth/innerHeight, 0.01, 100);
+camera.position.set(0, 0, 3.2);
+
+// Subtle environment for metal reflections (generated, no external HDRI file).
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+// --- Lights -------------------------------------------------------------
+// Cool key from front-upper-left.
+const key = new THREE.DirectionalLight(0xcad6ff, 0.9);
+key.position.set(-2, 2.5, 3);
+scene.add(key);
+
+// Hot orange RIM / back light behind the model, aimed at camera → edge glow.
+const rim = new THREE.DirectionalLight(0xff4d00, 6);
+rim.position.set(-1.2, 1.6, -3);   // behind & slightly above-left, like the reference
+scene.add(rim);
+
+// Second small orange kicker from behind-below to catch the legs/tail.
+const rim2 = new THREE.PointLight(0xff4d00, 4, 20, 2);
+rim2.position.set(1.5, -1.2, -2);
+scene.add(rim2);
+
+// Faint ambient so shadows don't go pure black.
+scene.add(new THREE.AmbientLight(0x404048, 0.4));
+
+// --- Controls -----------------------------------------------------------
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.enableZoom = false;
+controls.enablePan = false;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.8;
+
+// --- Load model ---------------------------------------------------------
+let model = null;
+const mats = [];
+const loader = new GLTFLoader();
+loader.load(MODEL_URL, (gltf) => {
+  model = gltf.scene;
+
+  // Center on origin and scale longest dimension to ~1.6 units.
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  model.position.sub(center);
+  const maxDim = Math.max(size.x, size.y, size.z);
+  model.scale.setScalar(1.6 / maxDim);
+
+  model.traverse((o) => {
+    if (o.isMesh && o.material) {
+      o.material.metalness = 0.6;
+      o.material.roughness = 0.45;
+      o.material.envMapIntensity = 0.7;
+      mats.push(o.material);
+    }
+  });
+
+  const pivot = new THREE.Group();      // pivot for the float bob
+  pivot.add(model);
+  scene.add(pivot);
+  window.__pivot = pivot;
+
+  document.getElementById("loader").classList.add("hidden");
+}, (e) => {
+  const pct = e.total ? Math.round(e.loaded/e.total*100) : 0;
+  document.getElementById("loader").textContent = "LOADING MODEL… " + pct + "%";
+}, (err) => {
+  document.getElementById("loader").textContent = "FAILED TO LOAD: " + err;
+  console.error(err);
+});
+
+// --- UI bindings --------------------------------------------------------
+const $ = (id) => document.getElementById(id);
+function bind(id, fn){ const el=$(id); const v=$(id+"V"); const upd=()=>{ if(v)v.textContent=(+el.value).toFixed(2).replace(/\.00$/,""); fn(+el.value); }; el.addEventListener("input",upd); upd(); }
+bind("rimPow", v => rim.intensity = v);          // back rim only
+bind("botInt", v => rim2.intensity = v);          // independent bottom kicker
+bind("keyInt", v => key.intensity = v);
+
+// Rim direction: place the rim light on a sphere (radius fixed) from az/elev.
+const RIM_R = 3.6;
+function updateRimDir(){
+  const az = (+$("rimAz").value) * Math.PI/180;
+  const el = (+$("rimEl").value) * Math.PI/180;
+  rim.position.set(
+    RIM_R * Math.cos(el) * Math.sin(az),
+    RIM_R * Math.sin(el),
+    RIM_R * Math.cos(el) * Math.cos(az)
+  );
+  rim.target.position.set(0,0,0);
+  rim.target.updateMatrixWorld();
+}
+bind("rimAz", updateRimDir);
+bind("rimEl", updateRimDir);
+scene.add(rim.target);
+updateRimDir();
+bind("metal",  v => mats.forEach(m => m.metalness = v));
+bind("rough",  v => mats.forEach(m => m.roughness = v));
+bind("env",    v => mats.forEach(m => m.envMapIntensity = v));
+bind("spin",   v => controls.autoRotateSpeed = v);
+$("rimColor").addEventListener("input", e => { const c=new THREE.Color(e.target.value); rim.color.copy(c); rim2.color.copy(c); });
+let floatOn = true; $("float").addEventListener("change", e => floatOn = e.target.checked);
+
+// Background swatch — canvas is transparent, so just recolour the page behind it.
+function setBg(hex){ document.body.style.background = hex; $("bgColor").value = hex; }
+$("bgColor").addEventListener("input", e => setBg(e.target.value));
+document.getElementById("swatches").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (b) setBg(b.dataset.bg);
+});
+
+// --- Render loop --------------------------------------------------------
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  if (window.__pivot) window.__pivot.position.y = floatOn ? Math.sin(t*0.8)*0.06 : 0;
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+addEventListener("resize", () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
