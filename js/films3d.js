@@ -22,10 +22,10 @@ const RECIPE = {
   metalness: 0.35,
   roughness: 0.45,
   env: 0.7,          // envMapIntensity
-  spin: 0.1,         // OrbitControls autoRotateSpeed
   floatAmp: 0.06,
   floatHz: 0.8,
-  fit: 1.6,          // model fits to this many world units
+  fit: 0.8,          // model fits to this many world units (half-size)
+  scrollRot: 0.0014, // radians of spin per pixel scrolled (down = +, up = −)
 };
 
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -93,10 +93,9 @@ else if (!webglOK()) {
     controls.dampingFactor = 0.06;
     controls.enableZoom = false;
     controls.enablePan = false;
-    controls.autoRotate = !reduce;
-    controls.autoRotateSpeed = RECIPE.spin;
+    controls.autoRotate = false;   // motion comes from scroll (+ drag), not auto-spin
 
-    const v = { node, mount, renderer, scene, camera, controls, pivot: null, ready: false, visible: true };
+    const v = { node, mount, renderer, scene, camera, controls, pivot: null, model: null, ready: false, visible: true };
 
     loader.load(node.dataset.glb, (gltf) => {
       const model = gltf.scene;
@@ -115,9 +114,17 @@ else if (!webglOK()) {
         }
       });
       const pivot = new THREE.Group();
+      // per-node static tilt (degrees) via data-rotx / data-roty / data-rotz
+      const d2r = Math.PI / 180;
+      pivot.rotation.set(
+        (parseFloat(node.dataset.rotx) || 0) * d2r,
+        (parseFloat(node.dataset.roty) || 0) * d2r,
+        (parseFloat(node.dataset.rotz) || 0) * d2r
+      );
       pivot.add(model);
       scene.add(pivot);
       v.pivot = pivot;
+      v.model = model;       // scroll spins the inner model on its own Y axis
       v.ready = true;
       node.classList.add("is-3d-ready");
     }, undefined, (err) => {
@@ -153,11 +160,19 @@ else if (!webglOK()) {
 
   // Single render loop drives all visible viewers.
   const clock = new THREE.Clock();
+  let lastScrollY = window.scrollY;
   function tick() {
     const t = clock.getElapsedTime();
+    // scroll delta this frame → spin objects (down = one way, up = the other)
+    const sy = window.scrollY;
+    const scrollDelta = sy - lastScrollY;
+    lastScrollY = sy;
     viewers.forEach((v) => {
       if (!v.visible || !v.ready) return;
-      if (v.pivot && !reduce) v.pivot.position.y = Math.sin(t * RECIPE.floatHz) * RECIPE.floatAmp;
+      if (!reduce) {
+        if (v.pivot) v.pivot.position.y = Math.sin(t * RECIPE.floatHz) * RECIPE.floatAmp;
+        if (v.model && scrollDelta) v.model.rotation.y += scrollDelta * RECIPE.scrollRot;
+      }
       v.controls.update();
       v.renderer.render(v.scene, v.camera);
     });

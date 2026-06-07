@@ -267,7 +267,8 @@ a { color: inherit; text-decoration: none; }
 .film__caption {
   position: absolute;
   z-index: 2;                   /* text sits OVER the object */
-  bottom: 10%;
+  top: 50%;
+  transform: translateY(-50%);  /* vertically centered → aligns with the object */
   max-width: min(34rem, 78%);
   pointer-events: none;         /* let drags pass through to the object */
 }
@@ -512,7 +513,8 @@ a { color: inherit; text-decoration: none; }
   .film--left .film__caption,
   .film--right .film__caption {
     left: var(--pad); right: var(--pad);
-    max-width: none; text-align: left; bottom: 6%;
+    max-width: none; text-align: left;
+    top: auto; bottom: 6%; transform: none;
   }
 }
 
