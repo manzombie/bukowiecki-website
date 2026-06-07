@@ -95,7 +95,7 @@ else if (!webglOK()) {
     controls.enablePan = false;
     controls.autoRotate = false;   // motion comes from scroll (+ drag), not auto-spin
 
-    const v = { node, mount, renderer, scene, camera, controls, pivot: null, model: null, ready: false, visible: true };
+    const v = { node, mount, renderer, scene, camera, controls, pivot: null, model: null, heroY: 0, ready: false, visible: true };
 
     loader.load(node.dataset.glb, (gltf) => {
       const model = gltf.scene;
@@ -113,18 +113,23 @@ else if (!webglOK()) {
           o.material.envMapIntensity = RECIPE.env;
         }
       });
-      const pivot = new THREE.Group();
-      // per-node static tilt (degrees) via data-rotx / data-roty / data-rotz
       const d2r = Math.PI / 180;
+      // static tilt on the pivot (data-rotx / data-rotz); the "hero" facing angle
+      // (data-roty) lives on the inner model so scroll can spin from it and we can
+      // reset to it each time the node re-enters view (deterministic first sight).
+      const heroY = (parseFloat(node.dataset.roty) || 0) * d2r;
+      const pivot = new THREE.Group();
       pivot.rotation.set(
         (parseFloat(node.dataset.rotx) || 0) * d2r,
-        (parseFloat(node.dataset.roty) || 0) * d2r,
+        0,
         (parseFloat(node.dataset.rotz) || 0) * d2r
       );
+      model.rotation.y = heroY;
       pivot.add(model);
       scene.add(pivot);
       v.pivot = pivot;
       v.model = model;       // scroll spins the inner model on its own Y axis
+      v.heroY = heroY;
       v.ready = true;
       node.classList.add("is-3d-ready");
     }, undefined, (err) => {
@@ -153,7 +158,11 @@ else if (!webglOK()) {
         sizeViewer(v);
       }
       const v = viewers.get(node);
-      if (v) v.visible = e.isIntersecting;
+      if (v) {
+        // reset to the hero facing angle each time it (re)enters view
+        if (e.isIntersecting && v.ready && v.model) v.model.rotation.y = v.heroY;
+        v.visible = e.isIntersecting;
+      }
     });
   }, { rootMargin: "300px 0px 300px 0px", threshold: 0 });
   nodes.forEach((n) => io.observe(n));
