@@ -275,16 +275,6 @@ a { color: inherit; text-decoration: none; }
 .film__caption > * { pointer-events: auto; }
 .film--left  .film__caption { left: 2%;  text-align: left; }
 .film--right .film__caption { right: 2%; text-align: right; }
-/* a soft scrim behind text so it stays legible where it crosses the object */
-.film__caption::before {
-  content: "";
-  position: absolute;
-  inset: -1.4rem -2rem;
-  z-index: -1;
-  background: radial-gradient(120% 120% at 30% 60%, rgba(7,7,8,0.72) 0%, rgba(7,7,8,0) 72%);
-  pointer-events: none;
-}
-.film--right .film__caption::before { background: radial-gradient(120% 120% at 70% 60%, rgba(7,7,8,0.72) 0%, rgba(7,7,8,0) 72%); }
 
 .film__title {
   font-family: var(--serif);
