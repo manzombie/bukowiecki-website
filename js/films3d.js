@@ -167,6 +167,16 @@ else if (!webglOK()) {
   }, { rootMargin: "300px 0px 300px 0px", threshold: 0 });
   nodes.forEach((n) => io.observe(n));
 
+  // Debug: add ?rot to the URL to show a live "data-roty" readout for the
+  // centred object — scroll/drag it to the look you want and read the number.
+  const DEBUG_ROT = new URLSearchParams(location.search).has("rot");
+  let dbgEl = null;
+  if (DEBUG_ROT) {
+    dbgEl = document.createElement("div");
+    dbgEl.style.cssText = "position:fixed;top:12px;right:12px;z-index:9999;background:rgba(0,0,0,.85);color:#FF4D00;font:12px ui-monospace,monospace;padding:8px 10px;border:1px solid #333;border-radius:6px;white-space:pre;pointer-events:none";
+    document.body.appendChild(dbgEl);
+  }
+
   // Single render loop drives all visible viewers.
   const clock = new THREE.Clock();
   let lastScrollY = window.scrollY;
@@ -185,6 +195,22 @@ else if (!webglOK()) {
       v.controls.update();
       v.renderer.render(v.scene, v.camera);
     });
+
+    if (DEBUG_ROT) {
+      // pick the most-centred visible viewer and report its equivalent data-roty
+      const vh = window.innerHeight;
+      let best = null, bestDist = Infinity;
+      viewers.forEach((v) => {
+        if (!v.visible || !v.ready) return;
+        const r = v.node.getBoundingClientRect();
+        const d = Math.abs(r.top + r.height / 2 - vh / 2);
+        if (d < bestDist) { bestDist = d; best = v; }
+      });
+      if (best) {
+        const deg = Math.round(((best.model.rotation.y + best.controls.getAzimuthalAngle()) * 180 / Math.PI) % 360);
+        dbgEl.textContent = best.node.dataset.film + '\ndata-roty="' + deg + '"';
+      }
+    }
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
