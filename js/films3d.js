@@ -31,6 +31,12 @@ const RECIPE = {
 
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// Progress of a node through the viewport: 0 = entering at bottom, 0.5 = centred,
+// 1 = leaving at top.
+function nodeProgress(rect, vh) {
+  return Math.min(1, Math.max(0, (vh - rect.top) / (vh + rect.height)));
+}
+
 function webglOK() {
   try {
     const c = document.createElement("canvas");
