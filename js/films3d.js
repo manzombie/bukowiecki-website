@@ -24,8 +24,9 @@ const RECIPE = {
   env: 0.7,          // envMapIntensity
   floatAmp: 0.06,
   floatHz: 0.8,
-  fit: 0.8,          // model fits to this many world units (half-size)
-  scrollRot: 0.0014, // radians of spin per pixel scrolled (down = +, up = −)
+  fit: 0.8,           // model fits to this many world units (half-size)
+  scrollRange: 1.0,   // radians swept across a node's full viewport travel
+                      // (centred = hero angle; scroll down/up rotates ±half this)
 };
 
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -158,11 +159,7 @@ else if (!webglOK()) {
         sizeViewer(v);
       }
       const v = viewers.get(node);
-      if (v) {
-        // reset to the hero facing angle each time it (re)enters view
-        if (e.isIntersecting && v.ready && v.model) v.model.rotation.y = v.heroY;
-        v.visible = e.isIntersecting;
-      }
+      if (v) v.visible = e.isIntersecting;
     });
   }, { rootMargin: "300px 0px 300px 0px", threshold: 0 });
   nodes.forEach((n) => io.observe(n));
@@ -179,18 +176,19 @@ else if (!webglOK()) {
 
   // Single render loop drives all visible viewers.
   const clock = new THREE.Clock();
-  let lastScrollY = window.scrollY;
   function tick() {
     const t = clock.getElapsedTime();
-    // scroll delta this frame → spin objects (down = one way, up = the other)
-    const sy = window.scrollY;
-    const scrollDelta = sy - lastScrollY;
-    lastScrollY = sy;
+    const vh = window.innerHeight;
     viewers.forEach((v) => {
       if (!v.visible || !v.ready) return;
       if (!reduce) {
         if (v.pivot) v.pivot.position.y = Math.sin(t * RECIPE.floatHz) * RECIPE.floatAmp;
-        if (v.model && scrollDelta) v.model.rotation.y += scrollDelta * RECIPE.scrollRot;
+        // rotation derived from scroll POSITION (centred = hero angle, no drift):
+        // scroll down → past centre → +; scroll up → above centre → −.
+        if (v.model) {
+          const prog = nodeProgress(v.node.getBoundingClientRect(), vh); // 0..1, .5 = centred
+          v.model.rotation.y = v.heroY + (prog - 0.5) * RECIPE.scrollRange;
+        }
       }
       v.controls.update();
       v.renderer.render(v.scene, v.camera);
