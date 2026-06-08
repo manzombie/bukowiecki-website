@@ -180,6 +180,13 @@ textarea {
   padding: 7px 12px;
   cursor: pointer;
   font-size: 11px;
+  text-decoration: none;
+}
+
+.tools-shortcut:hover {
+  border-color: var(--dark);
+  background: var(--dark);
+  color: var(--linen-2);
 }
 
 .grid {
@@ -253,6 +260,7 @@ textarea {
 .operator h2,
 .current-task h2,
 .github-panel h2,
+.tools-panel h2,
 .phase-board h2 {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
@@ -261,6 +269,40 @@ textarea {
   font-weight: 400;
   letter-spacing: -0.02em;
   color: var(--ink);
+}
+
+.tools-panel {
+  display: grid;
+  align-content: space-between;
+  gap: 12px;
+  background:
+    radial-gradient(circle at 100% 0%, var(--accent-soft), transparent 14rem),
+    var(--panel);
+}
+
+.tools-panel p:not(.panel-code) {
+  max-width: 38ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tools-launch {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+  padding: 10px 13px;
+  background: var(--dark);
+  color: var(--linen-2);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tools-launch:hover {
+  background: var(--accent);
 }
 
 .board-tools {

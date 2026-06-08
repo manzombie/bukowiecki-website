@@ -1,4 +1,5 @@
 (function () {
+  const TOOLS_URL = "https://tools.bukowiecki.co";
   const boardVersion = window.MISSION_CONFIG.boardVersion || "default";
   const storageKey = `mr_lobster_mission_control_${boardVersion}`;
   const gistStateFile = `state-${boardVersion}.json`;
@@ -66,6 +67,9 @@
   boot();
 
   async function boot() {
+    document.querySelectorAll("[data-tools-link]").forEach((link) => {
+      link.href = TOOLS_URL;
+    });
     els.loginForm.addEventListener("submit", onLogin);
     els.lockButton.addEventListener("click", lock);
     els.avatarButton.addEventListener("click", () => els.avatarInput.click());
