@@ -2025,3 +2025,60 @@ textarea:focus {
     justify-content: flex-start;
   }
 }
+
+/* Inbox — unclear captures awaiting one-tap resolution */
+
+.mc-inbox {
+  margin-top: 18px;
+}
+
+.mc-inbox-item {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.mc-inbox-item.is-pending {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.mc-inbox-item h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.mc-inbox-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mc-inbox-actions button {
+  padding: 5px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.mc-inbox-done {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.mc-inbox-done select {
+  max-width: 220px;
+  padding: 4px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--ink);
+  font-size: 12px;
+}

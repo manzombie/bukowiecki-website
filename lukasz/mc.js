@@ -17,6 +17,7 @@
     mirrorScore: document.getElementById("mcMirrorScore"),
     mirrorRefresh: document.getElementById("mcMirrorRefresh"),
     commitList: document.getElementById("mcCommitList"),
+    inbox: document.getElementById("mcInbox"),
     streaks: document.getElementById("mcStreaks"),
     strip: document.getElementById("mcStrip"),
     mirrorStatus: document.getElementById("mcMirrorStatus"),
@@ -144,6 +145,7 @@
       if (els.mirrorBody) els.mirrorBody.classList.remove("is-hidden");
       renderMirror();
       if (molDate > briefing.date) molDate = briefing.date;
+      await loadInbox();
       await loadMoleskine();
       await loadVentures();
     } catch (err) {
@@ -229,6 +231,66 @@
         molDate = target;
         loadMoleskine();
         document.querySelector(".mc-moleskine").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
+
+  // --- Inbox (unclear captures awaiting one-tap resolution) ---
+
+  async function loadInbox() {
+    if (!els.inbox) return;
+    try {
+      const captures = await api("/api/mc/captures?unresolved=true");
+      renderInbox(captures);
+    } catch (err) {
+      handleFailure(els.mirrorStatus, err);
+    }
+  }
+
+  function renderInbox(captures) {
+    if (!captures.length) {
+      els.inbox.innerHTML = "";
+      return;
+    }
+    const commitOptions = briefing.today.committed
+      .filter((row) => row.task_id && !row.done)
+      .map((row) => `<option value="${row.task_id}">${escapeHtml(row.task_title)}</option>`)
+      .join("");
+    els.inbox.innerHTML = `
+      <p class="mc-label">Inbox — needs a call</p>
+      ${captures.map((c) => `
+        <div class="mc-inbox-item" data-capture-id="${c.id}">
+          <h3>${escapeHtml(c.raw_text)}</h3>
+          <div class="mc-inbox-actions">
+            <button type="button" data-resolve="extra">Extra</button>
+            ${commitOptions ? `
+              <span class="mc-inbox-done">
+                <select aria-label="Which commitment">${commitOptions}</select>
+                <button type="button" data-resolve="task_done">Done</button>
+              </span>` : ""}
+            <button type="button" data-resolve="dismissed" class="task-delete">Dismiss</button>
+          </div>
+        </div>
+      `).join("")}
+    `;
+    els.inbox.querySelectorAll("[data-resolve]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const item = button.closest(".mc-inbox-item");
+        const captureId = Number(item.dataset.captureId);
+        const classification = button.dataset.resolve;
+        const body = { classification };
+        if (classification === "task_done") {
+          body.task_id = Number(item.querySelector("select").value);
+        }
+        item.classList.add("is-pending");
+        try {
+          await api(`/api/mc/captures/${captureId}/resolve`, { method: "POST", body });
+          await refreshDay();
+          await loadInbox();
+        } catch (err) {
+          item.classList.remove("is-pending");
+          handleFailure(els.mirrorStatus, err);
+        }
       });
     });
   }
