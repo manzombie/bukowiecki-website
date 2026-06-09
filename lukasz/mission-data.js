@@ -9,6 +9,12 @@
 // this file. It is .gitignored so it never reaches GitHub.
 window.MISSION_CONFIG = Object.assign({
   passcode: "",
+  // Mission Control API (FastAPI app behind tools.bukowiecki.co). The bearer
+  // token is NOT stored here — type it at the lockscreen (it doubles as the
+  // passcode) or in the connect form; mc.js keeps it in localStorage. For local
+  // dev, mission-config.local.js can set mcApiUrl/mcToken.
+  mcApiUrl: "https://tools.bukowiecki.co",
+  mcToken: "",
   githubRepo: "manzombie/mr_lobster_rebuild",
   gistId: "f438e3b860e2a5fe35e5750e96c4ffca",
   gistToken: "",

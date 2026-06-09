@@ -1552,3 +1552,476 @@ textarea:focus {
     justify-content: start;
   }
 }
+
+/* --- Mission Control (mc.js): daily mirror, moleskine, ventures --- */
+
+.mc-panel {
+  grid-column: 1 / -1;
+}
+
+.mc-label {
+  margin: 0 0 10px;
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.mc-status {
+  margin: 12px 0 0;
+  min-height: 1em;
+  color: var(--danger);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+}
+
+.mc-empty {
+  padding: 14px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.mc-connect p {
+  margin: 0 0 12px;
+  color: var(--ink-soft);
+  max-width: 60ch;
+}
+
+.mc-connect code {
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+}
+
+.mc-connect form {
+  display: flex;
+  gap: 10px;
+  max-width: 420px;
+}
+
+.mc-connect input,
+.mc-extra-form input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--ink);
+  font: inherit;
+}
+
+.mc-connect button,
+.mc-extra-form button {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--dark);
+  color: var(--linen);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* Mirror */
+
+.mirror-head {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 22px;
+}
+
+.mirror-date {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.mirror-sub {
+  margin: 6px 0 0;
+  color: var(--ink-soft);
+}
+
+.mirror-score {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+}
+
+.mirror-score strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 52px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.mirror-score strong small {
+  font-size: 26px;
+  color: var(--muted);
+}
+
+.mirror-score span {
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.mirror-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 28px;
+}
+
+.mc-commit-list {
+  display: grid;
+  gap: 8px;
+}
+
+.mc-commit {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.mc-commit h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.mc-commit p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mc-commit.is-done h3 {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.mc-check {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--ok);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mc-commit.is-done .mc-check {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: var(--linen);
+}
+
+.mc-streaks {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.mc-streak {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.mc-streak strong {
+  min-width: 40px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--accent);
+}
+
+.mc-streak span {
+  display: block;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.mc-streak small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.mc-strip {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  gap: 4px;
+}
+
+.mc-strip-day {
+  display: grid;
+  gap: 2px;
+  padding: 6px 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  text-align: center;
+  cursor: pointer;
+}
+
+.mc-strip-day small {
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 8px;
+}
+
+.mc-strip-day span {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+}
+
+.mc-strip-day.is-past span {
+  color: var(--ink-soft);
+}
+
+.mc-strip-day.is-today {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.mc-strip-day:not(.is-past):not(.is-today) span {
+  color: var(--faint);
+}
+
+/* Moleskine */
+
+.moleskine-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.moleskine-head h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.moleskine-head .ghost-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.moleskine-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+  gap: 0 26px;
+}
+
+.moleskine-divider {
+  background: var(--line-strong);
+}
+
+.mc-commit--page {
+  padding-left: 0;
+}
+
+.mc-extra {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mc-extra > span {
+  color: var(--accent);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  text-align: center;
+}
+
+.mc-extra h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.mc-extra p {
+  margin: 2px 0 0;
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+}
+
+.mc-extra.is-pending {
+  opacity: 0.55;
+}
+
+.mc-extra-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* Ventures */
+
+.mc-ventures .project-tabs button em {
+  margin-left: 6px;
+  font-style: normal;
+  color: var(--muted);
+}
+
+.mc-task-list {
+  display: grid;
+  gap: 6px;
+}
+
+.mc-task {
+  display: grid;
+  grid-template-columns: 18px 26px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 8px;
+  border: 1px solid transparent;
+  border-bottom: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.mc-task.is-dragging {
+  opacity: 0.45;
+}
+
+.mc-task.is-drop-target {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.mc-drag {
+  color: var(--faint);
+  cursor: grab;
+  font-size: 12px;
+  letter-spacing: -2px;
+}
+
+.mc-task-body h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mc-task-body p {
+  margin: 2px 0 0;
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mc-task-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.mc-task-actions button {
+  padding: 5px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.mc-task-actions button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.mc-newtask-form {
+  max-width: 480px;
+}
+
+.mc-done-tasks {
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.mc-done-tasks summary {
+  cursor: pointer;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mc-done-task {
+  padding: 6px 0 0 14px;
+  font-size: 13px;
+}
+
+.mc-done-task span {
+  color: var(--ok);
+}
+
+@media (max-width: 1180px) {
+  .mirror-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .mirror-head {
+    grid-template-columns: 1fr auto;
+  }
+
+  .mirror-date {
+    font-size: 26px;
+  }
+
+  .mirror-score strong {
+    font-size: 40px;
+  }
+
+  .moleskine-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .moleskine-divider {
+    height: 1px;
+    margin: 18px 0;
+  }
+
+  .mc-task {
+    grid-template-columns: 18px 26px 1fr;
+  }
+
+  .mc-task-actions {
+    grid-column: 2 / -1;
+    justify-content: flex-start;
+  }
+}
