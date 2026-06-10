@@ -2241,3 +2241,43 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* Extras: edit/delete */
+
+.mc-extra {
+  grid-template-columns: 26px 1fr auto;
+}
+
+.mc-extra.is-pending {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.mc-extra-actions {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.mc-extra:hover .mc-extra-actions,
+.mc-extra:focus-within .mc-extra-actions {
+  opacity: 1;
+}
+
+.mc-extra-actions button {
+  padding: 4px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+@media (max-width: 680px) {
+  .mc-extra-actions {
+    opacity: 1; /* no hover on touch */
+  }
+}

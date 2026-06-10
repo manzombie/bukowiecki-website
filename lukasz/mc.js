@@ -484,11 +484,15 @@
 
     els.molExtras.innerHTML = page.extras.length
       ? page.extras.map((row) => `
-          <div class="mc-extra">
+          <div class="mc-extra" data-log-id="${row.id}">
             <span>+</span>
-            <div>
+            <div class="mc-extra-body">
               <h3>${escapeHtml(row.note || row.task_title || "")}</h3>
               <p>${row.created_at ? timeOnly(row.created_at) : ""}</p>
+            </div>
+            <div class="mc-extra-actions">
+              <button type="button" data-action="edit">Edit</button>
+              <button type="button" data-action="delete" class="task-delete">Delete</button>
             </div>
           </div>
         `).join("")
@@ -502,6 +506,64 @@
         toggleLog(id, page.committed, els.molStatus, () => renderMoleskine(page));
       });
     });
+
+    els.molExtras.querySelectorAll("[data-action]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const item = button.closest(".mc-extra");
+        const logId = Number(item.dataset.logId);
+        const row = page.extras.find((r) => r.id === logId);
+        if (!row) return;
+
+        if (button.dataset.action === "edit") {
+          startExtraEdit(item, row);
+          return;
+        }
+        if (button.dataset.action === "delete") {
+          if (!confirm(`Delete this extra?\n\n${row.note || row.task_title || ""}`)) return;
+          item.classList.add("is-pending");
+          try {
+            await api(`/api/mc/daily-log/${logId}`, { method: "DELETE" });
+            await loadMoleskine();
+          } catch (err) {
+            item.classList.remove("is-pending");
+            handleFailure(els.molStatus, err);
+          }
+        }
+      });
+    });
+  }
+
+  function startExtraEdit(item, row) {
+    const titleEl = item.querySelector("h3");
+    if (!titleEl || item.querySelector(".task-edit-input")) return;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "task-edit-input";
+    input.maxLength = 500;
+    input.value = row.note || row.task_title || "";
+    titleEl.replaceWith(input);
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+
+    let settled = false;
+    const commit = async (save) => {
+      if (settled) return;
+      settled = true;
+      const value = input.value.trim();
+      if (save && value && value !== (row.note || "")) {
+        try {
+          await api(`/api/mc/daily-log/${row.id}`, { method: "PATCH", body: { note: value } });
+        } catch (err) {
+          handleFailure(els.molStatus, err);
+        }
+      }
+      await loadMoleskine();
+    };
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); commit(true); }
+      else if (e.key === "Escape") { e.preventDefault(); commit(false); }
+    });
+    input.addEventListener("blur", () => commit(true));
   }
 
   async function onAddExtra(event) {
