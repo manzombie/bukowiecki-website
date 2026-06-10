@@ -31,8 +31,18 @@
     molStatus: document.getElementById("mcMolStatus"),
     ventureTabs: document.getElementById("mcVentureTabs"),
     ventureBody: document.getElementById("mcVentureBody"),
-    ventureStatus: document.getElementById("mcVentureStatus")
+    ventureStatus: document.getElementById("mcVentureStatus"),
+    runway: document.getElementById("mcRunway"),
+    runwayDays: document.getElementById("mcRunwayDays"),
+    news: document.getElementById("mcNews"),
+    weekRange: document.getElementById("mcWeekRange"),
+    weekBody: document.getElementById("mcWeekBody"),
+    wins: document.getElementById("mcWins"),
+    winReplay: document.getElementById("mcWinReplay"),
+    weekStatus: document.getElementById("mcWeekStatus")
   };
+
+  const RUNWAY_KEY = "mc_runway_end";
 
   let token = CFG.mcToken || localStorage.getItem(TOKEN_KEY) || "";
   let briefing = null;
@@ -64,6 +74,9 @@
       });
     }
     if (els.mirrorRefresh) els.mirrorRefresh.addEventListener("click", refreshAll);
+    if (els.runway) els.runway.addEventListener("click", onRunwayClick);
+    if (els.winReplay) els.winReplay.addEventListener("click", onWinReplay);
+    renderRunway();
     if (els.molPrev) els.molPrev.addEventListener("click", () => shiftMoleskine(-1));
     if (els.molNext) els.molNext.addEventListener("click", () => shiftMoleskine(1));
     if (els.extraForm) els.extraForm.addEventListener("submit", onAddExtra);
@@ -148,6 +161,8 @@
       await loadInbox();
       await loadMoleskine();
       await loadVentures();
+      loadNews();
+      loadReflection();
     } catch (err) {
       handleFailure(els.mirrorStatus, err);
     }
@@ -233,6 +248,140 @@
         document.querySelector(".mc-moleskine").scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
+  }
+
+  // --- Runway countdown (localStorage; the loudest number on the mirror) ---
+
+  function renderRunway() {
+    if (!els.runwayDays) return;
+    const end = localStorage.getItem(RUNWAY_KEY);
+    if (!end) {
+      els.runwayDays.textContent = "—";
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const days = Math.ceil((parseDate(end) - today) / 86400000);
+    els.runwayDays.textContent = days;
+    els.runway.classList.toggle("is-low", days <= 60);
+  }
+
+  function onRunwayClick() {
+    const current = localStorage.getItem(RUNWAY_KEY) || "";
+    const value = prompt("Runway end date (YYYY-MM-DD). Leave empty to clear.", current);
+    if (value === null) return;
+    const trimmed = value.trim();
+    if (!trimmed) {
+      localStorage.removeItem(RUNWAY_KEY);
+    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      alert("Use YYYY-MM-DD.");
+      return;
+    } else {
+      localStorage.setItem(RUNWAY_KEY, trimmed);
+    }
+    renderRunway();
+  }
+
+  // --- News with thumbs (votes tune topic weights) ---
+
+  async function loadNews() {
+    if (!els.news) return;
+    try {
+      const data = await api("/api/mc/news/briefing");
+      renderNews(data.groups);
+    } catch (err) {
+      handleFailure(els.mirrorStatus, err);
+    }
+  }
+
+  function renderNews(groups) {
+    const items = groups.flatMap((g) => g.headlines);
+    if (!items.length) {
+      els.news.innerHTML = `<div class="mc-empty">No headlines right now.</div>`;
+      return;
+    }
+    els.news.innerHTML = items.map((h) => `
+      <div class="mc-news-item" data-topic="${escapeHtml(h.topic)}">
+        <a href="${escapeHtml(h.link)}" target="_blank" rel="noreferrer">${escapeHtml(h.title)}</a>
+        ${h.summary ? `<p>${escapeHtml(h.summary)}</p>` : ""}
+        <div class="mc-news-meta">
+          <small>${escapeHtml(h.source)}</small>
+          <span>
+            <button type="button" data-vote="up" title="More ${escapeHtml(h.topic)}">👍</button>
+            <button type="button" data-vote="down" title="Less ${escapeHtml(h.topic)}">👎</button>
+          </span>
+        </div>
+      </div>
+    `).join("");
+    els.news.querySelectorAll("[data-vote]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const item = button.closest(".mc-news-item");
+        const small = item.querySelector("small");
+        try {
+          const result = await api("/api/mc/news/feedback", {
+            method: "POST",
+            body: { topic: item.dataset.topic, vote: button.dataset.vote },
+          });
+          small.textContent = `${result.topic} → ${result.weight}`;
+        } catch (err) {
+          handleFailure(els.mirrorStatus, err);
+        }
+      });
+    });
+  }
+
+  // --- Week in review + win replay ---
+
+  async function loadReflection() {
+    if (!els.weekBody) return;
+    try {
+      const data = await api("/api/mc/reflections/latest");
+      renderReflection(data.reflection);
+    } catch (err) {
+      handleFailure(els.weekStatus, err);
+    }
+  }
+
+  function renderReflection(r) {
+    if (!r) {
+      els.weekRange.textContent = "No reflection yet";
+      els.weekBody.innerHTML = `<div class="mc-empty">Generated every Sunday evening from the week's log.</div>`;
+      return;
+    }
+    els.weekRange.textContent = `${shortDate(r.week_start)} – ${shortDate(r.week_end)}`;
+    const list = (items, mark) => items.length
+      ? items.map((i) => `<div class="mc-week-item">${mark} ${escapeHtml(i)}</div>`).join("")
+      : `<div class="mc-empty">Nothing.</div>`;
+    els.weekBody.innerHTML = `
+      <div class="mc-week-grid">
+        <div><p class="mc-label">Shipped</p>${list(r.what_shipped, "✓")}</div>
+        <div><p class="mc-label">Slipped</p>${list(r.what_slipped, "✗")}</div>
+        <div><p class="mc-label">Pattern</p><p class="mc-week-prose">${escapeHtml(r.pattern)}</p></div>
+        <div><p class="mc-label">Next week</p><p class="mc-week-prose">${escapeHtml(r.suggestion)}</p></div>
+      </div>
+    `;
+  }
+
+  async function onWinReplay() {
+    if (!els.wins.classList.contains("is-hidden")) {
+      els.wins.classList.add("is-hidden");
+      return;
+    }
+    try {
+      const data = await api("/api/mc/wins");
+      els.wins.innerHTML = data.days.length
+        ? data.days.map((d) => `
+            <div class="mc-win">
+              <strong>${escapeHtml(d.weekday)} ${shortDate(d.date)}</strong>
+              <p>${d.done.length} done · ${d.extras.length} extras</p>
+              <small>${d.done.concat(d.extras).slice(0, 5).map(escapeHtml).join(" · ")}</small>
+            </div>
+          `).join("")
+        : `<div class="mc-empty">No standout days yet — go make some.</div>`;
+      els.wins.classList.remove("is-hidden");
+    } catch (err) {
+      handleFailure(els.weekStatus, err);
+    }
   }
 
   // --- Inbox (unclear captures awaiting one-tap resolution) ---

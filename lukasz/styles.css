@@ -2082,3 +2082,162 @@ textarea:focus {
   color: var(--ink);
   font-size: 12px;
 }
+
+/* Runway countdown — the loudest number on the mirror */
+
+.mirror-runway {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mirror-runway strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 64px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.mirror-runway span {
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.mirror-runway.is-low strong {
+  color: var(--danger);
+}
+
+/* News with thumbs */
+
+.mc-news {
+  display: grid;
+  gap: 10px;
+}
+
+.mc-news-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mc-news-item a {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mc-news-item a:hover {
+  color: var(--accent);
+}
+
+.mc-news-item p {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.mc-news-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.mc-news-meta small {
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+}
+
+.mc-news-meta button {
+  padding: 2px 6px;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.55;
+}
+
+.mc-news-meta button:hover {
+  opacity: 1;
+}
+
+/* Week in review + win replay */
+
+.mc-week h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+}
+
+.mc-week-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.mc-week-item {
+  padding: 5px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.mc-week-prose {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.mc-wins {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-strong);
+}
+
+.mc-win strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.mc-win p {
+  margin: 4px 0;
+  color: var(--accent);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+}
+
+.mc-win small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 1180px) {
+  .mc-week-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .mirror-runway strong {
+    font-size: 44px;
+  }
+
+  .mc-week-grid,
+  .mc-wins {
+    grid-template-columns: 1fr;
+  }
+}

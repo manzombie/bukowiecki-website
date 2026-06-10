@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>🚀 Mr. Lobster Mission Control</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E1726'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="./styles.css?v=20260609b" />
+    <link rel="stylesheet" href="./styles.css?v=20260610a" />
   </head>
   <body>
     <div id="lockscreen" class="lockscreen">
@@ -54,6 +54,10 @@
                 <h1 id="mcMirrorDate" class="mirror-date">—</h1>
                 <p id="mcMirrorSub" class="mirror-sub">—</p>
               </div>
+              <button id="mcRunway" class="mirror-runway" type="button" title="Days of runway left — click to set the end date">
+                <strong id="mcRunwayDays">—</strong>
+                <span>RUNWAY<br />DAYS</span>
+              </button>
               <div class="mirror-score">
                 <strong id="mcMirrorScore">–</strong>
                 <span>COMMITTED<br />DONE</span>
@@ -71,6 +75,8 @@
                 <div id="mcStreaks" class="mc-streaks"></div>
                 <p class="mc-label">This Week</p>
                 <div id="mcStrip" class="mc-strip"></div>
+                <p class="mc-label">News</p>
+                <div id="mcNews" class="mc-news"></div>
               </div>
             </div>
             <p id="mcMirrorStatus" class="mc-status" role="alert"></p>
@@ -114,8 +120,21 @@
           <p id="mcVentureStatus" class="mc-status" role="alert"></p>
         </section>
 
+        <section class="panel mc-panel mc-week">
+          <div class="board-head">
+            <div>
+              <p class="panel-code">04 // WEEK IN REVIEW</p>
+              <h2 id="mcWeekRange">—</h2>
+            </div>
+            <button id="mcWinReplay" class="ghost-button" type="button">▶ Win replay</button>
+          </div>
+          <div id="mcWeekBody"></div>
+          <div id="mcWins" class="mc-wins is-hidden"></div>
+          <p id="mcWeekStatus" class="mc-status" role="alert"></p>
+        </section>
+
         <aside class="panel operator">
-          <p class="panel-code">04 // OPERATOR</p>
+          <p class="panel-code">05 // OPERATOR</p>
           <div class="operator-card">
             <div class="avatar-wrap">
               <button id="avatarButton" class="avatar" type="button" aria-label="Upload profile photo">
@@ -146,7 +165,7 @@
         </aside>
 
         <section class="panel hero">
-          <p class="panel-code hero-code">05 //<br />SESSION</p>
+          <p class="panel-code hero-code">06 //<br />SESSION</p>
           <div>
             <h1>Good morning, Lukasz.</h1>
             <p>Pick the next useful task. Finish it manually, or link it back to GitHub when the repo catches up.</p>
@@ -169,7 +188,7 @@
         </section>
 
         <section class="panel vitals">
-          <p class="panel-code">06 // VITALS</p>
+          <p class="panel-code">07 // VITALS</p>
           <strong id="progressPercent">0%</strong>
           <span>PROJECT PROGRESS</span>
           <div class="progress-track"><div id="progressBar"></div></div>
@@ -217,7 +236,7 @@
         </section>
 
         <section class="panel current-task">
-          <p class="panel-code">07 // ACTIVE TASK</p>
+          <p class="panel-code">08 // ACTIVE TASK</p>
           <div id="currentTaskEmpty" class="empty-state">No active task. Pick one with the “Now” button on the project board.</div>
           <div id="currentTask" class="is-hidden">
             <div class="task-kicker" id="currentPhase"></div>
@@ -232,12 +251,12 @@
         </section>
 
         <section class="panel prompt-panel">
-          <p class="panel-code">08 // HANDOFF PROMPT</p>
+          <p class="panel-code">09 // HANDOFF PROMPT</p>
           <textarea id="promptBox" readonly></textarea>
         </section>
 
         <section class="panel github-panel">
-          <p class="panel-code">09 // GITHUB LINK</p>
+          <p class="panel-code">10 // GITHUB LINK</p>
           <h2 class="repo-title">manzombie/mr_lobster_rebuild</h2>
           <p>This MVP keeps the dashboard simple and uses GitHub as the cross-machine project trail.</p>
           <div class="github-links">
@@ -249,7 +268,7 @@
         </section>
 
         <section class="panel tools-panel">
-          <p class="panel-code">10 // BUSINESS TOOLS</p>
+          <p class="panel-code">11 // BUSINESS TOOLS</p>
           <h2>LAB MEDIA operations.</h2>
           <p>Invoices, client records, email templates, and production utilities in one private workspace.</p>
           <a class="tools-launch" data-tools-link href="#">Open Tools <span aria-hidden="true">↗</span></a>
@@ -258,7 +277,7 @@
         <section class="panel phase-board">
           <div class="board-head">
             <div>
-              <p class="panel-code">11 // PROJECT BOARD</p>
+              <p class="panel-code">12 // PROJECT BOARD</p>
               <h2>Projects</h2>
             </div>
             <div class="board-tools">
@@ -277,8 +296,8 @@
     <!-- Local-only overrides (gitignored, 404s harmlessly on the public build) -->
     <script src="./mission-config.local.js"></script>
     <!-- bump ?v= when mission-data.js/app.js change so browsers fetch the new file -->
-    <script src="./mission-data.js?v=20260609a"></script>
-    <script src="./app.js?v=20260609a"></script>
-    <script src="./mc.js?v=20260609b"></script>
+    <script src="./mission-data.js?v=20260610a"></script>
+    <script src="./app.js?v=20260610a"></script>
+    <script src="./mc.js?v=20260610a"></script>
   </body>
 </html>
