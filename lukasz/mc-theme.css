@@ -1,0 +1,525 @@
+/* ==========================================================================
+   Mission Control v4 theme — warm glass instrument skin over the v3 layout.
+   Loads AFTER styles.css + mc-ui.css. Re-maps the linen variables onto the
+   glass tokens and re-skins existing classes; no markup contract changes.
+   See design-system.md. Phase 3 of the redesign loop.
+   ========================================================================== */
+
+/* ---- Variable remap: the linen world becomes the dusk world -------------- */
+
+:root {
+  color-scheme: dark;                /* native form controls render dark */
+  --linen: #241c15;                  /* menus/surfaces that used the canvas color */
+  --linen-2: var(--text-1);          /* light text on filled buttons */
+  --panel: var(--glass-1);
+  --ink: var(--text-1);
+  --ink-soft: var(--text-2);
+  --muted: var(--text-2);
+  --faint: var(--text-3);
+  --line: var(--glass-border);
+  --line-strong: var(--glass-border-hover);
+  --dark: rgba(255, 248, 240, 0.10); /* old dark fills become quiet glass */
+  --ok: #8fbc8b;
+  --warn: #e0b05e;
+  --danger: #e0564a;
+}
+
+/* ---- Canvas + ambient ----------------------------------------------------- */
+
+html {
+  background: var(--bg-base);
+}
+
+body {
+  background: var(--bg-base);   /* grid texture retires; .mc-ambient carries the light */
+  color: var(--text-1);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text-1);
+}
+
+/* ---- Panels become glass --------------------------------------------------- */
+
+.panel {
+  background: var(--glass-1);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  padding: var(--s5);
+}
+
+/* The mirror is sacred: glass level 2, hero padding, never out-glowed */
+.mc-mirror {
+  background: var(--glass-2);
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: var(--s6);
+}
+
+.panel-code,
+.eyebrow {
+  color: var(--text-3);
+  font-family: var(--font-label);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  margin-bottom: var(--s4);
+}
+
+/* ---- Topline ----------------------------------------------------------------- */
+
+.topline {
+  color: var(--text-3);
+}
+
+.status-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.ghost-button {
+  border-color: var(--glass-border);
+  background: var(--glass-1);
+  color: var(--text-2);
+}
+
+.ghost-button:hover,
+.tools-shortcut:hover {
+  border-color: var(--glass-border-hover);
+  background: var(--glass-2);
+  color: var(--text-1);
+}
+
+/* ---- Typography casting: numerals and headlines are Display ------------------- */
+
+.mirror-date,
+.hero h1,
+.moleskine-head h2,
+.mc-week .board-head h2,
+.operator h2,
+.current-task h2,
+.github-panel h2,
+.tools-panel h2,
+.phase-board h2,
+.mc-ventures h2,
+.phase-head h2,
+.login-panel h1 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+
+.mirror-runway strong,
+.mirror-score strong,
+.hero-clock strong,
+.vitals strong,
+.mc-streak strong,
+.ring-row span,
+.mc-strip-day span,
+.mc-extra > span {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.mirror-score strong small {
+  color: var(--text-3);
+}
+
+.hero-clock strong {
+  color: var(--text-1);
+  font-size: 40px;
+}
+
+.mirror-runway strong {
+  color: var(--accent);
+}
+
+.mirror-runway.is-low strong {
+  color: var(--danger);
+}
+
+.mc-streak strong {
+  color: var(--accent);
+}
+
+.ring-row span {
+  color: var(--text-1);
+}
+
+/* ---- Buttons and links: filled = quiet glass, accent stays scarce -------------- */
+
+.login-panel button,
+.action-row button,
+.github-links a,
+.mc-connect button,
+.mc-extra-form button,
+.tools-launch {
+  background: var(--glass-2);
+  border: 1px solid var(--glass-border);
+  color: var(--text-1);
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+
+.login-panel button:hover,
+.action-row button:hover,
+.github-links a:hover,
+.mc-connect button:hover,
+.mc-extra-form button:hover,
+.tools-launch:hover {
+  background: var(--glass-3);
+  border-color: var(--glass-border-active);
+}
+
+.action-row .secondary {
+  background: transparent;
+  border-color: var(--glass-border);
+  color: var(--text-2);
+}
+
+.board-create button,
+.filters button,
+.task-actions button,
+.task-actions a,
+.mc-task-actions button,
+.mc-inbox-actions button,
+.mc-extra-actions button {
+  border-color: var(--glass-border);
+  background: transparent;
+  color: var(--text-2);
+}
+
+.board-create button:hover {
+  border-color: var(--glass-border-active);
+  background: var(--glass-2);
+  color: var(--text-1);
+}
+
+.filters button.is-active,
+.filters.project-tabs button[data-project].is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.filters.project-tabs button[data-project] {
+  background: var(--glass-1);
+  color: var(--text-2);
+}
+
+.filters button.new-project-tab {
+  color: var(--accent);
+}
+
+/* ---- Inputs --------------------------------------------------------------------- */
+
+.login-panel input,
+.mc-connect input,
+.mc-extra-form input,
+.task-edit-input,
+textarea,
+.conditions-head select,
+.mc-inbox-done select {
+  background: rgba(0, 0, 0, 0.25);
+  border-color: var(--glass-border);
+  color: var(--text-1);
+}
+
+.login-panel input:focus,
+textarea:focus,
+.task-edit-input {
+  border-color: var(--glass-border-active);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-3);
+}
+
+.login-panel {
+  background: var(--glass-2);
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  border: 1px solid var(--glass-border);
+}
+
+/* ---- Cards within panels ----------------------------------------------------------- */
+
+.task,
+.ring-row div,
+.conditions-grid > div,
+.tide-widget,
+.amendment-list .task {
+  background: var(--glass-1);
+  border-color: var(--glass-border);
+}
+
+.task.active {
+  background: var(--glass-2);
+  border-color: var(--glass-border-active);
+}
+
+.task.blocked {
+  border-color: rgba(224, 86, 74, 0.45);
+  background: rgba(224, 86, 74, 0.08);
+}
+
+.task.done {
+  border-color: rgba(127, 184, 164, 0.30);
+}
+
+.check,
+.mc-check {
+  background: transparent;
+  border-color: var(--text-3);
+  color: transparent;
+}
+
+.task.done .check,
+.mc-commit.is-done .mc-check {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  color: var(--bg-base);
+}
+
+.mc-commit,
+.mc-extra,
+.mc-inbox-item,
+.mc-news-item,
+.mc-week-item,
+.mc-task {
+  border-bottom-color: var(--glass-border);
+}
+
+.mc-task.is-drop-target {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* mc-ui.css's TaskRow component shares the .mc-task name with the legacy
+   venture rows — restore the legacy 4-column grid for mc.js-rendered rows */
+#mcVentureBody .mc-task {
+  grid-template-columns: 18px 26px minmax(0, 1fr) auto;
+  padding: 10px 8px;
+  border: 1px solid transparent;
+  border-bottom: 1px solid var(--glass-border);
+  border-radius: 10px;
+  opacity: 1;
+}
+
+#mcVentureBody .mc-task.is-dragging {
+  opacity: 0.45;
+}
+
+#mcVentureBody .mc-task.is-drop-target {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* The agent briefing stops being the loudest thing on the page */
+.agent-output {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
+}
+
+#agentText {
+  color: var(--text-2);
+}
+
+/* Calm technology: nothing loops. LIVE is a static dot. */
+.agent-live-dot {
+  animation: none;
+  box-shadow: 0 0 0 2px rgba(127, 184, 164, 0.25);
+  background: var(--accent-2);
+}
+
+.agent-live-indicator {
+  color: var(--accent-2);
+}
+
+#agentRefresh {
+  border-color: var(--glass-border);
+  color: var(--text-3);
+}
+
+/* ---- Calendar ------------------------------------------------------------------------ */
+
+.cal-nav button {
+  border-color: var(--glass-border);
+  background: var(--glass-1);
+  color: var(--text-2);
+}
+
+.cal-nav button:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.cal-day,
+.cal-empty {
+  color: var(--text-2);
+}
+
+.cal-day.is-today {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.cal-day.is-done {
+  background: var(--accent-2);
+  color: var(--bg-base);
+}
+
+.cal-day.is-today.is-done {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.calendar-tooltip {
+  background: rgba(36, 28, 21, 0.96);
+  border-color: var(--glass-border-active);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.5);
+  color: var(--text-1);
+}
+
+.calendar-tooltip__check {
+  background: var(--accent-2);
+  color: var(--bg-base);
+}
+
+/* ---- Week strip + streaks --------------------------------------------------------------- */
+
+.mc-strip-day.is-today {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.mc-strip-day.is-past span {
+  color: var(--text-2);
+}
+
+.mc-strip-day:not(.is-past):not(.is-today) span {
+  color: var(--text-3);
+}
+
+/* ---- Conditions / tide -------------------------------------------------------------------- */
+
+.condition-icon,
+.tide-title span {
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.conditions-grid strong,
+.tide-row strong {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--text-1);
+}
+
+.tide-row strong {
+  font-family: var(--font-label);
+  font-weight: 500;
+}
+
+/* ---- Progress / vitals ----------------------------------------------------------------------- */
+
+/* Accent budget: runway, today, streaks. Vitals progress reads in sage. */
+.vitals strong {
+  color: var(--text-1);
+}
+
+.progress-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.progress-track div {
+  background: var(--accent-2);
+}
+
+/* ---- Moleskine / move menu --------------------------------------------------------------------- */
+
+.moleskine-divider {
+  background: var(--glass-border);
+}
+
+.move-wrapper summary {
+  border-color: var(--glass-border);
+  color: var(--text-2);
+}
+
+.move-menu {
+  background: #241c15;
+  border-color: var(--glass-border-active);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.move-option {
+  color: var(--text-1);
+}
+
+.move-option:hover {
+  background: var(--glass-3);
+  color: var(--text-1);
+}
+
+/* ---- News (panel list) ---------------------------------------------------------------------------- */
+
+.mc-news-item a {
+  color: var(--text-1);
+}
+
+.mc-news-item a:hover {
+  color: var(--accent);
+}
+
+.mc-news-item p {
+  color: var(--text-2);
+}
+
+.mc-news-more {
+  border-color: var(--glass-border);
+  background: var(--glass-1);
+  color: var(--text-2);
+}
+
+.mc-news-more:hover {
+  border-color: var(--glass-border-active);
+  background: var(--glass-2);
+  color: var(--text-1);
+}
+
+/* ---- Empty states collapse into quiet dashed glass --------------------------------------------------- */
+
+.empty-state,
+.mc-empty {
+  color: var(--text-3);
+  border-color: var(--glass-border);
+}
+
+.mc-status {
+  color: var(--danger);
+}
+
+/* ---- Done-pulse hook: completing a commitment pulses the mirror border -------------------------------- */
+
+.panel.is-pulsing {
+  animation: mc-done-pulse 900ms var(--ease-out);
+}
+
+/* ---- Reduced motion -------------------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .panel.is-pulsing {
+    animation: none;
+  }
+}

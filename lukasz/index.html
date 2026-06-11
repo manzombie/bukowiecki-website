@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>🚀 Bukowiecki Mission Control</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E1726'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400&family=Inter:wght@400;600&display=swap" />
     <link rel="stylesheet" href="./styles.css?v=20260611b" />
+    <link rel="stylesheet" href="./mc-ui.css?v=20260611b" />
+    <link rel="stylesheet" href="./mc-theme.css?v=20260611b" />
   </head>
   <body>
+    <div class="mc-ambient" aria-hidden="true"></div>
     <div id="lockscreen" class="lockscreen">
       <form id="loginForm" class="login-panel">
         <p class="eyebrow">PRIVATE OPS</p>
@@ -68,14 +74,14 @@
             <div class="mirror-grid">
               <div>
                 <p class="mc-label">The Three</p>
-                <div id="mcCommitList" class="mc-commit-list"></div>
+                <div id="mcCommitList" class="mc-commit-list"><div class="mc-skeleton" style="height:52px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:52px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:52px;margin-bottom:8px"></div></div>
                 <div id="mcInbox" class="mc-inbox"></div>
               </div>
               <div>
                 <p class="mc-label">This Week</p>
-                <div id="mcStrip" class="mc-strip"></div>
+                <div id="mcStrip" class="mc-strip"><div class="mc-skeleton" style="height:44px;grid-column:1/-1"></div></div>
                 <p class="mc-label">Streaks</p>
-                <div id="mcStreaks" class="mc-streaks"></div>
+                <div id="mcStreaks" class="mc-streaks"><div class="mc-skeleton" style="height:40px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:40px;margin-bottom:8px"></div></div>
               </div>
             </div>
             <p id="mcMirrorStatus" class="mc-status" role="alert"></p>
@@ -132,7 +138,7 @@
             </div>
           </div>
           <div id="mcVentureTabs" class="filters project-tabs"></div>
-          <div id="mcVentureBody"></div>
+          <div id="mcVentureBody"><div class="mc-skeleton" style="height:48px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:48px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:48px;margin-bottom:8px"></div></div>
           <p id="mcVentureStatus" class="mc-status" role="alert"></p>
         </section>
 
@@ -180,7 +186,7 @@
               </div>
               <div class="tide-widget">
                 <div class="tide-title"><span aria-hidden="true">🌊</span> Tide guidance</div>
-                <div id="tideList" class="tide-list">Loading tide curve…</div>
+                <div id="tideList" class="tide-list"><div class="mc-skeleton" style="height:14px"></div><div class="mc-skeleton" style="height:14px"></div></div>
               </div>
             </div>
           </section>
@@ -189,7 +195,7 @@
         <!-- Row 3 // News and context -->
         <section class="panel news-panel span-8">
           <p class="panel-code">06 // NEWS</p>
-          <div id="mcNews" class="mc-news"></div>
+          <div id="mcNews" class="mc-news"><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div></div>
         </section>
 
         <div class="rail span-4">
@@ -201,7 +207,7 @@
               </div>
               <button id="mcWinReplay" class="ghost-button" type="button">▶ Win replay</button>
             </div>
-            <div id="mcWeekBody"></div>
+            <div id="mcWeekBody"><div class="mc-skeleton" style="height:56px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:56px;margin-bottom:8px"></div></div>
             <div id="mcWins" class="mc-wins is-hidden"></div>
             <p id="mcWeekStatus" class="mc-status" role="alert"></p>
           </section>
@@ -216,12 +222,12 @@
             <div class="moleskine-grid">
               <div class="moleskine-col">
                 <p class="mc-label">Committed</p>
-                <div id="mcMolCommitted"></div>
+                <div id="mcMolCommitted"><div class="mc-skeleton" style="height:44px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:44px;margin-bottom:8px"></div></div>
               </div>
               <div class="moleskine-divider" aria-hidden="true"></div>
               <div class="moleskine-col">
                 <p class="mc-label">Extras</p>
-                <div id="mcMolExtras"></div>
+                <div id="mcMolExtras"><div class="mc-skeleton" style="height:36px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:36px;margin-bottom:8px"></div></div>
                 <form id="mcExtraForm" class="mc-extra-form is-hidden">
                   <input id="mcExtraInput" type="text" placeholder="What else happened?" maxlength="500" />
                   <button type="submit">Add</button>
@@ -311,8 +317,9 @@
     <!-- Local-only overrides (gitignored, 404s harmlessly on the public build) -->
     <script src="./mission-config.local.js"></script>
     <!-- bump ?v= when mission-data.js/app.js change so browsers fetch the new file -->
-    <script src="./mission-data.js?v=20260611a"></script>
-    <script src="./app.js?v=20260611a"></script>
-    <script src="./mc.js?v=20260611a"></script>
+    <script src="./mc-ui.js?v=20260611b"></script>
+    <script src="./mission-data.js?v=20260611b"></script>
+    <script src="./app.js?v=20260611b"></script>
+    <script src="./mc.js?v=20260611b"></script>
   </body>
 </html>
