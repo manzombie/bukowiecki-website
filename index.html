@@ -8,18 +8,18 @@
   <!-- SEO / META                                                    -->
   <!-- ============================================================= -->
   <title>Lukasz Bukowiecki — The AI-native VFX Editor</title>
-  <meta name="description" content="VFX Editor & AI tool builder. 17 years cutting shots on Avatar, Gravity, Harry Potter, Black Mirror and Alien: Covenant — now building the AI-native editorial tools post-production still doesn't have." />
+  <meta name="description" content="VFX Editor & systems builder. Seventeen years of VFX editorial — Avatar, Gravity, Harry Potter, Black Mirror — and now The Lord of the Rings: The Rings of Power. Building FRAME/SHIFT, the editorial database post-production doesn't have yet." />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Lukasz Bukowiecki — The AI-native VFX Editor" />
-  <meta property="og:description" content="17 years on the biggest films ever made. Now building the AI tools post-production doesn't have yet." />
+  <meta property="og:description" content="Seventeen years inside the biggest productions ever made — currently leading VFX editorial on The Rings of Power, building the editorial infrastructure post-production doesn't have yet." />
   <meta property="og:url" content="https://bukowiecki.co/" />
   <!-- OG image = hero end frame (Oscar presented) on black -->
   <meta property="og:image" content="images/og-image.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Lukasz Bukowiecki — The AI-native VFX Editor" />
-  <meta name="twitter:description" content="17 years on the biggest films ever made. Now building the AI tools post-production doesn't have yet." />
+  <meta name="twitter:description" content="Seventeen years inside the biggest productions ever made — currently leading VFX editorial on The Rings of Power, building the editorial infrastructure post-production doesn't have yet." />
   <meta name="twitter:image" content="images/og-image.jpg" />
 
   <!-- ============================================================= -->
@@ -32,7 +32,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/style.css?v=3d3" />
+  <link rel="stylesheet" href="css/style.css?v=copy1" />
 
   <!-- Three.js (vanilla, CDN, no build step) for the real-time 3D film objects -->
   <script type="importmap">
@@ -81,39 +81,40 @@
 
         <!-- Text overlaid on the frame's empty black regions -->
         <div class="hero__copy">
-          <p class="hero__eyebrow mono">VFX EDITOR · AI TOOL BUILDER</p>
+          <p class="hero__eyebrow mono">VFX EDITOR · SYSTEMS BUILDER · LONDON</p>
           <h1 class="hero__headline">I build the systems<br />behind the scenes.</h1>
           <p class="hero__subhead">
-            17 years cutting shots on Avatar, Gravity, Harry Potter, Black Mirror
-            and Alien: Covenant. Now building the AI-native editorial tools
-            post-production still doesn't have.
+            Seventeen years of VFX editorial — Avatar, Gravity, Harry Potter,
+            Black Mirror — and now The Lord of the Rings: The Rings of Power.
+            Between shows, I build FRAME/SHIFT: the editorial database I always
+            wished existed.
           </p>
           <div class="hero__cta-row">
-            <a href="#frameshift" class="btn btn--accent mono">&rarr; See the tools</a>
+            <a href="#work" class="btn btn--accent mono">&rarr; See the work</a>
           </div>
         </div>
 
         <!-- Thin mono proof line -->
         <p class="hero__proof mono">
-          17 YEARS · THOUSANDS OF SHOTS ·
-          <!-- [PLACEHOLDER: IMDb URL] -->
-          <a href="#" class="proof__link" data-placeholder="imdb-url">IMDB &nearr;</a>
+          17 YEARS · FEATURES &amp; EPISODIC ·
+          <a href="https://www.imdb.com/name/nm3164979/" class="proof__link" target="_blank" rel="noopener">IMDB &nearr;</a>
         </p>
       </div>
     </div>
   </section>
 
   <!-- ============================================================= -->
-  <!-- THE WORK — five film nodes (real-time floating 3D objects)     -->
+  <!-- THE WORK — six film/TV nodes (real-time floating 3D objects)   -->
   <!--   Each node: a transparent Three.js canvas (object) sitting     -->
   <!--   BEHIND the caption; text is allowed to overlap the object     -->
-  <!--   for depth (hero-style). Order = chronological, Avatar first.  -->
+  <!--   for depth (hero-style). Order = chronological, Avatar first,  -->
+  <!--   ending on Rings of Power (the climax is the present).         -->
   <!--   3D handled by js/films3d.js; no-WebGL → static poster.        -->
   <!-- ============================================================= -->
   <section class="section films" id="work">
     <div class="section__head reveal">
       <h2 class="section__title">The work.</h2>
-      <p class="section__intro mono">A selection from seventeen years in feature &amp; episodic VFX.</p>
+      <p class="section__intro mono">Six productions from seventeen years in feature and episodic VFX.</p>
     </div>
 
     <!-- AVATAR · 2009 -->
@@ -148,8 +149,7 @@
       <div class="film__caption">
         <h3 class="film__title">Gravity</h3>
         <p class="film__meta mono">VFX Editor · 2013 · Framestore</p>
-        <!-- [PLACEHOLDER: one line — your specific contribution to Gravity] -->
-        <p class="film__line" data-placeholder="gravity-line">[PLACEHOLDER: one line — your specific contribution]</p>
+        <p class="film__line">This film took so long that Clooney's line mentioning MySpace had to be rewritten — Facebook had overtaken it before we finished. Four years of shots, frame by frame.</p>
       </div>
     </article>
 
@@ -161,27 +161,39 @@
       <div class="film__caption">
         <h3 class="film__title">Alien: Covenant</h3>
         <p class="film__meta mono">VFX Editor · 2017 · Framestore</p>
-        <!-- [PLACEHOLDER: one line — your specific contribution to Alien: Covenant] -->
-        <p class="film__line" data-placeholder="alien-line">[PLACEHOLDER: one line — your specific contribution]</p>
+        <p class="film__line">Facehuggers and chestbursters on screen for split seconds — enough to define the terror of an entire franchise. I've been an Alien fan since childhood. Getting those cuts right mattered.</p>
       </div>
     </article>
 
-    <!-- BLACK MIRROR · (last) -->
+    <!-- BLACK MIRROR · 2019 -->
     <article class="film film--left reveal" data-film="blackmirror" data-glb="films/blackmirror.glb?v=hd1" data-roty="-20">
       <div class="film__viewer" aria-hidden="true"></div>
       <img class="film__poster" src="films/blackmirror.poster.webp" loading="lazy"
            alt="A switched-off smartphone with a cracked screen, orange glowing faintly through the spiderweb of cracks, floating in a void." />
       <div class="film__caption">
         <h3 class="film__title">Black Mirror</h3>
-        <p class="film__meta mono">VFX Editor · Framestore</p>
+        <p class="film__meta mono">VFX Editor · 2019 · Netflix / House of Tomorrow</p>
         <p class="film__line">Charlie Brooker demands invisible effects — harder to pull off than the spectacular ones.</p>
+      </div>
+    </article>
+
+    <!-- THE RINGS OF POWER · 2025 (the present — the climax of the scroll) -->
+    <article class="film film--right reveal" data-film="rop" data-glb="films/rop.glb?v=rop1">
+      <div class="film__viewer" aria-hidden="true"></div>
+      <img class="film__poster" src="films/rop.poster.webp" loading="lazy"
+           alt="A freshly forged metal ring, a thin molten orange seam still glowing around its band, floating in a void." />
+      <div class="film__caption">
+        <h3 class="film__title">The Lord of the Rings: The Rings of Power</h3>
+        <p class="film__meta mono">VFX Editor · 2025 · Amazon MGM Studios</p>
+        <p class="film__line">Among the largest VFX undertakings in episodic television. I run the editorial spine: turnovers, tracking, versioning, conform.</p>
       </div>
     </article>
 
     <!-- Additional credits strip (text only, no objects) -->
     <p class="films__also mono reveal">
-      ALSO: The Dark Crystal · Paddington · Guardians of the Galaxy · Everest ·
-      Jupiter Ascending · RoboCop · Geostorm · The Golden Compass
+      ALSO: KAOS · The Witcher: Blood Origin · Dracula · The Dark Crystal ·
+      A Discovery of Witches · Brave New World · Guardians of the Galaxy Vol. 2 ·
+      Paddington 1–2 · Everest · Jupiter Ascending · Geostorm · The Golden Compass
     </p>
   </section>
 
@@ -194,9 +206,11 @@
     </div>
     <div class="expertise__body reveal">
       <p class="prose">
-        My job was always the same: make the invisible work. Bridge the creative
-        vision and the technical reality of getting it on screen — thousands of
-        shots, moving cleanly from artist to final.
+        I own the editorial spine of a show — the system that moves thousands of
+        shots from artists to screen. EDLs, turnovers, versioning, conform, under
+        deadline pressure that never lets up. My job has always been the same:
+        make the invisible work. After seventeen years, I started building the
+        tools to do it better.
       </p>
       <ul class="caps mono">
         <li>EDL / ALE workflows</li>
@@ -222,10 +236,18 @@
       </div>
       <div class="product__copy">
         <h2 class="section__title">FRAME/SHIFT.</h2>
-        <!-- [PLACEHOLDER — short line on what FRAME/SHIFT is: an editorial/VFX database project] -->
-        <p class="product__line" data-placeholder="frameshift-line">
-          [PLACEHOLDER — short line on what FRAME/SHIFT is: an editorial/VFX database project.]
+        <p class="product__line">
+          Every show I've worked on ran its VFX editorial out of spreadsheets —
+          fragile, manual, rebuilt from scratch each time. FRAME/SHIFT is the
+          alternative: a database built around how shows actually move, where the
+          cut itself drives the pipeline. Shot tracking, turnovers and versioning
+          derived from the EDL, not retyped into cells.
         </p>
+        <p class="product__line">
+          I'm building it the only way I'd trust: inside a live production, on
+          real data, an hour a night. Not a startup. Infrastructure.
+        </p>
+        <p class="product__concept mono">THE CUT-DERIVED PIPELINE — the edit is the source of truth; everything else follows from it.</p>
         <!-- href injected from FRAMESHIFT_URL constant at runtime -->
         <a class="btn btn--accent mono" data-link="frameshift" target="_blank" rel="noopener">
           &rarr; Visit FRAME/SHIFT &nearr;
@@ -243,9 +265,11 @@
     <div class="product__inner product__inner--reverse reveal">
       <div class="product__copy">
         <h2 class="section__title">VFX Tools.</h2>
-        <!-- [PLACEHOLDER — short line: a selection of editorial/VFX tools I build and share on LinkedIn] -->
-        <p class="product__line" data-placeholder="vfxtools-line">
-          [PLACEHOLDER — short line: a selection of editorial/VFX tools I build and share on LinkedIn.]
+        <p class="product__line">
+          Standalone tools from the cutting room floor — EDL parsing, turnover
+          checks, the small automations that save an afternoon. I share them as
+          I build them. Some will be absorbed into FRAME/SHIFT; the rest stay
+          free and practical.
         </p>
         <!-- href injected from VFXTOOLS_URL constant at runtime -->
         <a class="btn btn--accent mono" data-link="vfxtools">
@@ -259,35 +283,51 @@
   </section>
 
   <!-- ============================================================= -->
-  <!-- NOW — current projects                                         -->
+  <!-- NOW — current status                                           -->
   <!-- ============================================================= -->
   <section class="section now" id="now">
     <div class="section__head reveal">
-      <h2 class="section__title">What I'm building now.</h2>
+      <h2 class="section__title">Now.</h2>
     </div>
 
-    <div class="now__grid">
-      <article class="now__card reveal">
-        <img class="now__logo" src="images/VFX_Tools.png"
-             alt="VFX Tools logo." loading="lazy" />
-        <h3 class="now__title">AI tools for VFX editorial</h3>
-        <!-- [PLACEHOLDER — short blurb on the AI editorial tools you're building now] -->
-        <p class="now__line" data-placeholder="now-ai-blurb">
-          [PLACEHOLDER — short blurb on the AI editorial tools you're building now.]
-        </p>
-      </article>
-
-      <!-- Mr. Lobster — evidence I ship, not a second pitch -->
-      <article class="now__card now__card--lobster reveal">
+    <div class="now__body reveal">
+      <p class="prose">
+        Cutting VFX on a major series. Building FRAME/SHIFT nightly, in
+        production. Writing about editorial systems and AI on LinkedIn, weekly.
+      </p>
+      <!-- Mr. Lobster — one line, proof of shipping; never a second pitch -->
+      <p class="now__elsewhere">
         <img class="now__lobster" src="images/mr_lobster_PFP.png"
              alt="Mr. Lobster — a brushed-metal lobster brand mark." loading="lazy" />
-        <h3 class="now__title">Mr. Lobster</h3>
-        <p class="now__line">
-          Proof I ship AI products outside film: an AI WhatsApp automation for
-          local businesses that can't afford to miss an enquiry.
-        </p>
-        <a class="link-mono mono" href="https://mrlobster.co.uk" target="_blank" rel="noopener">&rarr; mrlobster.co.uk &nearr;</a>
-      </article>
+        <span>Elsewhere: <strong>Mr.&nbsp;Lobster</strong> — proof I ship AI products outside film.
+        <a class="link-mono mono" href="https://mrlobster.co.uk" target="_blank" rel="noopener">&rarr; mrlobster.co.uk &nearr;</a></span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- ABOUT — compact through-line (in-flow, deliberately NOT in nav)-->
+  <!-- ============================================================= -->
+  <section class="section about" id="about">
+    <div class="section__head reveal">
+      <h2 class="section__title">The through line.</h2>
+    </div>
+    <div class="about__body reveal">
+      <p class="prose">
+        I was the kid who stayed through the credits, wondering who all those
+        people were. It took nine years of studying while working restaurant
+        shifts to become one of them.
+      </p>
+      <p class="prose">
+        Seventeen years later, my name has scrolled past on Avatar, Gravity,
+        Harry Potter and Black Mirror, and I run VFX editorial on some of the
+        biggest series in television.
+      </p>
+      <p class="prose">
+        Somewhere along the way I realised the job was never really about the
+        shots. It was about the system that moves them. So now I build the
+        system — with the same instinct, and much better tools.
+      </p>
     </div>
   </section>
 
@@ -297,16 +337,12 @@
   <section class="section contact" id="contact">
     <div class="contact__inner reveal">
       <h2 class="section__title">Let's talk.</h2>
-      <p class="contact__sub">For AI integration in post pipelines, editorial tooling, or speaking.</p>
+      <p class="contact__sub">For VFX editorial, AI in post-production pipelines, or speaking.</p>
       <div class="contact__links mono">
-        <!-- [PLACEHOLDER: email address] -->
-        <a href="#" data-placeholder="email">EMAIL &nearr;</a>
-        <!-- [PLACEHOLDER: LinkedIn URL] -->
-        <a href="#" data-placeholder="linkedin">LINKEDIN &nearr;</a>
-        <!-- [PLACEHOLDER: IMDb URL] -->
-        <a href="#" data-placeholder="imdb">IMDB &nearr;</a>
-        <!-- [PLACEHOLDER: X / Twitter URL] -->
-        <a href="#" data-placeholder="x">X &nearr;</a>
+        <a href="mailto:lukasz.vfx@gmail.com">EMAIL &nearr;</a>
+        <a href="https://www.linkedin.com/in/lukasz-bukowiecki" target="_blank" rel="noopener">LINKEDIN &nearr;</a>
+        <a href="https://www.imdb.com/name/nm3164979/" target="_blank" rel="noopener">IMDB &nearr;</a>
+        <a href="https://x.com/manzombie_eth" target="_blank" rel="noopener">X &nearr;</a>
       </div>
     </div>
     <footer class="footer mono">© 2026 Lukasz Bukowiecki · bukowiecki.co</footer>
