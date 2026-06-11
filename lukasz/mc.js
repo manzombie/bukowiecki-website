@@ -45,6 +45,8 @@
   const RUNWAY_KEY = "mc_runway_end";
 
   let token = CFG.mcToken || localStorage.getItem(TOKEN_KEY) || "";
+  let streaksAnimated = false;
+  let lastRefreshAt = 0;
   let briefing = null;
   let molDate = todayStr();
   let ventures = [];
@@ -83,6 +85,14 @@
 
     if (token) refreshAll();
     else showConnect("");
+
+    // Freshness: a morning glance at a stale tab still shows today. Refetch on
+    // return to the tab when the data is more than 60s old.
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && token && Date.now() - lastRefreshAt > 60000) {
+        refreshAll();
+      }
+    });
   }
 
   // --- API client ---
@@ -142,6 +152,16 @@
     if (els.ventureBody) els.ventureBody.innerHTML = `<div class="mc-empty">Connect Mission Control above.</div>`;
   }
 
+  // Completion celebrates: a green border pulse on the containing panel.
+  function pulsePanel(node) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const panel = node && node.closest ? node.closest(".panel") : null;
+    if (!panel) return;
+    panel.classList.remove("is-pulsing");
+    void panel.offsetWidth; // restart the animation
+    panel.classList.add("is-pulsing");
+  }
+
   function handleFailure(statusEl, err) {
     if (err instanceof AuthError) {
       showConnect(err.message);
@@ -152,6 +172,7 @@
 
   async function refreshAll() {
     if (els.mirrorStatus) els.mirrorStatus.textContent = "";
+    lastRefreshAt = Date.now();
     try {
       briefing = await api("/api/mc/briefing/today");
       if (els.connect) els.connect.classList.add("is-hidden");
@@ -221,6 +242,12 @@
         <div><span>${escapeHtml(s.activity.toUpperCase())}</span><small>${s.total} total · last ${shortDate(s.last_date)}</small></div>
       </div>
     `).join("");
+    if (!streaksAnimated && window.MCUI) {
+      streaksAnimated = true;
+      els.streaks.querySelectorAll(".mc-streak strong").forEach((node) => {
+        MCUI.countUp(node, Number(node.textContent) || 0);
+      });
+    }
   }
 
   function renderStrip(todayIso) {
@@ -331,12 +358,20 @@
       button.addEventListener("click", async () => {
         const item = button.closest(".mc-news-item");
         const small = item.querySelector("small");
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        // Immediate feedback: thumbs-down slides the card out, thumbs-up dims it
+        if (button.dataset.vote === "down") {
+          item.classList.add("is-downvoted");
+          setTimeout(() => item.remove(), reduced ? 0 : 260);
+        } else {
+          item.classList.add("is-upvoted");
+        }
         try {
           const result = await api("/api/mc/news/feedback", {
             method: "POST",
             body: { topic: item.dataset.topic, vote: button.dataset.vote },
           });
-          small.textContent = `${result.topic} → ${result.weight}`;
+          if (button.dataset.vote === "up") small.textContent = `${result.topic} → ${result.weight}`;
         } catch (err) {
           handleFailure(els.mirrorStatus, err);
         }
@@ -614,6 +649,7 @@
     setBoth(next);
     renderMirror();
     if (rerender) rerender();
+    if (next) pulsePanel(statusEl);
     try {
       const updated = await api(`/api/mc/daily-log/${logId}`, { method: "PATCH", body: { done: next } });
       setBoth(updated.done);

@@ -111,6 +111,12 @@
     if (!window.MISSION_CONFIG.passcode || sessionStorage.getItem(authKey) === "true") unlock();
     tickClock();
     setInterval(tickClock, 10000);
+    // Seconds tick as a soft opacity pulse on the separator, never a hard jump
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setInterval(() => {
+        els.timeLabel.classList.toggle("is-tick", new Date().getSeconds() % 2 === 1);
+      }, 1000);
+    }
     if (els.conditionsLocation) els.conditionsLocation.value = state.conditionsLocation;
     fetchConditions();
     setInterval(fetchConditions, 60 * 60 * 1000);
@@ -707,15 +713,25 @@
       month: "short",
       year: "numeric"
     }).toUpperCase();
-    els.timeLabel.textContent = now.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit"
-    });
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    els.timeLabel.innerHTML = `${hh}<span class="mc-clock__sep">:</span>${mm}`;
+    renderGreeting(now.getHours());
     const today = todayStr();
     if (today !== lastRenderedDate) {
       lastRenderedDate = today;
       renderCalendar();
     }
+  }
+
+  // The greeting tracks the actual time of day — an ambient display that says
+  // "Good morning" at 18:35 burns trust in every other number on the page.
+  function renderGreeting(hour) {
+    const greeting = document.getElementById("greeting");
+    if (!greeting) return;
+    const part = hour < 5 ? "Up late" : hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : hour < 22 ? "Good evening" : "Up late";
+    const text = `${part}, Lukasz.`;
+    if (greeting.textContent !== text) greeting.textContent = text;
   }
 
   function escapeHtml(value) {

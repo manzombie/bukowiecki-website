@@ -138,6 +138,22 @@ body {
   font-size: 40px;
 }
 
+/* Seconds breathe through the separator instead of jumping */
+.hero-clock strong .mc-clock__sep {
+  transition: opacity var(--dur-med) var(--ease-out);
+}
+
+.hero-clock strong.is-tick .mc-clock__sep {
+  opacity: 0.35;
+}
+
+/* Last serif holdouts join the display face */
+.avatar,
+.mc-win strong {
+  font-family: var(--font-display);
+  font-weight: 300;
+}
+
 .mirror-runway strong {
   color: var(--accent);
 }

@@ -165,6 +165,26 @@
     });
   }
 
+  /* ---- Staggered panel appearance, fired when the app actually becomes visible ----- */
+
+  function setupAppear() {
+    if (REDUCED_MOTION.matches || !window.MCUI) return;
+    const app = document.getElementById("app");
+    if (!app) return;
+    const run = () => MCUI.staggerAppear(panels().filter((p) => !p.classList.contains("is-collapsed")));
+    if (!app.classList.contains("is-hidden")) {
+      run();
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      if (!app.classList.contains("is-hidden")) {
+        observer.disconnect();
+        run();
+      }
+    });
+    observer.observe(app, { attributes: true, attributeFilter: ["class"] });
+  }
+
   /* ---- Boot ----------------------------------------------------------------------- */
 
   applyOrder();
@@ -173,4 +193,5 @@
     setupDrag(panel);
   });
   setupReset();
+  setupAppear();
 })();
