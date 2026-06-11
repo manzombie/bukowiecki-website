@@ -455,10 +455,11 @@ textarea {
   border-color: var(--accent);
 }
 
+/* Months wrap to fewer columns instead of squeezing until digits collide */
 .cal-months {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
 }
 
 .cal-month-name {
