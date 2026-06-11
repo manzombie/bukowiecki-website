@@ -1754,7 +1754,6 @@ textarea:focus {
 .mc-streaks {
   display: grid;
   gap: 10px;
-  margin-bottom: 20px;
 }
 
 .mc-streak {
@@ -1790,6 +1789,7 @@ textarea:focus {
   display: grid;
   grid-template-columns: repeat(14, 1fr);
   gap: 4px;
+  margin-bottom: 20px;
 }
 
 .mc-strip-day {
