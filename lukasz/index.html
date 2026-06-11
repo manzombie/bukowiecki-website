@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>🚀 Mr. Lobster Mission Control</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E1726'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='38'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="./styles.css?v=20260610b" />
+    <link rel="stylesheet" href="./styles.css?v=20260610c" />
   </head>
   <body>
     <div id="lockscreen" class="lockscreen">
@@ -38,7 +38,8 @@
       </header>
 
       <section class="grid">
-        <section class="panel mc-panel mc-mirror">
+        <!-- Row 1 // Daily command view -->
+        <section class="panel mc-panel mc-mirror span-8">
           <p class="panel-code">01 // TODAY — DAILY MIRROR</p>
           <div id="mcConnect" class="mc-connect is-hidden">
             <p>Mission Control is not connected. Enter the API access token (same one set as <code>MC_API_TOKEN</code> on the server).</p>
@@ -75,43 +76,82 @@
                 <div id="mcStreaks" class="mc-streaks"></div>
                 <p class="mc-label">This Week</p>
                 <div id="mcStrip" class="mc-strip"></div>
-                <p class="mc-label">News</p>
-                <div id="mcNews" class="mc-news"></div>
               </div>
             </div>
             <p id="mcMirrorStatus" class="mc-status" role="alert"></p>
           </div>
         </section>
 
-        <section class="panel mc-panel mc-moleskine">
-          <p class="panel-code">02 // MOLESKINE</p>
-          <div class="moleskine-head">
-            <button id="mcMolPrev" type="button" class="ghost-button" aria-label="Previous day">←</button>
-            <h2 id="mcMolDate">—</h2>
-            <button id="mcMolNext" type="button" class="ghost-button" aria-label="Next day">→</button>
-          </div>
-          <div class="moleskine-grid">
-            <div class="moleskine-col">
-              <p class="mc-label">Committed</p>
-              <div id="mcMolCommitted"></div>
+        <div class="rail span-4">
+          <section class="panel current-task">
+            <p class="panel-code">02 // ACTIVE TASK</p>
+            <div id="currentTaskEmpty" class="empty-state">No active task. Pick one with the “Now” button on the project board.</div>
+            <div id="currentTask" class="is-hidden">
+              <div class="task-kicker" id="currentPhase"></div>
+              <h2 id="currentTitle"></h2>
+              <p id="currentDescription"></p>
+              <div class="action-row">
+                <button id="copyPromptButton" type="button">Copy Codex / Claude Prompt</button>
+                <button id="completeCurrentButton" type="button" class="secondary">Mark Done</button>
+                <button id="putBackButton" type="button" class="secondary">Put Back</button>
+              </div>
             </div>
-            <div class="moleskine-divider" aria-hidden="true"></div>
-            <div class="moleskine-col">
-              <p class="mc-label">Extras</p>
-              <div id="mcMolExtras"></div>
-              <form id="mcExtraForm" class="mc-extra-form is-hidden">
-                <input id="mcExtraInput" type="text" placeholder="What else happened?" maxlength="500" />
-                <button type="submit">Add</button>
-              </form>
-            </div>
-          </div>
-          <p id="mcMolStatus" class="mc-status" role="alert"></p>
-        </section>
+          </section>
 
-        <section class="panel mc-panel mc-ventures">
+          <section class="panel vitals">
+            <p class="panel-code">03 // VITALS</p>
+            <strong id="progressPercent">0%</strong>
+            <span>PROJECT PROGRESS</span>
+            <div class="progress-track"><div id="progressBar"></div></div>
+            <div class="ring-row">
+              <div><span id="doneCount">0</span><small>Done</small></div>
+              <div><span id="activeCount">0</span><small>Active</small></div>
+              <div><span id="blockedCount">0</span><small>Blocked</small></div>
+            </div>
+            <div class="conditions-widget" aria-label="Southend weather, daylight, and tide guidance">
+              <div class="conditions-head">
+                <label for="conditionsLocation">Location</label>
+                <select id="conditionsLocation" aria-label="Weather location">
+                  <option value="southend">Southend-on-Sea</option>
+                  <option value="shepperton">Shepperton, UK</option>
+                  <option value="new-york">New York</option>
+                  <option value="los-angeles">Los Angeles</option>
+                  <option value="tokyo">Tokyo</option>
+                  <option value="wellington">Wellington</option>
+                </select>
+                <small id="conditionsUpdated">Loading</small>
+                <button id="conditionsRefresh" type="button" class="conditions-refresh" aria-label="Refresh weather" title="Refresh now">↻</button>
+              </div>
+              <div class="conditions-grid">
+                <div>
+                  <span class="condition-icon" aria-hidden="true">🌦️</span>
+                  <strong id="weatherSummary">--</strong>
+                  <small id="weatherDetail">Weather</small>
+                </div>
+                <div>
+                  <span class="condition-icon" aria-hidden="true">🌅</span>
+                  <strong id="sunriseTime">--:--</strong>
+                  <small>Sunrise</small>
+                </div>
+                <div>
+                  <span class="condition-icon" aria-hidden="true">🌇</span>
+                  <strong id="sunsetTime">--:--</strong>
+                  <small>Sunset</small>
+                </div>
+              </div>
+              <div class="tide-widget">
+                <div class="tide-title"><span aria-hidden="true">🌊</span> Tide guidance</div>
+                <div id="tideList" class="tide-list">Loading tide curve…</div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Row 2 // Projects and session -->
+        <section class="panel mc-panel mc-ventures span-8">
           <div class="board-head">
             <div>
-              <p class="panel-code">03 // VENTURES</p>
+              <p class="panel-code">04 // VENTURES</p>
               <h2>Command Center</h2>
             </div>
           </div>
@@ -120,21 +160,80 @@
           <p id="mcVentureStatus" class="mc-status" role="alert"></p>
         </section>
 
-        <section class="panel mc-panel mc-week">
-          <div class="board-head">
+        <div class="rail span-4">
+          <section class="panel hero">
+            <p class="panel-code">05 // SESSION</p>
             <div>
-              <p class="panel-code">04 // WEEK IN REVIEW</p>
-              <h2 id="mcWeekRange">—</h2>
+              <h1>Good morning, Lukasz.</h1>
+              <p>Pick the next useful task. Finish it manually, or link it back to GitHub when the repo catches up.</p>
             </div>
-            <button id="mcWinReplay" class="ghost-button" type="button">▶ Win replay</button>
-          </div>
-          <div id="mcWeekBody"></div>
-          <div id="mcWins" class="mc-wins is-hidden"></div>
-          <p id="mcWeekStatus" class="mc-status" role="alert"></p>
+            <div class="hero-clock">
+              <strong id="timeLabel">--:--</strong>
+              <span>LOCAL TIME</span>
+            </div>
+            <div id="agentModule" class="agent-module">
+              <div class="agent-meta">
+                <span id="agentModelLabel">HAIKU 4.5</span>
+                <span class="agent-live-indicator"><span class="agent-live-dot"></span>LIVE</span>
+                <button id="agentRefresh" type="button" title="Refresh briefing">↻</button>
+              </div>
+              <div class="agent-output">
+                <p id="agentText">Complete a task to generate the next guide, or press ↻ for a manual refresh.</p>
+              </div>
+            </div>
+            <div id="calendarWidget" class="calendar-widget"></div>
+          </section>
+        </div>
+
+        <!-- Row 3 // News and context -->
+        <section class="panel news-panel span-8">
+          <p class="panel-code">06 // NEWS</p>
+          <div id="mcNews" class="mc-news"></div>
         </section>
 
-        <aside class="panel operator">
-          <p class="panel-code">05 // OPERATOR</p>
+        <div class="rail span-4">
+          <section class="panel mc-panel mc-week">
+            <div class="board-head">
+              <div>
+                <p class="panel-code">07 // WEEK IN REVIEW</p>
+                <h2 id="mcWeekRange">—</h2>
+              </div>
+              <button id="mcWinReplay" class="ghost-button" type="button">▶ Win replay</button>
+            </div>
+            <div id="mcWeekBody"></div>
+            <div id="mcWins" class="mc-wins is-hidden"></div>
+            <p id="mcWeekStatus" class="mc-status" role="alert"></p>
+          </section>
+
+          <section class="panel mc-panel mc-moleskine">
+            <p class="panel-code">08 // MOLESKINE</p>
+            <div class="moleskine-head">
+              <button id="mcMolPrev" type="button" class="ghost-button" aria-label="Previous day">←</button>
+              <h2 id="mcMolDate">—</h2>
+              <button id="mcMolNext" type="button" class="ghost-button" aria-label="Next day">→</button>
+            </div>
+            <div class="moleskine-grid">
+              <div class="moleskine-col">
+                <p class="mc-label">Committed</p>
+                <div id="mcMolCommitted"></div>
+              </div>
+              <div class="moleskine-divider" aria-hidden="true"></div>
+              <div class="moleskine-col">
+                <p class="mc-label">Extras</p>
+                <div id="mcMolExtras"></div>
+                <form id="mcExtraForm" class="mc-extra-form is-hidden">
+                  <input id="mcExtraInput" type="text" placeholder="What else happened?" maxlength="500" />
+                  <button type="submit">Add</button>
+                </form>
+              </div>
+            </div>
+            <p id="mcMolStatus" class="mc-status" role="alert"></p>
+          </section>
+        </div>
+
+        <!-- Row 4 // Supporting utilities -->
+        <aside class="panel operator span-3">
+          <p class="panel-code">09 // OPERATOR</p>
           <div class="operator-card">
             <div class="avatar-wrap">
               <button id="avatarButton" class="avatar" type="button" aria-label="Upload profile photo">
@@ -164,99 +263,13 @@
           </dl>
         </aside>
 
-        <section class="panel hero">
-          <p class="panel-code hero-code">06 //<br />SESSION</p>
-          <div>
-            <h1>Good morning, Lukasz.</h1>
-            <p>Pick the next useful task. Finish it manually, or link it back to GitHub when the repo catches up.</p>
-          </div>
-          <div class="hero-clock">
-            <strong id="timeLabel">--:--</strong>
-            <span>LOCAL TIME</span>
-          </div>
-          <div id="agentModule" class="agent-module">
-            <div class="agent-meta">
-              <span id="agentModelLabel">HAIKU 4.5</span>
-              <span class="agent-live-indicator"><span class="agent-live-dot"></span>LIVE</span>
-              <button id="agentRefresh" type="button" title="Refresh briefing">↻</button>
-            </div>
-            <div class="agent-output">
-              <p id="agentText">Complete a task to generate the next guide, or press ↻ for a manual refresh.</p>
-            </div>
-          </div>
-          <div id="calendarWidget" class="calendar-widget"></div>
-        </section>
-
-        <section class="panel vitals">
-          <p class="panel-code">07 // VITALS</p>
-          <strong id="progressPercent">0%</strong>
-          <span>PROJECT PROGRESS</span>
-          <div class="progress-track"><div id="progressBar"></div></div>
-          <div class="ring-row">
-            <div><span id="doneCount">0</span><small>Done</small></div>
-            <div><span id="activeCount">0</span><small>Active</small></div>
-            <div><span id="blockedCount">0</span><small>Blocked</small></div>
-          </div>
-          <div class="conditions-widget" aria-label="Southend weather, daylight, and tide guidance">
-            <div class="conditions-head">
-              <label for="conditionsLocation">Location</label>
-              <select id="conditionsLocation" aria-label="Weather location">
-                <option value="southend">Southend-on-Sea</option>
-                <option value="shepperton">Shepperton, UK</option>
-                <option value="new-york">New York</option>
-                <option value="los-angeles">Los Angeles</option>
-                <option value="tokyo">Tokyo</option>
-                <option value="wellington">Wellington</option>
-              </select>
-              <small id="conditionsUpdated">Loading</small>
-              <button id="conditionsRefresh" type="button" class="conditions-refresh" aria-label="Refresh weather" title="Refresh now">↻</button>
-            </div>
-            <div class="conditions-grid">
-              <div>
-                <span class="condition-icon" aria-hidden="true">🌦️</span>
-                <strong id="weatherSummary">--</strong>
-                <small id="weatherDetail">Weather</small>
-              </div>
-              <div>
-                <span class="condition-icon" aria-hidden="true">🌅</span>
-                <strong id="sunriseTime">--:--</strong>
-                <small>Sunrise</small>
-              </div>
-              <div>
-                <span class="condition-icon" aria-hidden="true">🌇</span>
-                <strong id="sunsetTime">--:--</strong>
-                <small>Sunset</small>
-              </div>
-            </div>
-            <div class="tide-widget">
-              <div class="tide-title"><span aria-hidden="true">🌊</span> Tide guidance</div>
-              <div id="tideList" class="tide-list">Loading tide curve…</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel current-task">
-          <p class="panel-code">08 // ACTIVE TASK</p>
-          <div id="currentTaskEmpty" class="empty-state">No active task. Pick one with the “Now” button on the project board.</div>
-          <div id="currentTask" class="is-hidden">
-            <div class="task-kicker" id="currentPhase"></div>
-            <h2 id="currentTitle"></h2>
-            <p id="currentDescription"></p>
-            <div class="action-row">
-              <button id="copyPromptButton" type="button">Copy Codex / Claude Prompt</button>
-              <button id="completeCurrentButton" type="button" class="secondary">Mark Done</button>
-              <button id="putBackButton" type="button" class="secondary">Put Back</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel prompt-panel">
-          <p class="panel-code">09 // HANDOFF PROMPT</p>
+        <section class="panel prompt-panel span-3">
+          <p class="panel-code">10 // HANDOFF PROMPT</p>
           <textarea id="promptBox" readonly></textarea>
         </section>
 
-        <section class="panel github-panel">
-          <p class="panel-code">10 // GITHUB LINK</p>
+        <section class="panel github-panel span-3">
+          <p class="panel-code">11 // GITHUB LINK</p>
           <h2 class="repo-title">manzombie/mr_lobster_rebuild</h2>
           <p>This MVP keeps the dashboard simple and uses GitHub as the cross-machine project trail.</p>
           <div class="github-links">
@@ -267,17 +280,18 @@
           <p id="githubStatus" class="muted">Live GitHub completion sync is planned for v0.2.</p>
         </section>
 
-        <section class="panel tools-panel">
-          <p class="panel-code">11 // BUSINESS TOOLS</p>
+        <section class="panel tools-panel span-3">
+          <p class="panel-code">12 // BUSINESS TOOLS</p>
           <h2>LAB MEDIA operations.</h2>
           <p>Invoices, client records, email templates, and production utilities in one private workspace.</p>
           <a class="tools-launch" data-tools-link href="#">Open Tools <span aria-hidden="true">↗</span></a>
         </section>
 
-        <section class="panel phase-board">
+        <!-- Final row // Project board -->
+        <section class="panel phase-board span-12">
           <div class="board-head">
             <div>
-              <p class="panel-code">12 // PROJECT BOARD</p>
+              <p class="panel-code">13 // PROJECT BOARD</p>
               <h2>Projects</h2>
             </div>
             <div class="board-tools">
@@ -296,8 +310,8 @@
     <!-- Local-only overrides (gitignored, 404s harmlessly on the public build) -->
     <script src="./mission-config.local.js"></script>
     <!-- bump ?v= when mission-data.js/app.js change so browsers fetch the new file -->
-    <script src="./mission-data.js?v=20260610b"></script>
-    <script src="./app.js?v=20260610b"></script>
-    <script src="./mc.js?v=20260610b"></script>
+    <script src="./mission-data.js?v=20260610c"></script>
+    <script src="./app.js?v=20260610c"></script>
+    <script src="./mc.js?v=20260610c"></script>
   </body>
 </html>

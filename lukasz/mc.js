@@ -300,8 +300,10 @@
       els.news.innerHTML = `<div class="mc-empty">No headlines right now.</div>`;
       return;
     }
-    els.news.innerHTML = items.map((h) => `
-      <div class="mc-news-item" data-topic="${escapeHtml(h.topic)}">
+    // Show the top stories only; the rest stay behind "View all news"
+    const NEWS_VISIBLE = 8;
+    els.news.innerHTML = items.map((h, i) => `
+      <div class="mc-news-item${i >= NEWS_VISIBLE ? " mc-news-overflow is-hidden" : ""}" data-topic="${escapeHtml(h.topic)}">
         <a href="${escapeHtml(h.link)}" target="_blank" rel="noreferrer">${escapeHtml(h.title)}</a>
         ${h.summary ? `<p>${escapeHtml(h.summary)}</p>` : ""}
         <div class="mc-news-meta">
@@ -312,7 +314,19 @@
           </span>
         </div>
       </div>
-    `).join("");
+    `).join("") + (items.length > NEWS_VISIBLE
+      ? `<button type="button" class="mc-news-more" data-news-more>View all news (${items.length})</button>`
+      : "");
+    const moreButton = els.news.querySelector("[data-news-more]");
+    if (moreButton) {
+      moreButton.addEventListener("click", () => {
+        const expanded = moreButton.classList.toggle("is-open");
+        els.news.querySelectorAll(".mc-news-overflow").forEach((item) => {
+          item.classList.toggle("is-hidden", !expanded);
+        });
+        moreButton.textContent = expanded ? "Show top stories only" : `View all news (${items.length})`;
+      });
+    }
     els.news.querySelectorAll("[data-vote]").forEach((button) => {
       button.addEventListener("click", async () => {
         const item = button.closest(".mc-news-item");
