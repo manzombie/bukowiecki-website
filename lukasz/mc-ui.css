@@ -1,0 +1,675 @@
+/* ==========================================================================
+   Mission Control UI — warm glass instrument
+   Tokens, glass material, and component library. See design-system.md.
+   ========================================================================== */
+
+/* ---- 1. Tokens ---------------------------------------------------------- */
+
+:root {
+  /* Background world */
+  --bg-base: #1a140f;
+  --bg-glow-amber: rgba(255, 166, 87, 0.15);
+  --bg-glow-coral: rgba(255, 107, 91, 0.08);
+  --bg-glow-teal: rgba(64, 130, 120, 0.1);
+
+  /* Glass surfaces */
+  --glass-1: rgba(255, 248, 240, 0.045);
+  --glass-2: rgba(255, 248, 240, 0.075);
+  --glass-3: rgba(255, 248, 240, 0.115);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-hover: rgba(255, 255, 255, 0.16);
+  --glass-border-active: rgba(255, 255, 255, 0.24);
+
+  /* Accents */
+  --accent: #ff6b5b;
+  --accent-soft: rgba(255, 107, 91, 0.14);
+  --accent-2: #7fb8a4;
+
+  /* Text */
+  --text-1: #f4ede3;
+  --text-2: #b9ac9b;
+  --text-3: #8a7e6f;
+
+  /* Semantic */
+  --ok: #8fbc8b;
+  --warn: #e0b05e;
+  --danger: #e0564a;
+
+  /* Type roles */
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Spacing scale — no other values permitted */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 150ms;
+  --dur-med: 250ms;
+  --dur-slow: 400ms;
+
+  --radius: 20px;
+}
+
+/* ---- 2. Ambient background ---------------------------------------------- */
+
+/* Safety net: the canvas itself is never lighter than the base, even if the
+   fixed ambient layer drops out of the compositor (seen in scrolled captures). */
+body {
+  background: var(--bg-base);
+}
+
+.mc-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(46rem 34rem at 12% 8%, var(--bg-glow-amber), transparent 70%),
+    radial-gradient(40rem 30rem at 88% 30%, var(--bg-glow-coral), transparent 70%),
+    radial-gradient(50rem 38rem at 50% 100%, var(--bg-glow-teal), transparent 70%),
+    var(--bg-base);
+}
+
+.mc-ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");
+  background-size: 240px 240px;
+  opacity: 0.04;
+  pointer-events: none;
+}
+
+/* ---- 3. Glass material — three levels ----------------------------------- */
+
+.glass-1,
+.glass-2,
+.glass-3 {
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  color: var(--text-1);
+}
+
+.glass-1 {
+  background: var(--glass-1);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.glass-2 {
+  background: var(--glass-2);
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.glass-3 {
+  background: var(--glass-3);
+  backdrop-filter: blur(26px) saturate(1.35);
+  -webkit-backdrop-filter: blur(26px) saturate(1.35);
+  border-color: var(--glass-border-active);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+/* Interactive lift — only on cards that are actually interactive */
+.glass-hover {
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.glass-hover:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-2px);
+}
+
+/* ---- 4. Panel chrome ----------------------------------------------------- */
+
+.mc-card {
+  position: relative;
+  padding: var(--s5);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.mc-card--hero {
+  padding: var(--s6);
+}
+
+.mc-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: var(--s4);
+  cursor: grab;
+}
+
+.mc-card__head:active {
+  cursor: grabbing;
+}
+
+.mc-label {
+  margin: 0;
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.mc-label--bright {
+  color: var(--text-2);
+}
+
+.mc-card__controls {
+  margin-left: auto;
+  display: flex;
+  gap: var(--s1);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.mc-card:hover .mc-card__controls {
+  opacity: 1;
+}
+
+.mc-card__controls button {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--glass-border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--font-label);
+  font-size: 11px;
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.mc-card__controls button:hover {
+  color: var(--text-1);
+  border-color: var(--glass-border-hover);
+}
+
+/* Collapsed state: pill with label + one key metric */
+.mc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s2) var(--s4);
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.mc-pill .mc-pill__metric {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  color: var(--text-1);
+}
+
+/* ---- 5. BigNumber -------------------------------------------------------- */
+
+.mc-bignum {
+  display: grid;
+  gap: var(--s1);
+  justify-items: start;
+}
+
+.mc-bignum__value {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  font-size: 64px;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+
+.mc-bignum--xl .mc-bignum__value {
+  font-size: 96px;
+}
+
+.mc-bignum--md .mc-bignum__value {
+  font-size: 40px;
+}
+
+.mc-bignum--accent .mc-bignum__value {
+  color: var(--accent);
+}
+
+.mc-bignum--danger .mc-bignum__value {
+  color: var(--danger);
+}
+
+.mc-bignum__label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.mc-bignum__meta {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+/* ---- 6. ProgressArc ------------------------------------------------------ */
+
+.mc-arc {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.mc-arc svg {
+  transform: rotate(-90deg);
+}
+
+.mc-arc__track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.mc-arc__fill {
+  fill: none;
+  stroke: var(--accent-2);
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--dur-slow) var(--ease-out);
+}
+
+.mc-arc--danger .mc-arc__fill {
+  stroke: var(--danger);
+}
+
+.mc-arc__center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--s1);
+  text-align: center;
+}
+
+.mc-arc__value {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--text-1);
+}
+
+.mc-arc--danger .mc-arc__value {
+  color: var(--danger);
+}
+
+.mc-arc__label {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* ---- 7. TaskRow ----------------------------------------------------------- */
+
+.mc-task {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  border-radius: 14px;
+  border: 1px solid transparent;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    opacity var(--dur-med) var(--ease-out);
+}
+
+.mc-task:hover {
+  background: var(--glass-1);
+  border-color: var(--glass-border);
+}
+
+.mc-task__toggle {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border: 1.5px solid var(--text-3);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: transparent;
+  font-size: 12px;
+  line-height: 1;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-med) var(--ease-spring),
+    color var(--dur-med) var(--ease-spring);
+}
+
+.mc-task__toggle:hover {
+  border-color: var(--accent-2);
+}
+
+.mc-task__title {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    color var(--dur-med) var(--ease-out),
+    text-decoration-color var(--dur-med) var(--ease-out);
+  text-decoration: line-through transparent;
+}
+
+.mc-task__project {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  padding: var(--s1) var(--s2);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.mc-task.is-done {
+  opacity: 0.45;
+}
+
+.mc-task.is-done .mc-task__toggle {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  color: var(--bg-base);
+}
+
+.mc-task.is-done .mc-task__title {
+  text-decoration: line-through var(--text-2);
+  color: var(--text-2);
+}
+
+/* Done pulse on the parent card border */
+@keyframes mc-done-pulse {
+  0% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(127, 184, 164, 0); }
+  35% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(127, 184, 164, 0.55); }
+  100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 0 1px rgba(127, 184, 164, 0); }
+}
+
+.mc-card.is-pulsing {
+  animation: mc-done-pulse 900ms var(--ease-out);
+}
+
+/* ---- 8. StreakBadge ------------------------------------------------------- */
+
+.mc-streak {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: var(--s3);
+}
+
+.mc-streak__count {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.mc-streak__activity {
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.mc-streak__meta {
+  grid-column: 2;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ---- 9. CalendarStrip ------------------------------------------------------ */
+
+.mc-calstrip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--s1);
+  text-align: center;
+}
+
+.mc-calstrip__day {
+  display: grid;
+  gap: var(--s1);
+  justify-items: center;
+  padding: var(--s2) 0;
+  border-radius: 10px;
+}
+
+.mc-calstrip__dow {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+}
+
+.mc-calstrip__num {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  font-size: 18px;
+  color: var(--text-2);
+}
+
+.mc-calstrip__dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.mc-calstrip__day.has-log .mc-calstrip__dot {
+  background: var(--accent-2);
+}
+
+.mc-calstrip__day.is-today {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+}
+
+.mc-calstrip__day.is-today .mc-calstrip__num {
+  color: var(--accent);
+  font-weight: 400;
+}
+
+/* ---- 10. NewsCard ----------------------------------------------------------- */
+
+.mc-news-item {
+  display: grid;
+  gap: var(--s2);
+  padding: var(--s4) 0;
+  border-bottom: 1px solid var(--glass-border);
+  transition: opacity var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out);
+}
+
+.mc-news-item:last-child {
+  border-bottom: none;
+}
+
+.mc-news-item__headline {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.mc-news-item__summary {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.mc-news-item__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.mc-news-item__source {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.mc-news-item__votes {
+  margin-left: auto;
+  display: flex;
+  gap: var(--s1);
+}
+
+.mc-news-item__votes button {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  padding: var(--s1) var(--s2);
+  font-size: 13px;
+  cursor: pointer;
+  filter: grayscale(1) opacity(0.5);
+  transition:
+    filter var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.mc-news-item__votes button:hover {
+  filter: none;
+  border-color: var(--glass-border-hover);
+}
+
+.mc-news-item.is-upvoted {
+  opacity: 0.7;
+}
+
+.mc-news-item.is-downvoted {
+  transform: translateX(24px);
+  opacity: 0;
+}
+
+/* ---- 11. Skeleton ------------------------------------------------------------ */
+
+@keyframes mc-shimmer {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.5; }
+}
+
+.mc-skeleton {
+  border-radius: 10px;
+  background: var(--glass-1);
+  animation: mc-shimmer 1.6s var(--ease-out) infinite;
+}
+
+/* ---- 12. Clock ---------------------------------------------------------------- */
+
+.mc-clock {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  font-size: 64px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+
+.mc-clock__sep {
+  transition: opacity var(--dur-med) var(--ease-out);
+}
+
+.mc-clock.is-tick .mc-clock__sep {
+  opacity: 0.35;
+}
+
+/* ---- 13. Panel appear (staggered on load) -------------------------------------- */
+
+@keyframes mc-appear {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mc-appear {
+  animation: mc-appear var(--dur-slow) var(--ease-out) both;
+}
+
+/* ---- 14. Reduced motion: everything static ------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-appear,
+  .mc-skeleton,
+  .mc-card.is-pulsing {
+    animation: none;
+  }
+
+  .glass-hover,
+  .glass-hover:hover,
+  .mc-task,
+  .mc-task__toggle,
+  .mc-task__title,
+  .mc-news-item,
+  .mc-arc__fill,
+  .mc-clock__sep {
+    transition: none;
+  }
+
+  .glass-hover:hover {
+    transform: none;
+  }
+}

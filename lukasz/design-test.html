@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MC Design Test — glass component library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400&family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./mc-ui.css" />
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font-body);
+        color: var(--text-1);
+        padding: var(--s7) var(--s5);
+      }
+      .test-wrap {
+        width: min(1200px, 100%);
+        margin: 0 auto;
+        display: grid;
+        gap: var(--s6);
+      }
+      .test-section > .mc-label {
+        margin-bottom: var(--s4);
+      }
+      .test-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--s4);
+        align-items: start;
+      }
+      .test-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s4);
+        align-items: flex-start;
+      }
+      h1.test-title {
+        margin: 0;
+        font-family: var(--font-display);
+        font-weight: 300;
+        font-size: 40px;
+        letter-spacing: -0.02em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mc-ambient" aria-hidden="true"></div>
+
+    <div class="test-wrap">
+      <header>
+        <p class="mc-label">MC REDESIGN // PHASE 2 — COMPONENT LIBRARY</p>
+        <h1 class="test-title">Warm glass instrument</h1>
+      </header>
+
+      <section class="test-section">
+        <p class="mc-label">Glass levels 1 / 2 / 3</p>
+        <div class="test-grid" id="glassLevels"></div>
+      </section>
+
+      <section class="test-section">
+        <p class="mc-label">BigNumber — md / lg / xl / danger</p>
+        <div class="test-row" id="bigNumbers"></div>
+      </section>
+
+      <section class="test-section">
+        <p class="mc-label">ProgressArc + Clock</p>
+        <div class="test-row" id="arcs"></div>
+      </section>
+
+      <section class="test-section">
+        <p class="mc-label">Mirror mock — TaskRow + StreakBadge + CalendarStrip</p>
+        <div id="mirrorMock"></div>
+      </section>
+
+      <section class="test-section">
+        <p class="mc-label">NewsCard — vote to test motion</p>
+        <div id="newsMock"></div>
+      </section>
+
+      <section class="test-section">
+        <p class="mc-label">Skeletons + collapsed pill</p>
+        <div class="test-row" id="skeletons"></div>
+      </section>
+    </div>
+
+    <script src="./mc-ui.js"></script>
+    <script>
+      const { glassCard, bigNumber, progressArc, taskRow, streakBadge, calendarStrip, newsCard, skeleton, clock, staggerAppear } = window.MCUI;
+
+      // Glass levels
+      const levels = document.getElementById("glassLevels");
+      [1, 2, 3].forEach((level) => {
+        const card = glassCard({ level, label: `GLASS LEVEL ${level}`, collapsible: true, closeable: true, metric: () => "demo" });
+        card.classList.add("glass-hover");
+        card.body.innerHTML = `<p style="margin:0;color:var(--text-2)">Backdrop blur ${[14, 20, 26][level - 1]}px. Hover for lift + border brighten. The controls appear on hover.</p>`;
+        levels.appendChild(card);
+      });
+
+      // BigNumbers
+      const nums = document.getElementById("bigNumbers");
+      nums.appendChild(bigNumber({ value: 4, label: "Gym streak", size: "md", countUp: true }));
+      nums.appendChild(bigNumber({ value: 12, label: "Day streak", countUp: true }));
+      nums.appendChild(bigNumber({ value: 312, label: "Runway days", size: "xl", countUp: true }));
+      nums.appendChild(bigNumber({ value: 47, label: "Runway days — low", size: "xl", tone: "danger", countUp: true }));
+
+      // Arcs + clock
+      const arcs = document.getElementById("arcs");
+      arcs.appendChild(progressArc({ value: 312, max: 365, label: "Runway", size: 140 }));
+      arcs.appendChild(progressArc({ value: 47, max: 365, label: "Runway low", size: 140, danger: true }));
+      arcs.appendChild(progressArc({ value: 2, max: 3, label: "Done", size: 100 }));
+      arcs.appendChild(clock());
+
+      // Mirror mock
+      const mirror = glassCard({ level: 2, label: "01 // TODAY — DAILY MIRROR", hero: true });
+      const date = document.createElement("div");
+      date.innerHTML = `<div style="font-family:var(--font-display);font-weight:300;font-size:40px;letter-spacing:-0.02em;margin-bottom:var(--s5)">Thursday, 11 June 2026</div>`;
+      mirror.body.appendChild(date);
+      [
+        { title: "Cut the FrameShift teaser to 60s", project: "FRAMESHIFT", done: false },
+        { title: "Ship the EDL audit SUBCAPS fix", project: "VFX TOOLS", done: true },
+        { title: "Send the May invoice", project: "LAB MEDIA", done: false },
+      ].forEach((t) => mirror.body.appendChild(taskRow(t)));
+
+      const streakRow = document.createElement("div");
+      streakRow.className = "test-row";
+      streakRow.style.marginTop = "var(--s5)";
+      streakRow.appendChild(streakBadge({ count: 4, activity: "Gym", lastDone: "last 10 Jun" }));
+      streakRow.appendChild(streakBadge({ count: 12, activity: "Ship daily", lastDone: "last today" }));
+      mirror.body.appendChild(streakRow);
+
+      const stripWrap = document.createElement("div");
+      stripWrap.style.marginTop = "var(--s5)";
+      const days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - 3 + i);
+        return { date: d, hasLog: i % 2 === 0 };
+      });
+      stripWrap.appendChild(calendarStrip({ days }));
+      mirror.body.appendChild(stripWrap);
+      document.getElementById("mirrorMock").appendChild(mirror);
+
+      // News
+      const news = glassCard({ level: 1, label: "06 // NEWS" });
+      [
+        { headline: "Union VFX on production-ready Gaussian splat crowds", summary: "Union VFX and Clear Angle developed Gaussian splat crowds for production pipelines.", source: "fxguide" },
+        { headline: "The visual effects of 'Star Trek: Starfleet Academy'", summary: "Podcast and VFX breakdown video analyze the visual effects.", source: "befores & afters" },
+        { headline: "Anthropic's Dario Amodei has just one direct report", summary: "Anthropic CEO Dario Amodei has only one direct report.", source: "TechCrunch AI" },
+      ].forEach((n) => news.body.appendChild(newsCard(n)));
+      document.getElementById("newsMock").appendChild(news);
+
+      // Skeletons + pill
+      const skels = document.getElementById("skeletons");
+      const skelCard = glassCard({ level: 1, label: "LOADING STATE" });
+      skelCard.body.style.display = "grid";
+      skelCard.body.style.gap = "var(--s3)";
+      skelCard.body.appendChild(skeleton("60%", 18));
+      skelCard.body.appendChild(skeleton("90%", 12));
+      skelCard.body.appendChild(skeleton("75%", 12));
+      skels.appendChild(skelCard);
+
+      const pillDemo = glassCard({ level: 1, label: "08 // MOLESKINE", collapsible: true, metric: () => "3 extras" });
+      pillDemo.body.innerHTML = `<p style="margin:0;color:var(--text-2)">Collapse me with the – control (hover the header).</p>`;
+      skels.appendChild(pillDemo);
+
+      // Staggered appearance across all top-level cards
+      staggerAppear(Array.from(document.querySelectorAll(".test-wrap .glass-1, .test-wrap .glass-2, .test-wrap .glass-3")));
+    </script>
+  </body>
+</html>
