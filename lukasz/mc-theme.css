@@ -516,6 +516,123 @@ textarea::placeholder {
   animation: mc-done-pulse 900ms var(--ease-out);
 }
 
+/* ---- Layout engine: pills, drag, lift -------------------------------------------------------------------- */
+
+.panel {
+  position: relative;
+}
+
+.mc-drag-handle {
+  cursor: grab;
+  user-select: none;
+}
+
+.mc-drag-handle:active {
+  cursor: grabbing;
+}
+
+.mc-collapse-btn {
+  position: absolute;
+  top: var(--s4);
+  right: var(--s4);
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--glass-border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--font-label);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.panel:hover > .mc-collapse-btn {
+  opacity: 1;
+}
+
+.mc-collapse-btn:hover {
+  color: var(--text-1);
+  border-color: var(--glass-border-hover);
+}
+
+/* Collapsed panel = pill: label + expand affordance, nothing else */
+.mc-pill-head {
+  display: none;
+}
+
+.panel.is-collapsed {
+  grid-column: span 3;
+  align-self: start;
+  min-height: 0;
+  padding: 0;
+  border-radius: 999px;
+}
+
+.panel.is-collapsed > * {
+  display: none !important;
+}
+
+.panel.is-collapsed > .mc-pill-head {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  width: 100%;
+  padding: var(--s2) var(--s4);
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.mc-pill-head .panel-code {
+  margin: 0;
+}
+
+.mc-pill-head span[aria-hidden] {
+  font-family: var(--font-label);
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.mc-pill-head:hover .panel-code,
+.mc-pill-head:hover span[aria-hidden] {
+  color: var(--text-1);
+}
+
+/* Drag states: lift to glass level 3, settle with a spring */
+.panel.is-lifted {
+  background: var(--glass-3);
+  border-color: var(--glass-border-active);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
+  transform: scale(1.02);
+  z-index: 40;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .panel.is-settling {
+    transition: transform var(--dur-med) var(--ease-spring);
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .mc-drag-handle {
+    cursor: default;
+  }
+
+  .panel.is-collapsed {
+    grid-column: 1 / -1;
+  }
+}
+
 /* ---- Reduced motion -------------------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

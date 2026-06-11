@@ -39,13 +39,14 @@
           <span id="todayLabel"></span>
           <span>MISSION: LAB MEDIA</span>
           <a class="ghost-button tools-shortcut" data-tools-link href="#">Tools</a>
+          <button id="layoutReset" class="ghost-button" type="button" title="Restore default panel layout">Reset layout</button>
           <button id="lockButton" class="ghost-button" type="button">Lock</button>
         </div>
       </header>
 
-      <section class="grid">
+      <section class="grid" data-container="root">
         <!-- Row 1 // Daily command view -->
-        <section class="panel mc-panel mc-mirror span-8">
+        <section class="panel mc-panel mc-mirror span-8" data-panel="mirror">
           <p class="panel-code">01 // TODAY — DAILY MIRROR</p>
           <div id="mcConnect" class="mc-connect is-hidden">
             <p>Mission Control is not connected. Enter the API access token (same one set as <code>MC_API_TOKEN</code> on the server).</p>
@@ -88,8 +89,8 @@
           </div>
         </section>
 
-        <div class="rail span-4">
-          <section class="panel hero">
+        <div class="rail span-4" data-container="rail-1">
+          <section class="panel hero" data-panel="session">
             <p class="panel-code">02 // SESSION</p>
             <div>
               <h1>Good morning, Lukasz.</h1>
@@ -112,7 +113,7 @@
             <div id="calendarWidget" class="calendar-widget"></div>
           </section>
 
-          <section class="panel current-task">
+          <section class="panel current-task" data-panel="active-task">
             <p class="panel-code">03 // ACTIVE TASK</p>
             <div id="currentTaskEmpty" class="empty-state">No active task. Pick one with the “Now” button on the project board.</div>
             <div id="currentTask" class="is-hidden">
@@ -130,7 +131,7 @@
         </div>
 
         <!-- Row 2 // Projects and session -->
-        <section class="panel mc-panel mc-ventures span-8">
+        <section class="panel mc-panel mc-ventures span-8" data-panel="ventures">
           <div class="board-head">
             <div>
               <p class="panel-code">04 // VENTURES</p>
@@ -142,8 +143,8 @@
           <p id="mcVentureStatus" class="mc-status" role="alert"></p>
         </section>
 
-        <div class="rail span-4">
-          <section class="panel vitals">
+        <div class="rail span-4" data-container="rail-2">
+          <section class="panel vitals" data-panel="vitals">
             <p class="panel-code">05 // VITALS</p>
             <strong id="progressPercent">0%</strong>
             <span>PROJECT PROGRESS</span>
@@ -193,13 +194,13 @@
         </div>
 
         <!-- Row 3 // News and context -->
-        <section class="panel news-panel span-8">
+        <section class="panel news-panel span-8" data-panel="news">
           <p class="panel-code">06 // NEWS</p>
           <div id="mcNews" class="mc-news"><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div></div>
         </section>
 
-        <div class="rail span-4">
-          <section class="panel mc-panel mc-week">
+        <div class="rail span-4" data-container="rail-3">
+          <section class="panel mc-panel mc-week" data-panel="week">
             <div class="board-head">
               <div>
                 <p class="panel-code">07 // WEEK IN REVIEW</p>
@@ -212,7 +213,7 @@
             <p id="mcWeekStatus" class="mc-status" role="alert"></p>
           </section>
 
-          <section class="panel mc-panel mc-moleskine">
+          <section class="panel mc-panel mc-moleskine" data-panel="moleskine">
             <p class="panel-code">08 // MOLESKINE</p>
             <div class="moleskine-head">
               <button id="mcMolPrev" type="button" class="ghost-button" aria-label="Previous day">←</button>
@@ -239,7 +240,7 @@
         </div>
 
         <!-- Row 4 // Supporting utilities -->
-        <aside class="panel operator span-3">
+        <aside class="panel operator span-3" data-panel="operator">
           <p class="panel-code">09 // OPERATOR</p>
           <div class="operator-card">
             <div class="avatar-wrap">
@@ -270,12 +271,12 @@
           </dl>
         </aside>
 
-        <section class="panel prompt-panel span-3">
+        <section class="panel prompt-panel span-3" data-panel="handoff">
           <p class="panel-code">10 // HANDOFF PROMPT</p>
           <textarea id="promptBox" readonly></textarea>
         </section>
 
-        <section class="panel github-panel span-3">
+        <section class="panel github-panel span-3" data-panel="github">
           <p class="panel-code">11 // GITHUB LINK</p>
           <h2 class="repo-title">manzombie/mr_lobster_rebuild</h2>
           <p>This MVP keeps the dashboard simple and uses GitHub as the cross-machine project trail.</p>
@@ -287,7 +288,7 @@
           <p id="githubStatus" class="muted">Live GitHub completion sync is planned for v0.2.</p>
         </section>
 
-        <section class="panel tools-panel span-3">
+        <section class="panel tools-panel span-3" data-panel="tools">
           <p class="panel-code">12 // BUSINESS TOOLS</p>
           <h2>LAB MEDIA operations.</h2>
           <p>Invoices, client records, email templates, and production utilities in one private workspace.</p>
@@ -295,7 +296,7 @@
         </section>
 
         <!-- Final row // Project board -->
-        <section class="panel phase-board span-12">
+        <section class="panel phase-board span-12" data-panel="board">
           <div class="board-head">
             <div>
               <p class="panel-code">13 // PROJECT BOARD</p>
@@ -321,5 +322,6 @@
     <script src="./mission-data.js?v=20260611b"></script>
     <script src="./app.js?v=20260611b"></script>
     <script src="./mc.js?v=20260611b"></script>
+    <script src="./mc-layout.js?v=20260611b"></script>
   </body>
 </html>
