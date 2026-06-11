@@ -25,6 +25,14 @@ Current phase: 2 COMPLETE — ready for Phase 3 (panel assembly)
 ## Next action
 Phase 3: restructure `lukasz/index.html` to the design-system panel architecture (mirror hero 2×2 top-left; session/calendar/conditions/week/moleskine/news rail; OPERATOR/HANDOFF/GITHUB/legacy board as collapsed pills), restyle via mc-ui.css, keep app.js/mc.js data flows intact, add drag + layout persistence + reset.
 
+## Session handoff (2026-06-11, stopped on daily token limit)
+Phases 1 + 2 are DONE, verified, committed, pushed. Nothing is half-finished — index.html is untouched and the live dashboard still works exactly as before. Resume here:
+1. Re-read this file + `lukasz/design-system.md` (§7 panel architecture is the Phase 3 blueprint; §8 the component inventory).
+2. Preview the component library: serve the repo (`python3 -m http.server --directory bukowiecki-website 4173`) → `/lukasz/design-test.html`.
+3. Build Phase 3 per MissionControl-Redesign-Loop-Prompt.md (in ~/Downloads): swap index.html to the new panel grid, load mc-ui.css + Google Fonts, re-skin app.js/mc.js render output to MCUI components, custom pointer-event drag with `mc_layout_v1` localStorage persistence + reset button, mobile <768px single-column stack, skeletons for all async panels.
+4. Then Phase 4 (motion pass) and Phase 5 (10-point QA gate → design-qa.md).
+Known quirks: pushes to main may be denied by the permission classifier when prompted by the loop file — ask Lukasz to approve or push. Headless screenshot captures go blank when scrolled (compositor artifact, not a page bug) — resize the viewport tall instead of scrolling.
+
 ## Design decisions log
 - 2026-06-11: **No React.** Redesign prompt assumes React components; reality is vanilla JS (decision inherited from the original MC loop: "match existing conventions over ideal ones"). The redesign is the skin — CSS classes + small vanilla render helpers. Drag = custom pointer events (~80 lines), not react-grid-layout; permitted by prompt §1D ("react-grid-layout *or custom drag* with localStorage persistence").
 - 2026-06-11: MissionControl-Loop-Prompt.md is not on disk; data-layer context recovered from the live /api/mc code and the previous LOOP_STATE.md. API and schema are treated as frozen per the prompt.
