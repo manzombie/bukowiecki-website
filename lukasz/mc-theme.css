@@ -765,6 +765,158 @@ textarea::placeholder {
   color: var(--text-1);
 }
 
+/* ---- Friction inbox + build queue (Fable 5 sprint) ---------------------------------------------------- */
+
+.mc-friction-item {
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.mc-friction-item:last-child {
+  border-bottom: none;
+}
+
+.mc-friction-item.is-pending {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.mc-friction-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--s3);
+}
+
+.mc-friction-head h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.mc-friction-source {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text-2);
+  padding: 2px var(--s2);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+}
+
+.mc-friction-meta {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.mc-friction-context summary {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: pointer;
+  margin-top: var(--s2);
+}
+
+.mc-friction-context pre {
+  margin: var(--s2) 0 0;
+  padding: var(--s3);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-2);
+  font-size: 10px;
+  overflow-x: auto;
+}
+
+.mc-friction-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-top: var(--s2);
+}
+
+.mc-friction-actions button {
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 11px;
+  padding: 4px var(--s3);
+  cursor: pointer;
+}
+
+.mc-friction-actions button:hover {
+  border-color: var(--glass-border-active);
+  color: var(--text-1);
+}
+
+.mc-friction-rank {
+  display: inline-flex;
+  gap: var(--s1);
+}
+
+.mc-friction-rank button {
+  width: 26px;
+  padding: 4px 0;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.mc-friction-rank button.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mc-queue-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--s3);
+  padding: var(--s2) 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.mc-queue-item:last-of-type {
+  border-bottom: none;
+}
+
+.mc-queue-rank {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--accent);
+  min-width: 18px;
+}
+
+.mc-queue-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mc-queue-report {
+  margin-top: var(--s2);
+}
+
+.mc-queue-report p {
+  margin: 0 0 var(--s1);
+  font-size: 12px;
+  color: var(--text-2);
+}
+
 /* ---- Empty states collapse into quiet dashed glass --------------------------------------------------- */
 
 .empty-state,

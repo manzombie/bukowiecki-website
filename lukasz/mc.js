@@ -39,7 +39,11 @@
     weekBody: document.getElementById("mcWeekBody"),
     wins: document.getElementById("mcWins"),
     winReplay: document.getElementById("mcWinReplay"),
-    weekStatus: document.getElementById("mcWeekStatus")
+    weekStatus: document.getElementById("mcWeekStatus"),
+    friction: document.getElementById("mcFriction"),
+    frictionStatus: document.getElementById("mcFrictionStatus"),
+    buildQueue: document.getElementById("mcBuildQueue"),
+    buildQueueStatus: document.getElementById("mcBuildQueueStatus")
   };
 
   const RUNWAY_KEY = "mc_runway_end";
@@ -184,6 +188,8 @@
       await loadVentures();
       loadNews();
       loadReflection();
+      loadFriction();
+      loadBuildQueue();
     } catch (err) {
       handleFailure(els.mirrorStatus, err);
     }
@@ -504,6 +510,108 @@
         }
       });
     });
+  }
+
+  // --- Friction inbox + build queue (Fable 5 sprint) ---
+
+  const FRICTION_SOURCE_ICON = { frameshift: "FS", mission_control: "MC", voice: "🎙", manual: "✎" };
+
+  async function loadFriction() {
+    if (!els.friction) return;
+    try {
+      const items = await api("/api/mc/friction?status=new");
+      renderFriction(items);
+    } catch (err) {
+      handleFailure(els.frictionStatus, err);
+    }
+  }
+
+  function renderFriction(items) {
+    if (!items.length) {
+      els.friction.innerHTML = `<div class="mc-empty">Inbox zero — nothing slowed you down today.</div>`;
+      return;
+    }
+    els.friction.innerHTML = items.map((f) => `
+      <div class="mc-friction-item" data-friction-id="${f.id}">
+        <div class="mc-friction-head">
+          <span class="mc-friction-source">${FRICTION_SOURCE_ICON[f.source] || f.source}</span>
+          <h3>${escapeHtml(f.note || f.action || "(no note — context only)")}</h3>
+          <span class="mc-friction-meta">${escapeHtml(f.screen || "")} · ${shortDate(String(f.created_at).slice(0, 10))}</span>
+        </div>
+        ${f.context ? `
+          <details class="mc-friction-context">
+            <summary>Context</summary>
+            <pre>${escapeHtml(JSON.stringify(f.context, null, 2))}</pre>
+          </details>` : ""}
+        <div class="mc-friction-actions">
+          <span class="mc-friction-rank" role="group" aria-label="Rank">
+            ${[1, 2, 3].map((n) => `<button type="button" data-rank="${n}" class="${f.rank === n ? "is-active" : ""}">${n}</button>`).join("")}
+          </span>
+          <button type="button" data-friction-act="queue">Queue for build</button>
+          <button type="button" data-friction-act="dismiss" class="task-delete">Dismiss</button>
+        </div>
+      </div>
+    `).join("");
+
+    els.friction.querySelectorAll("[data-rank]").forEach((button) => {
+      button.addEventListener("click", () => frictionPatch(button, { rank: Number(button.dataset.rank) }, { reload: false }));
+    });
+    els.friction.querySelectorAll("[data-friction-act]").forEach((button) => {
+      const status = button.dataset.frictionAct === "queue" ? "queued_for_build" : "dismissed";
+      button.addEventListener("click", () => frictionPatch(button, { status }, { reload: true }));
+    });
+  }
+
+  async function frictionPatch(button, body, { reload }) {
+    const item = button.closest(".mc-friction-item");
+    const id = Number(item.dataset.frictionId);
+    item.classList.add("is-pending");
+    try {
+      await api(`/api/mc/friction/${id}`, { method: "PATCH", body });
+      if (reload) {
+        await loadFriction();
+        loadBuildQueue();
+      } else {
+        item.classList.remove("is-pending");
+        item.querySelectorAll("[data-rank]").forEach((b) =>
+          b.classList.toggle("is-active", Number(b.dataset.rank) === body.rank));
+      }
+    } catch (err) {
+      item.classList.remove("is-pending");
+      handleFailure(els.frictionStatus, err);
+    }
+  }
+
+  async function loadBuildQueue() {
+    if (!els.buildQueue) return;
+    try {
+      const data = await api("/api/mc/friction/queue");
+      renderBuildQueue(data);
+    } catch (err) {
+      handleFailure(els.buildQueueStatus, err);
+    }
+  }
+
+  function renderBuildQueue(data) {
+    const queue = data.queue.length
+      ? data.queue.map((f) => `
+          <div class="mc-queue-item">
+            <span class="mc-queue-rank">${f.rank || "·"}</span>
+            <span class="mc-queue-title">${escapeHtml(f.note || f.action || f.screen || `#${f.id}`)}</span>
+            <span class="mc-friction-meta">${FRICTION_SOURCE_ICON[f.source] || f.source}</span>
+          </div>`).join("")
+      : `<div class="mc-empty">Queue is empty — rank friction items to fill tonight's build.</div>`;
+
+    const report = data.last_report ? `
+      <p class="mc-label">Last night shipped — night ${data.last_report.night}</p>
+      <div class="mc-queue-report">${escapeHtml(data.last_report.summary)
+        .split("\n").map((line) => `<p>${line}</p>`).join("")}</div>` : "";
+
+    els.buildQueue.innerHTML = `
+      <p class="mc-label">Tonight's queue</p>
+      ${queue}
+      ${report}
+    `;
   }
 
   // --- Moleskine ---

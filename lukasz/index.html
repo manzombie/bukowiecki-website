@@ -8,9 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400&family=Inter:wght@400;600&display=swap" />
-    <link rel="stylesheet" href="./styles.css?v=20260612e" />
-    <link rel="stylesheet" href="./mc-ui.css?v=20260612e" />
-    <link rel="stylesheet" href="./mc-theme.css?v=20260612e" />
+    <link rel="stylesheet" href="./styles.css?v=20260612f" />
+    <link rel="stylesheet" href="./mc-ui.css?v=20260612f" />
+    <link rel="stylesheet" href="./mc-theme.css?v=20260612f" />
   </head>
   <body>
     <div class="mc-ambient" aria-hidden="true"></div>
@@ -250,7 +250,20 @@
           </section>
         </div>
 
-        <!-- Row 4 // Supporting utilities -->
+        <!-- Row 4 // Sprint: friction inbox + build queue -->
+        <section class="panel mc-panel mc-friction span-8" data-panel="friction">
+          <p class="panel-code">15 // FRICTION INBOX</p>
+          <div id="mcFriction"><div class="mc-skeleton" style="height:56px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:56px"></div></div>
+          <p id="mcFrictionStatus" class="mc-status" role="alert"></p>
+        </section>
+
+        <section class="panel mc-panel mc-buildqueue span-4" data-panel="buildqueue">
+          <p class="panel-code">16 // BUILD QUEUE</p>
+          <div id="mcBuildQueue"><div class="mc-skeleton" style="height:48px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:48px"></div></div>
+          <p id="mcBuildQueueStatus" class="mc-status" role="alert"></p>
+        </section>
+
+        <!-- Row 5 // Supporting utilities -->
         <aside class="panel operator span-3" data-panel="operator">
           <p class="panel-code">10 // OPERATOR</p>
           <div class="operator-card">
@@ -329,11 +342,11 @@
     <!-- Local-only overrides (gitignored, 404s harmlessly on the public build) -->
     <script src="./mission-config.local.js"></script>
     <!-- bump ?v= when mission-data.js/app.js change so browsers fetch the new file -->
-    <script src="./mc-ui.js?v=20260612e"></script>
-    <script src="./mission-data.js?v=20260612e"></script>
-    <script src="./app.js?v=20260612e"></script>
-    <script src="./mc.js?v=20260612e"></script>
-    <script src="./mc-layout.js?v=20260612e"></script>
-    <script src="./mc-settings.js?v=20260612e"></script>
+    <script src="./mc-ui.js?v=20260612f"></script>
+    <script src="./mission-data.js?v=20260612f"></script>
+    <script src="./app.js?v=20260612f"></script>
+    <script src="./mc.js?v=20260612f"></script>
+    <script src="./mc-layout.js?v=20260612f"></script>
+    <script src="./mc-settings.js?v=20260612f"></script>
   </body>
 </html>
