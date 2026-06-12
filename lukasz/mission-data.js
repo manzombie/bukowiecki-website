@@ -15,7 +15,7 @@ window.MISSION_CONFIG = Object.assign({
   // dev, mission-config.local.js can set mcApiUrl/mcToken.
   mcApiUrl: "https://tools.bukowiecki.co",
   mcToken: "",
-  githubRepo: "manzombie/mr_lobster_rebuild",
+  githubRepo: "manzombie/mrlobster-website",
   gistId: "f438e3b860e2a5fe35e5750e96c4ffca",
   gistToken: "",
   anthropicKey: "",

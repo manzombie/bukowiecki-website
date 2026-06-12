@@ -12,7 +12,7 @@ This is an MVP static dashboard for one.com file-manager hosting. It stores manu
 
 For cross-machine truth, use GitHub:
 
-1. Create the repo at `https://github.com/manzombie/mr_lobster_rebuild`.
+1. Create the repo at `https://github.com/manzombie/mrlobster-website`.
 2. Click the `Issue` button beside a Mission Control task to create a matching GitHub issue.
 3. Close the issue or merge a PR when the task is complete.
 4. Keep `BUILD_LOG.md` in the repo as the rebuild record.
@@ -20,8 +20,8 @@ For cross-machine truth, use GitHub:
 Recommended first repo setup from any machine:
 
 ```bash
-git clone https://github.com/manzombie/mr_lobster_rebuild.git
-cd mr_lobster_rebuild
+git clone https://github.com/manzombie/mrlobster-website.git
+cd mrlobster-website
 touch BUILD_LOG.md
 mkdir -p DOCS
 touch DOCS/decisions.md
@@ -33,8 +33,8 @@ git push
 When working from another machine:
 
 ```bash
-git clone https://github.com/manzombie/mr_lobster_rebuild.git
-cd mr_lobster_rebuild
+git clone https://github.com/manzombie/mrlobster-website.git
+cd mrlobster-website
 git pull
 ```
 
@@ -61,7 +61,7 @@ The in-page passcode keeps the dashboard out of casual view, but it is not stron
 
 v0.2 should add read-only GitHub sync:
 
-- Fetch open/closed GitHub issues from `manzombie/mr_lobster_rebuild`.
+- Fetch open/closed GitHub issues from `manzombie/mrlobster-website`.
 - Match issues to Mission Control task titles.
 - Display `GitHub Verified` when a linked issue is closed.
 - Keep manual status as an override.
