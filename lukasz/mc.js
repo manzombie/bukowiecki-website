@@ -538,6 +538,10 @@
           <h3>${escapeHtml(f.note || f.action || "(no note — context only)")}</h3>
           <span class="mc-friction-meta">${escapeHtml(f.screen || "")} · ${shortDate(String(f.created_at).slice(0, 10))}</span>
         </div>
+        ${f.screenshot_path && f.screenshot_path.startsWith("data:image/") ? `
+          <a class="mc-friction-shot" href="${f.screenshot_path}" target="_blank" rel="noreferrer" title="Open screenshot full size">
+            <img src="${f.screenshot_path}" alt="Screenshot from ${escapeHtml(f.screen || f.source)}" loading="lazy" />
+          </a>` : ""}
         ${f.context ? `
           <details class="mc-friction-context">
             <summary>Context</summary>

@@ -826,6 +826,25 @@ textarea::placeholder {
   white-space: nowrap;
 }
 
+.mc-friction-shot {
+  display: block;
+  margin-top: var(--s2);
+  width: fit-content;
+}
+
+.mc-friction-shot img {
+  display: block;
+  max-width: 100%;
+  max-height: 160px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.mc-friction-shot:hover img {
+  border-color: var(--glass-border-active);
+}
+
 .mc-friction-context summary {
   font-family: var(--font-label);
   font-size: 9px;
