@@ -5,6 +5,96 @@
    See design-system.md. Phase 3 of the redesign loop.
    ========================================================================== */
 
+/* ---- Customisation tokens: every visual material value is a runtime var ----
+   mc-settings.js writes these via setProperty(); presets are just token sets.
+   Never hardcode glass or background values below — derive from these. */
+
+:root {
+  --mc-bg-color: #1a140f;
+  --mc-bg-blur: 8px;
+  --mc-glass-opacity: 0.075;
+  --mc-glass-tint-r: 255;
+  --mc-glass-tint-g: 248;
+  --mc-glass-tint-b: 240;
+  --mc-glass-border-opacity: 0.10;
+  --mc-backdrop-blur: 16px;
+  --mc-light-direction: 12% 8%;
+  --mc-light-color: 255, 166, 87;
+  --mc-light-intensity: 0.15;
+
+  /* Derived glass levels — one opacity knob drives the three-level hierarchy */
+  --glass-1: rgba(var(--mc-glass-tint-r), var(--mc-glass-tint-g), var(--mc-glass-tint-b), calc(var(--mc-glass-opacity) * 0.6));
+  --glass-2: rgba(var(--mc-glass-tint-r), var(--mc-glass-tint-g), var(--mc-glass-tint-b), var(--mc-glass-opacity));
+  --glass-3: rgba(var(--mc-glass-tint-r), var(--mc-glass-tint-g), var(--mc-glass-tint-b), calc(var(--mc-glass-opacity) * 1.55));
+  --glass-border: rgba(255, 255, 255, var(--mc-glass-border-opacity));
+  --glass-border-hover: rgba(255, 255, 255, calc(var(--mc-glass-border-opacity) * 1.6));
+  --glass-border-active: rgba(255, 255, 255, min(1, calc(var(--mc-glass-border-opacity) * 2.4)));
+  --bg-base: var(--mc-bg-color);
+}
+
+/* Mood/preset switches glide, they don't flicker */
+.panel,
+.mc-pill-head,
+.ghost-button,
+.agent-output,
+.login-panel {
+  transition:
+    background-color 400ms var(--ease-out),
+    border-color 400ms var(--ease-out);
+}
+
+/* The primary light bloom obeys direction, colour and intensity; the two
+   secondary glows stay put for depth. The solid base is the final layer. */
+.mc-ambient {
+  background:
+    radial-gradient(52rem 40rem at var(--mc-light-direction), rgba(var(--mc-light-color), var(--mc-light-intensity)), transparent 70%),
+    radial-gradient(40rem 30rem at 88% 30%, var(--bg-glow-coral), transparent 70%),
+    radial-gradient(50rem 38rem at 50% 100%, var(--bg-glow-teal), transparent 70%),
+    var(--mc-bg-color);
+  transition: background-color 400ms var(--ease-out);
+}
+
+/* Uploaded background image sits between the base colour and the glass */
+.mc-ambient-image {
+  position: fixed;
+  inset: -40px;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  filter: blur(var(--mc-bg-blur));
+  display: none;
+}
+
+body.has-bg-image .mc-ambient-image {
+  display: block;
+}
+
+/* With an image active the ambient keeps only the light bloom */
+body.has-bg-image .mc-ambient {
+  background:
+    radial-gradient(52rem 40rem at var(--mc-light-direction), rgba(var(--mc-light-color), var(--mc-light-intensity)), transparent 70%);
+}
+
+/* Blur depth follows the knob across the three levels */
+.panel,
+.glass-1 {
+  backdrop-filter: blur(calc(var(--mc-backdrop-blur) * 0.875)) saturate(1.15);
+  -webkit-backdrop-filter: blur(calc(var(--mc-backdrop-blur) * 0.875)) saturate(1.15);
+}
+
+.glass-2,
+.mc-mirror,
+.login-panel {
+  backdrop-filter: blur(calc(var(--mc-backdrop-blur) * 1.25)) saturate(1.25);
+  -webkit-backdrop-filter: blur(calc(var(--mc-backdrop-blur) * 1.25)) saturate(1.25);
+}
+
+.glass-3,
+#mcToast {
+  backdrop-filter: blur(calc(var(--mc-backdrop-blur) * 1.6)) saturate(1.35);
+  -webkit-backdrop-filter: blur(calc(var(--mc-backdrop-blur) * 1.6)) saturate(1.35);
+}
+
 /* ---- Variable remap: the linen world becomes the dusk world -------------- */
 
 :root {
@@ -890,6 +980,146 @@ body.is-editing .panel:not(.is-collapsed) {
 
   .panel.is-collapsed {
     grid-column: 1 / -1;
+  }
+}
+
+/* ---- Customisation: mood pills + settings drawer ----------------------------------------------------------- */
+
+.mc-mood-pill.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+#mcSettings {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 150;
+  width: min(340px, 92vw);
+  padding: var(--s5);
+  overflow-y: auto;
+  background: var(--glass-2);
+  backdrop-filter: blur(calc(var(--mc-backdrop-blur) * 1.6)) saturate(1.3);
+  -webkit-backdrop-filter: blur(calc(var(--mc-backdrop-blur) * 1.6)) saturate(1.3);
+  border-left: 1px solid var(--glass-border-active);
+  transform: translateX(100%);
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+#mcSettings.is-open {
+  transform: translateX(0);
+}
+
+.mc-settings__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s4);
+}
+
+.mc-settings__head .panel-code {
+  margin: 0;
+}
+
+.mc-settings__close {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#mcSettings .mc-label {
+  margin: var(--s5) 0 var(--s3);
+}
+
+.mc-settings__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.mc-swatch {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--glass-border-hover);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.mc-swatch:hover {
+  border-color: var(--glass-border-active);
+  transform: translateY(-1px);
+}
+
+.mc-settings__upload {
+  display: flex;
+  gap: var(--s2);
+  margin-top: var(--s3);
+}
+
+.mc-settings__slider {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--s3);
+  margin-top: var(--s3);
+}
+
+.mc-settings__slider span {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.mc-settings__slider input[type="range"] {
+  width: 150px;
+  accent-color: var(--accent);
+}
+
+.mc-settings__compass {
+  display: grid;
+  grid-template-columns: repeat(3, 34px);
+  gap: var(--s1);
+  margin-bottom: var(--s3);
+}
+
+.mc-settings__compass button {
+  height: 30px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--font-label);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.mc-settings__compass button:hover {
+  color: var(--text-1);
+  border-color: var(--glass-border-hover);
+}
+
+.mc-settings__compass button.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mc-settings__actions {
+  display: grid;
+  gap: var(--s2);
+  margin-top: var(--s6);
+}
+
+@media (max-width: 768px) {
+  .mc-mood-pill {
+    display: none;
   }
 }
 

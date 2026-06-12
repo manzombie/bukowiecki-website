@@ -309,4 +309,6 @@
   setupNav();
   setupAppear();
   setEditing(false);
+
+  window.MCLayout = { toast };
 })();
