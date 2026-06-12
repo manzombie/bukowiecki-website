@@ -15,7 +15,7 @@
     "--mc-glass-tint-r", "--mc-glass-tint-g", "--mc-glass-tint-b",
     "--mc-glass-border-opacity", "--mc-backdrop-blur",
     "--mc-light-direction", "--mc-light-color", "--mc-light-intensity",
-    "--mc-bg-blur",
+    "--mc-bg-blur", "--mc-bg-intensity",
   ];
 
   const MOODS = {
@@ -133,17 +133,32 @@
       toast("Image too large — 5MB max.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
+    // Downscale + re-encode before storing: raw base64 of a multi-MB photo
+    // exceeds the localStorage quota and the save silently fails. 2200px is
+    // plenty behind a blur layer; JPEG q0.85 keeps it well under 1MB.
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, 2200 / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.naturalWidth * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
       try {
-        localStorage.setItem("mc_bg_image", reader.result);
-        applyBgImage(reader.result);
+        localStorage.setItem("mc_bg_image", dataUrl);
+        applyBgImage(dataUrl);
         toast("Background set.");
       } catch (err) {
         toast("Image too large to store — try a smaller file.");
       }
     };
-    reader.readAsDataURL(file);
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      toast("Could not read that image.");
+    };
+    img.src = url;
   }
 
   /* ---- Drawer ---------------------------------------------------------------------- */
@@ -167,14 +182,20 @@
       <div class="mc-settings__row mc-settings__swatches">
         ${swatches(BG_PALETTE, "bg", (v) => `background:${v}`)}
       </div>
-      <label class="mc-settings__upload">
-        <input id="mcBgUpload" type="file" accept="image/jpeg,image/png,image/webp" hidden />
-        <span class="ghost-button">Upload image…</span>
+      <div class="mc-settings__upload">
+        <label>
+          <input id="mcBgUpload" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+          <span class="ghost-button">Upload image…</span>
+        </label>
         <button type="button" id="mcBgClear" class="ghost-button">Clear</button>
-      </label>
+      </div>
       <label class="mc-settings__slider">
         <span>Image blur</span>
         <input id="mcBgBlur" type="range" min="0" max="20" step="1" />
+      </label>
+      <label class="mc-settings__slider">
+        <span>Image intensity</span>
+        <input id="mcBgIntensity" type="range" min="0.1" max="1" step="0.01" />
       </label>
 
       <p class="mc-label">Glass</p>
@@ -240,6 +261,10 @@
       localStorage.setItem("mc_bg_blur", `${v}px`);
       return `${v}px`;
     });
+    bindSlider("mcBgIntensity", "--mc-bg-intensity", (v) => {
+      localStorage.setItem("mc_bg_intensity", v);
+      return v;
+    });
 
     drawer.querySelector("#mcBgUpload").addEventListener("change", (e) => onImageUpload(e.target.files[0]));
     drawer.querySelector(".mc-settings__upload .ghost-button").addEventListener("click", (e) => {
@@ -260,7 +285,7 @@
       toast("Custom preset saved.");
     });
     drawer.querySelector("#mcResetTheme").addEventListener("click", () => {
-      ["mc_mood", "mc_custom_preset", "mc_bg_image", "mc_bg_blur"].forEach((k) => localStorage.removeItem(k));
+      ["mc_mood", "mc_custom_preset", "mc_bg_image", "mc_bg_blur", "mc_bg_intensity"].forEach((k) => localStorage.removeItem(k));
       VAR_KEYS.forEach((k) => root.style.removeProperty(k));
       applyBgImage(null);
       const customPill = document.querySelector('[data-mood="custom"]');
@@ -291,6 +316,7 @@
     set("mcBlurDepth", num(vars["--mc-backdrop-blur"]));
     set("mcLightIntensity", num(vars["--mc-light-intensity"]));
     set("mcBgBlur", num(vars["--mc-bg-blur"]));
+    set("mcBgIntensity", vars["--mc-bg-intensity"] === "" ? 1 : num(vars["--mc-bg-intensity"]));
     const dir = vars["--mc-light-direction"];
     drawer.querySelectorAll("[data-dir]").forEach((b) =>
       b.classList.toggle("is-active", COMPASS[b.dataset.dir] === dir));
@@ -347,6 +373,8 @@
   setupNav();
   const storedBlur = localStorage.getItem("mc_bg_blur");
   if (storedBlur) root.style.setProperty("--mc-bg-blur", storedBlur);
+  const storedIntensity = localStorage.getItem("mc_bg_intensity");
+  if (storedIntensity) root.style.setProperty("--mc-bg-intensity", storedIntensity);
   setMood(localStorage.getItem("mc_mood") || "energy");
   const storedImage = localStorage.getItem("mc_bg_image");
   if (storedImage) applyBgImage(storedImage);
