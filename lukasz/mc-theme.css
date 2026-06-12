@@ -694,13 +694,101 @@ textarea::placeholder {
   position: relative;
 }
 
-.mc-drag-handle {
-  cursor: grab;
-  user-select: none;
+/* ---- Edit mode: locked by default, handles only while editing ---------------- */
+
+.mc-grip,
+.mc-resize {
+  display: none;
 }
 
-.mc-drag-handle:active {
+body.is-editing .panel:not(.is-collapsed) > .mc-grip {
+  display: grid;
+  place-items: center;
+  position: absolute;
+  top: var(--s3);
+  left: var(--s3);
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  color: var(--text-3);
+  font-size: 11px;
+  letter-spacing: -1px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+body.is-editing .mc-grip:hover {
+  color: var(--text-1);
+  background: var(--glass-2);
+}
+
+body.is-editing .mc-grip:active {
   cursor: grabbing;
+}
+
+body.is-editing [data-container="root"] > * > .mc-resize,
+body.is-editing [data-container="root"] > .panel > .mc-resize {
+  display: block;
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  border-right: 2px solid var(--glass-border-active);
+  border-radius: 2px;
+  touch-action: none;
+}
+
+body.is-editing .rail {
+  position: relative;
+  outline: 1px dashed var(--glass-border-hover);
+  outline-offset: 4px;
+  border-radius: var(--radius);
+}
+
+body.is-editing .panel:not(.is-collapsed) {
+  border-style: dashed;
+}
+
+#editLayoutButton.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Toast */
+#mcToast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 8px);
+  z-index: 200;
+  padding: var(--s3) var(--s5);
+  border-radius: 999px;
+  background: var(--glass-3);
+  backdrop-filter: blur(26px) saturate(1.35);
+  -webkit-backdrop-filter: blur(26px) saturate(1.35);
+  border: 1px solid var(--glass-border-active);
+  color: var(--text-1);
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out);
+}
+
+#mcToast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 768px) {
+  #editLayoutButton {
+    display: none;
+  }
 }
 
 .mc-collapse-btn {
