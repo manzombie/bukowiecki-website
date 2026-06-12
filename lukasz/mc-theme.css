@@ -315,11 +315,22 @@ body {
 
 .panel-code,
 .eyebrow {
-  color: var(--text-3);
+  color: var(--text-2);
   font-family: var(--font-label);
   font-weight: 500;
   letter-spacing: 0.14em;
   margin-bottom: var(--s4);
+}
+
+/* Over a custom background image the backdrop can be any brightness — labels
+   and empty states carry a soft dark shadow so they read on light imagery. */
+body.has-bg-image .panel-code,
+body.has-bg-image .eyebrow,
+body.has-bg-image .mc-label,
+body.has-bg-image .mc-empty,
+body.has-bg-image .empty-state {
+  color: var(--text-1);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
 }
 
 /* ---- Topline ----------------------------------------------------------------- */

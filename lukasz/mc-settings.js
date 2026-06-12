@@ -57,6 +57,8 @@
   const TINTS = [
     ["Warm white", [255, 248, 240]], ["Cool white", [235, 242, 255]], ["Amber", [255, 220, 170]],
     ["Blue", [180, 200, 255]], ["Green", [200, 235, 215]], ["Rose", [255, 205, 215]],
+    // Dark tints: panels darken instead of lighten — for bright background images.
+    ["Charcoal", [28, 24, 20]], ["Slate", [22, 28, 38]],
   ];
   const LIGHT_COLORS = [
     ["Warm white", "255, 240, 220"], ["Cool white", "220, 235, 255"], ["Amber", "255, 200, 120"],
