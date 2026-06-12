@@ -53,13 +53,169 @@ body {
   padding: var(--s5);
 }
 
-/* The mirror is sacred: glass level 2, hero padding, never out-glowed */
+/* The mirror keeps glass level 2 but is sized for its content, not for dominance */
 .mc-mirror {
   background: var(--glass-2);
   backdrop-filter: blur(20px) saturate(1.25);
   -webkit-backdrop-filter: blur(20px) saturate(1.25);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  padding: var(--s6);
+  padding: var(--s5);
+}
+
+/* ---- Phase A density: compact mirror ---------------------------------------- */
+
+.mirror-head {
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: var(--s3);
+  align-items: center;
+  margin-bottom: var(--s4);
+}
+
+.mirror-date {
+  font-size: 22px;
+}
+
+.mirror-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.mirror-runway {
+  padding: 0 var(--s2);
+  gap: var(--s2);
+}
+
+.mirror-runway strong {
+  font-size: 32px;
+}
+
+.mirror-score {
+  gap: var(--s2);
+}
+
+.mirror-score strong {
+  font-size: 26px;
+}
+
+.mirror-score strong small {
+  font-size: 14px;
+}
+
+.mirror-runway span,
+.mirror-score span {
+  font-size: 8px;
+}
+
+/* Single column inside the compact mirror */
+.mirror-grid {
+  grid-template-columns: 1fr;
+  gap: var(--s4);
+}
+
+/* The Three: one tight line per task — toggle · title · venture pill */
+.mc-commit {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s2) 0;
+}
+
+.mc-commit h3 {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mc-commit__tag {
+  font-family: var(--font-label);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  padding: 3px var(--s2);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.mc-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+/* Streaks: name + count + 7-day dot strip on one line */
+.mc-streakline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s2) 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.mc-streakline:last-child {
+  border-bottom: none;
+}
+
+.mc-streakline__name {
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--text-2);
+}
+
+.mc-streakline__count {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.mc-streakline__dots {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.mc-streakline__dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border-hover);
+  background: transparent;
+}
+
+.mc-streakline__dots i.is-hit {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+
+/* ---- Calendar: own panel + overflow root fix --------------------------------- */
+
+/* Root cause of the digit collision: buttons kept UA padding and `font: inherit`
+   overrode the small size, so each month's min-content exceeded its track and
+   spilled into the neighbour. Kill both, at every width. */
+.cal-day,
+.cal-empty {
+  padding: 0;
+  min-width: 0;
+  font-size: 10px;
+}
+
+.cal-months {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.calendar-panel .calendar-widget {
+  border-top: none;
+  padding-top: 0;
 }
 
 .panel-code,

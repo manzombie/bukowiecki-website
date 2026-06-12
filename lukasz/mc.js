@@ -217,10 +217,8 @@
     els.commitList.innerHTML = committed.map((row) => `
       <div class="mc-commit ${row.done ? "is-done" : ""}" data-log-id="${row.id}">
         <button class="mc-check" type="button" aria-label="Toggle done">${row.done ? "✓" : ""}</button>
-        <div>
-          <h3>${escapeHtml(row.task_title || row.note || "Untitled")}</h3>
-          <p>${escapeHtml(row.project_name || "")}${row.rolled ? " · rolled" : ""}</p>
-        </div>
+        <h3>${escapeHtml(row.task_title || row.note || "Untitled")}</h3>
+        ${row.project_name ? `<span class="mc-commit__tag">${escapeHtml(row.project_name)}${row.rolled ? " · rolled" : ""}</span>` : ""}
       </div>
     `).join("");
     els.commitList.querySelectorAll(".mc-commit .mc-check").forEach((button) => {
@@ -236,15 +234,30 @@
       els.streaks.innerHTML = `<div class="mc-empty">No streaks yet — they start counting with capture (jiu jitsu, gym…).</div>`;
       return;
     }
-    els.streaks.innerHTML = streaks.map((s) => `
-      <div class="mc-streak">
-        <strong>${s.current}</strong>
-        <div><span>${escapeHtml(s.activity.toUpperCase())}</span><small>${s.total} total · last ${shortDate(s.last_date)}</small></div>
-      </div>
-    `).join("");
+    // 7-day dot strip per activity: a streak is consecutive days ending at
+    // last_date, so the filled window is [last_date - (current-1), last_date].
+    const today = parseDate(briefing.date);
+    els.streaks.innerHTML = streaks.map((s) => {
+      const last = parseDate(s.last_date);
+      const first = new Date(last);
+      first.setDate(first.getDate() - Math.max(0, s.current - 1));
+      const dots = [];
+      for (let offset = -6; offset <= 0; offset += 1) {
+        const day = new Date(today);
+        day.setDate(day.getDate() + offset);
+        const hit = s.current > 0 && day >= first && day <= last;
+        dots.push(`<i class="${hit ? "is-hit" : ""}" title="${toIso(day)}"></i>`);
+      }
+      return `
+        <div class="mc-streakline">
+          <span class="mc-streakline__name">${escapeHtml(s.activity.toUpperCase())}</span>
+          <strong class="mc-streakline__count">${s.current}</strong>
+          <span class="mc-streakline__dots">${dots.join("")}</span>
+        </div>`;
+    }).join("");
     if (!streaksAnimated && window.MCUI) {
       streaksAnimated = true;
-      els.streaks.querySelectorAll(".mc-streak strong").forEach((node) => {
+      els.streaks.querySelectorAll(".mc-streakline strong").forEach((node) => {
         MCUI.countUp(node, Number(node.textContent) || 0);
       });
     }

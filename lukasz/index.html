@@ -8,9 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400&family=Inter:wght@400;600&display=swap" />
-    <link rel="stylesheet" href="./styles.css?v=20260611c" />
-    <link rel="stylesheet" href="./mc-ui.css?v=20260611c" />
-    <link rel="stylesheet" href="./mc-theme.css?v=20260611c" />
+    <link rel="stylesheet" href="./styles.css?v=20260612a" />
+    <link rel="stylesheet" href="./mc-ui.css?v=20260612a" />
+    <link rel="stylesheet" href="./mc-theme.css?v=20260612a" />
   </head>
   <body>
     <div class="mc-ambient" aria-hidden="true"></div>
@@ -46,7 +46,8 @@
 
       <section class="grid" data-container="root">
         <!-- Row 1 // Daily command view -->
-        <section class="panel mc-panel mc-mirror span-8" data-panel="mirror">
+        <div class="rail span-4" data-container="rail-a">
+        <section class="panel mc-panel mc-mirror" data-panel="mirror">
           <p class="panel-code">01 // TODAY — DAILY MIRROR</p>
           <div id="mcConnect" class="mc-connect is-hidden">
             <p>Mission Control is not connected. Enter the API access token (same one set as <code>MC_API_TOKEN</code> on the server).</p>
@@ -89,9 +90,25 @@
           </div>
         </section>
 
-        <div class="rail span-4" data-container="rail-1">
+          <section class="panel current-task" data-panel="active-task">
+            <p class="panel-code">04 // ACTIVE TASK</p>
+            <div id="currentTaskEmpty" class="empty-state">No active task. Pick one with the “Now” button on the project board.</div>
+            <div id="currentTask" class="is-hidden">
+              <div class="task-kicker" id="currentPhase"></div>
+              <h2 id="currentTitle"></h2>
+              <p id="currentDescription"></p>
+              <div class="action-row">
+                <button id="copyPromptButton" type="button">Copy Codex / Claude Prompt</button>
+                <button id="completeCurrentButton" type="button" class="secondary">Mark Done</button>
+                <button id="putBackButton" type="button" class="secondary">Put Back</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="rail span-4" data-container="rail-b">
           <section class="panel hero" data-panel="session">
-            <p class="panel-code">02 // SESSION</p>
+            <p class="panel-code">03 // SESSION</p>
             <div>
               <h1 id="greeting">Good morning, Lukasz.</h1>
             </div>
@@ -109,42 +126,17 @@
                 <p id="agentText">Complete a task to generate the next guide, or press ↻ for a manual refresh.</p>
               </div>
             </div>
+          </section>
+
+          <section class="panel calendar-panel" data-panel="calendar">
+            <p class="panel-code">06 // CALENDAR</p>
             <div id="calendarWidget" class="calendar-widget"></div>
           </section>
-
-          <section class="panel current-task" data-panel="active-task">
-            <p class="panel-code">03 // ACTIVE TASK</p>
-            <div id="currentTaskEmpty" class="empty-state">No active task. Pick one with the “Now” button on the project board.</div>
-            <div id="currentTask" class="is-hidden">
-              <div class="task-kicker" id="currentPhase"></div>
-              <h2 id="currentTitle"></h2>
-              <p id="currentDescription"></p>
-              <div class="action-row">
-                <button id="copyPromptButton" type="button">Copy Codex / Claude Prompt</button>
-                <button id="completeCurrentButton" type="button" class="secondary">Mark Done</button>
-                <button id="putBackButton" type="button" class="secondary">Put Back</button>
-              </div>
-            </div>
-          </section>
-
         </div>
 
-        <!-- Row 2 // Projects and session -->
-        <section class="panel mc-panel mc-ventures span-8" data-panel="ventures">
-          <div class="board-head">
-            <div>
-              <p class="panel-code">04 // VENTURES</p>
-              <h2>Command Center</h2>
-            </div>
-          </div>
-          <div id="mcVentureTabs" class="filters project-tabs"></div>
-          <div id="mcVentureBody"><div class="mc-skeleton" style="height:48px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:48px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:48px;margin-bottom:8px"></div></div>
-          <p id="mcVentureStatus" class="mc-status" role="alert"></p>
-        </section>
-
-        <div class="rail span-4" data-container="rail-2">
+        <div class="rail span-4" data-container="rail-c">
           <section class="panel vitals" data-panel="vitals">
-            <p class="panel-code">05 // VITALS</p>
+            <p class="panel-code">02 // VITALS</p>
             <strong id="progressPercent">0%</strong>
             <span>PROJECT PROGRESS</span>
             <div class="progress-track"><div id="progressBar"></div></div>
@@ -192,17 +184,36 @@
           </section>
         </div>
 
+        <!-- Row 2 // Ventures spans the bottom of the command view -->
+        <section class="panel mc-panel mc-ventures span-12" data-panel="ventures">
+          <div class="board-head">
+            <div>
+              <p class="panel-code">05 // VENTURES</p>
+              <h2>Command Center</h2>
+            </div>
+          </div>
+          <div id="mcVentureTabs" class="filters project-tabs"></div>
+          <div id="mcVentureBody"><div class="mc-skeleton" style="height:48px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:48px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:48px;margin-bottom:8px"></div></div>
+          <p id="mcVentureStatus" class="mc-status" role="alert"></p>
+        </section>
+
+        
+
+        
+
+        
+
         <!-- Row 3 // News and context -->
         <section class="panel news-panel span-8" data-panel="news">
-          <p class="panel-code">06 // NEWS</p>
+          <p class="panel-code">07 // NEWS</p>
           <div id="mcNews" class="mc-news"><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div><div class="mc-skeleton" style="height:72px;margin-bottom:8px"></div></div>
         </section>
 
-        <div class="rail span-4" data-container="rail-3">
+        <div class="rail span-4" data-container="rail-d">
           <section class="panel mc-panel mc-week" data-panel="week">
             <div class="board-head">
               <div>
-                <p class="panel-code">07 // WEEK IN REVIEW</p>
+                <p class="panel-code">08 // WEEK IN REVIEW</p>
                 <h2 id="mcWeekRange">—</h2>
               </div>
               <button id="mcWinReplay" class="ghost-button" type="button">▶ Win replay</button>
@@ -213,7 +224,7 @@
           </section>
 
           <section class="panel mc-panel mc-moleskine" data-panel="moleskine">
-            <p class="panel-code">08 // MOLESKINE</p>
+            <p class="panel-code">09 // MOLESKINE</p>
             <div class="moleskine-head">
               <button id="mcMolPrev" type="button" class="ghost-button" aria-label="Previous day">←</button>
               <h2 id="mcMolDate">—</h2>
@@ -240,7 +251,7 @@
 
         <!-- Row 4 // Supporting utilities -->
         <aside class="panel operator span-3" data-panel="operator">
-          <p class="panel-code">09 // OPERATOR</p>
+          <p class="panel-code">10 // OPERATOR</p>
           <div class="operator-card">
             <div class="avatar-wrap">
               <button id="avatarButton" class="avatar" type="button" aria-label="Upload profile photo">
@@ -271,12 +282,12 @@
         </aside>
 
         <section class="panel prompt-panel span-3" data-panel="handoff">
-          <p class="panel-code">10 // HANDOFF PROMPT</p>
+          <p class="panel-code">11 // HANDOFF PROMPT</p>
           <textarea id="promptBox" readonly></textarea>
         </section>
 
         <section class="panel github-panel span-3" data-panel="github">
-          <p class="panel-code">11 // GITHUB LINK</p>
+          <p class="panel-code">12 // GITHUB LINK</p>
           <h2 class="repo-title">manzombie/mr_lobster_rebuild</h2>
           <p>This MVP keeps the dashboard simple and uses GitHub as the cross-machine project trail.</p>
           <div class="github-links">
@@ -288,7 +299,7 @@
         </section>
 
         <section class="panel tools-panel span-3" data-panel="tools">
-          <p class="panel-code">12 // BUSINESS TOOLS</p>
+          <p class="panel-code">13 // BUSINESS TOOLS</p>
           <h2>LAB MEDIA operations.</h2>
           <p>Invoices, client records, email templates, and production utilities in one private workspace.</p>
           <a class="tools-launch" data-tools-link href="#">Open Tools <span aria-hidden="true">↗</span></a>
@@ -298,7 +309,7 @@
         <section class="panel phase-board span-12" data-panel="board">
           <div class="board-head">
             <div>
-              <p class="panel-code">13 // PROJECT BOARD</p>
+              <p class="panel-code">14 // PROJECT BOARD</p>
               <h2>Projects</h2>
             </div>
             <div class="board-tools">
@@ -317,10 +328,10 @@
     <!-- Local-only overrides (gitignored, 404s harmlessly on the public build) -->
     <script src="./mission-config.local.js"></script>
     <!-- bump ?v= when mission-data.js/app.js change so browsers fetch the new file -->
-    <script src="./mc-ui.js?v=20260611c"></script>
-    <script src="./mission-data.js?v=20260611c"></script>
-    <script src="./app.js?v=20260611c"></script>
-    <script src="./mc.js?v=20260611c"></script>
-    <script src="./mc-layout.js?v=20260611c"></script>
+    <script src="./mc-ui.js?v=20260612a"></script>
+    <script src="./mission-data.js?v=20260612a"></script>
+    <script src="./app.js?v=20260612a"></script>
+    <script src="./mc.js?v=20260612a"></script>
+    <script src="./mc-layout.js?v=20260612a"></script>
   </body>
 </html>
