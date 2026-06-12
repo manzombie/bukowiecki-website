@@ -519,7 +519,7 @@
   async function loadFriction() {
     if (!els.friction) return;
     try {
-      const items = await api("/api/mc/friction?status=new");
+      const items = await api("/api/mc/friction?status=inbox");
       renderFriction(items);
     } catch (err) {
       handleFailure(els.frictionStatus, err);
