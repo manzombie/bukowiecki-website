@@ -49,9 +49,11 @@ lab.bukowiecki.co/<tool-slug>/      →  lab/<tool-slug>/index.html
    (`index.html`, `engine.js`, `ui.js`, `styles.css`).
 2. Reuse `shared/prng.js` — do **not** fork the PRNG (determinism must be
    identical across tools so seeds are portable).
-3. Edit the **Fable Days grid** in `lab/index.html`: find the `<!-- DAY N -->`
-   slot, change `data-status="upcoming"` to `data-status="live"`, set the title,
-   description, and `href="/<new-slug>/"`.
+3. Add a card to the **days grid** in `lab/index.html`. Cards are only shown
+   once a tool is ready (no "coming soon" placeholders). Copy the commented
+   template inside `<div class="days">`, fill in the day number, title
+   (`Research #0N — …`), one-line description, and `href="/<new-slug>/"`.
+   Bump the `01 / 10 live` counter.
 4. That's it — no router, no config, no rebuild.
 
 ---
