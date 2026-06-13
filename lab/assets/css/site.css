@@ -41,7 +41,17 @@ a:hover { color: var(--accent); }
   padding: 22px var(--pad);
   border-bottom: 1px solid var(--line);
 }
-.masthead .logo { font-family: var(--mono); font-size: 13px; letter-spacing: 0.02em; font-weight: 600; }
+.masthead .logo {
+  font-family: var(--mono); font-size: 13px; letter-spacing: 0.02em; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink);
+}
+.masthead .logo:hover { color: var(--ink); }
+.logo-mark { width: 26px; height: 26px; flex: none; display: block; }
+.logo-mark .bk { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: square; }
+.logo-mark .link { stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 0 5.5; }
+.logo-mark .dot circle { fill: var(--ink); }
+.logo-mark .hot { fill: var(--accent); }
+.masthead .logo:hover .hot { fill: var(--accent); }
 .masthead nav { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
 .masthead nav a { text-decoration: none; margin-left: 18px; }
 
