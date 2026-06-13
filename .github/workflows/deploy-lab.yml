@@ -1,0 +1,63 @@
+name: Deploy Studio Cipher lab to one.com (lab.bukowiecki.co)
+
+# Publishes the lab/ folder to the lab.bukowiecki.co web root over SFTP on every
+# push to main that touches lab/. The lab is its own subdomain, served from its
+# own web root — separate from the main site (deploy-onecom.yml) and from the
+# GitHub-Pages dashboard (deploy-lukasz.yml).
+#
+# One-time setup by the site owner:
+#   1. Create the `lab` subdomain in one.com, pointed at its own web root.
+#   2. Add repo secret SFTP_LAB_REMOTE_PATH = that web root's absolute path.
+#      (SFTP_HOST / SFTP_USER / SFTP_PASSWORD are reused from the main deploy.)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lab/**'
+      - '.github/workflows/deploy-lab.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: lab-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check SFTP secrets are configured
+        id: gate
+        run: |
+          if [ -z "${{ secrets.SFTP_HOST }}" ] || [ -z "${{ secrets.SFTP_LAB_REMOTE_PATH }}" ]; then
+            echo "::warning::SFTP secrets not fully set — skipping lab deploy. Need SFTP_HOST / SFTP_USER / SFTP_PASSWORD and SFTP_LAB_REMOTE_PATH in Settings → Secrets → Actions."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/checkout@v4
+
+      - name: Stage lab files (exclude cruft + throwaway tests)
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          mkdir -p _deploy
+          cp -r lab/* _deploy/
+          find _deploy -name '.DS_Store' -delete
+          find _deploy -name '_test.html' -delete
+          echo "Staged $(find _deploy -type f | wc -l) files."
+
+      - name: Upload to one.com via SFTP
+        if: steps.gate.outputs.ready == 'true'
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.5
+        with:
+          server: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 22
+          local_path: './_deploy/*'
+          remote_path: ${{ secrets.SFTP_LAB_REMOTE_PATH }}
+          sftp_only: true
+          delete_remote_files: false

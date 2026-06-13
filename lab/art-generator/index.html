@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cipher 01 — Algorithm Studio · Studio Cipher</title>
+<meta name="description" content="A client-side generative-art collection studio. Design an algorithm, set collection rules, generate and curate — all in the browser, fully reproducible by seed." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <b>Studio Cipher</b><span class="sep">/</span>Cipher 01 — Algorithm Studio
+  </div>
+  <a class="back" href="/">← all tools</a>
+</header>
+
+<main class="studio">
+  <!-- ======================= LEFT: CONTROL PANELS ======================= -->
+  <div class="panels">
+    <div class="tabs" role="tablist" aria-label="Studio panels">
+      <button class="tab" role="tab" id="tab-1" aria-controls="panel-design" aria-selected="true">
+        <span class="n">1</span> Algorithm
+      </button>
+      <button class="tab" role="tab" id="tab-2" aria-controls="panel-rules" aria-selected="false">
+        <span class="n">2</span> Collection
+      </button>
+      <button class="tab" role="tab" id="tab-3" aria-controls="panel-generate" aria-selected="false">
+        <span class="n">3</span> Generate
+      </button>
+    </div>
+
+    <!-- PANEL 1 — ALGORITHM DESIGN -->
+    <section class="panel" id="panel-design" role="tabpanel" aria-labelledby="tab-1" data-active="true">
+      <div class="group">
+        <h3>Elements — the mark</h3>
+        <div class="ctrl">
+          <label for="seg-element">Mark type</label>
+          <p class="hint">What single thing gets drawn, over and over, to build the picture.</p>
+          <div class="seg" id="seg-element" role="group" aria-label="Mark type"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Movement — the arrangement</h3>
+        <div class="ctrl">
+          <label for="seg-movement">How marks are placed</label>
+          <p class="hint">The hidden logic that decides where each mark lands on the canvas.</p>
+          <div class="seg" id="seg-movement" role="group" aria-label="Movement"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Composition</h3>
+        <div id="composition-sliders"></div>
+      </div>
+
+      <div class="group">
+        <h3>Behaviour — how marks relate</h3>
+        <p class="hint" style="margin-top:-4px">Turn a behaviour on, then dial its strength.</p>
+        <div id="behaviours"></div>
+      </div>
+
+      <div class="group">
+        <h3>Colour system</h3>
+        <div class="ctrl">
+          <label>Palette</label>
+          <p class="hint">A fixed set of colours the art is allowed to use.</p>
+          <div class="palettes" id="palettes" role="group" aria-label="Palette"></div>
+        </div>
+        <div class="ctrl">
+          <label for="seg-colorRule">Colour rule</label>
+          <p class="hint">How a colour is chosen for each mark from the palette.</p>
+          <div class="seg" id="seg-colorRule" role="group" aria-label="Colour rule"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Texture — the surface</h3>
+        <div class="ctrl">
+          <label for="seg-texture">Finish</label>
+          <p class="hint">A look applied on top, like choosing paper or a print process.</p>
+          <div class="seg" id="seg-texture" role="group" aria-label="Texture"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Randomness</h3>
+        <div id="randomness-sliders"></div>
+      </div>
+    </section>
+
+    <!-- PANEL 2 — COLLECTION RULES -->
+    <section class="panel" id="panel-rules" role="tabpanel" aria-labelledby="tab-2">
+      <div class="group">
+        <h3>Identity</h3>
+        <div class="ctrl field">
+          <label for="seed">Collection seed</label>
+          <p class="hint">The master key. The same seed always rebuilds the exact same collection.</p>
+          <input type="text" id="seed" autocomplete="off" spellcheck="false" />
+        </div>
+        <div id="size-slider"></div>
+      </div>
+
+      <div class="group">
+        <h3>What stays the same, what varies</h3>
+        <p class="hint" style="margin-top:-4px">For each trait: keep it <b>consistent</b> across the whole collection, or let it <b>vary</b> piece to piece.</p>
+        <div class="locks" id="locks"></div>
+      </div>
+
+      <div class="group">
+        <h3>Variation</h3>
+        <div id="variation-sliders"></div>
+        <div class="toggle-row behaviour" style="margin-top:10px">
+          <label class="sw"><input type="checkbox" id="mustBeUnique" /><span></span></label>
+          <span class="tname">Must be unique<br><span class="thint">Reject any piece identical to another.</span></span>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Forbidden combinations</h3>
+        <p class="hint" style="margin-top:-4px">Block trait pairings you never want to see.</p>
+        <div id="forbid-rows"></div>
+        <button class="btn" id="add-rule" type="button">+ add rule</button>
+      </div>
+    </section>
+
+    <!-- PANEL 3 — GENERATE & CURATE -->
+    <section class="panel" id="panel-generate" role="tabpanel" aria-labelledby="tab-3">
+      <div class="group">
+        <h3>Generate</h3>
+        <p class="hint" style="margin-top:-4px">Render the whole collection to the contact sheet on the right.</p>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-generate" type="button">Generate collection</button>
+          <button class="btn" id="btn-detect" type="button">Detect look-alikes</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Curate</h3>
+        <p class="hint" style="margin-top:-4px">Hover a tile to favourite, reject, vary, or open it full-screen. Clusters of look-alikes get a marigold outline.</p>
+        <div class="ctrl">
+          <label for="sort">Sort by</label>
+          <select id="sort">
+            <option value="index">Token order</option>
+            <option value="colour">Colour</option>
+            <option value="composition">Composition</option>
+            <option value="rarity">Rarity</option>
+          </select>
+        </div>
+        <p class="note" id="curate-stats"></p>
+      </div>
+
+      <div class="group">
+        <h3>Export</h3>
+        <p class="hint" style="margin-top:-4px">Each PNG ships with a JSON sidecar carrying its seed + every setting, so any piece can be rebuilt exactly.</p>
+        <div class="btn-row">
+          <button class="btn accent" id="btn-zip" type="button">Export collection (ZIP)</button>
+        </div>
+        <p class="note">Exports render at high resolution on demand. ZIP needs no server — it's built in your browser.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- ======================= RIGHT: THE STAGE ======================= -->
+  <div class="stage">
+    <!-- stage for Panel 1 -->
+    <section class="stage-view" data-for="panel-design">
+      <div class="stage-head">
+        <div>
+          <h2>Live system preview</h2>
+          <span class="sub">Six pieces from the current algorithm — judge the <em>system</em>, not one image.</span>
+        </div>
+        <button class="btn" id="btn-reroll" type="button">↻ Re-roll</button>
+      </div>
+      <div class="preview-grid" id="preview-grid"></div>
+      <p class="note">These six share your settings but use different seeds. If they look like a family, your algorithm is working.</p>
+    </section>
+
+    <!-- stage for Panel 2 -->
+    <section class="stage-view" data-for="panel-rules" hidden>
+      <div class="stage-head">
+        <div>
+          <h2>Collection preview</h2>
+          <span class="sub">Twelve samples drawn from <code id="seed-echo"></code> — related, but not repetitive.</span>
+        </div>
+        <button class="btn" id="btn-restrip" type="button">↻ Resample</button>
+      </div>
+      <div class="strip" id="strip"></div>
+    </section>
+
+    <!-- stage for Panel 3 -->
+    <section class="stage-view" data-for="panel-generate" hidden>
+      <div class="stage-head">
+        <div>
+          <h2>Contact sheet</h2>
+          <span class="sub" id="sheet-sub">Press “Generate collection” to render every piece.</span>
+        </div>
+        <div class="count" id="sheet-count"></div>
+      </div>
+      <div class="progress" hidden id="progress"><i></i></div>
+      <div class="sheet" id="sheet"><p class="empty">No collection yet. Open Panel&nbsp;3 → Generate.</p></div>
+    </section>
+  </div>
+</main>
+
+<!-- lightbox / fullscreen stepper -->
+<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-label="Artwork viewer">
+  <div class="lb-top">
+    <span id="lb-title">—</span>
+    <button id="lb-close" type="button">Close ✕</button>
+  </div>
+  <div class="lb-stage"><canvas id="lb-canvas" width="1000" height="1000"></canvas></div>
+  <div>
+    <p class="lb-meta" id="lb-meta"></p>
+    <div class="lb-bottom">
+      <button class="btn" id="lb-prev" type="button">← Prev</button>
+      <button class="btn" id="lb-fav" type="button">★ Favourite</button>
+      <button class="btn" id="lb-png" type="button">Download PNG + JSON</button>
+      <button class="btn" id="lb-next" type="button">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- JSZip (only external dependency, used for ZIP export) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous"></script>
+<script type="module" src="ui.js"></script>
+</body>
+</html>

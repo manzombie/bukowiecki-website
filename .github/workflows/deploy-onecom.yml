@@ -9,7 +9,9 @@ on:
     branches: [main]
     paths-ignore:
       - 'lukasz/**'
+      - 'lab/**'
       - '.github/workflows/deploy-lukasz.yml'
+      - '.github/workflows/deploy-lab.yml'
       - '**.md'
   workflow_dispatch:
 
