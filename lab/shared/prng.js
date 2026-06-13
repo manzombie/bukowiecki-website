@@ -1,5 +1,5 @@
 /* ============================================================================
- * shared/prng.js — the canonical deterministic randomness for Studio Cipher.
+ * shared/prng.js — the canonical deterministic randomness for Research Studio.
  *
  * WHY THIS EXISTS (read me even if you don't code):
  * A generative-art "collection" is only real if it is *reproducible*. If we

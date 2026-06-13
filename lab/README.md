@@ -1,10 +1,10 @@
-# Studio Cipher — lab.bukowiecki.co
+# Research Studio — lab.bukowiecki.co
 
 A 10-day "tool a day" generative-art lab. Each day ships one self-contained,
 client-side tool. No backend, no build step, no tracking. Pure HTML/CSS/JS +
 canvas. Everything is statically deployable.
 
-> **Naming note:** the umbrella project is **Studio Cipher**. (Do not use
+> **Naming note:** the umbrella project is **Research Studio**. (Do not use
 > "Handmade by Robots" — it's a live trademark.)
 
 ---

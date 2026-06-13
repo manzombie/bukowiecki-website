@@ -654,7 +654,7 @@ function lbStep(d) {
 function pieceJSON(p) {
   return {
     tool: "cipher-01-algorithm-studio",
-    studioCipherVersion: 1,
+    researchStudioVersion: 1,
     collectionSeed: config.seed,
     tokenIndex: p.index,
     tokenSeed: p.tokenSeed,
