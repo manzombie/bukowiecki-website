@@ -8,9 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400&family=Inter:wght@400;600&display=swap" />
-    <link rel="stylesheet" href="./styles.css?v=20260612i" />
-    <link rel="stylesheet" href="./mc-ui.css?v=20260612i" />
-    <link rel="stylesheet" href="./mc-theme.css?v=20260612i" />
+    <link rel="stylesheet" href="./styles.css?v=20260613a" />
+    <link rel="stylesheet" href="./mc-ui.css?v=20260613a" />
+    <link rel="stylesheet" href="./mc-theme.css?v=20260613a" />
   </head>
   <body>
     <div class="mc-ambient" aria-hidden="true"></div>
@@ -91,19 +91,13 @@
           </div>
         </section>
 
-          <section class="panel current-task" data-panel="active-task">
-            <p class="panel-code">04 // ACTIVE TASK</p>
-            <div id="currentTaskEmpty" class="empty-state">No active task. Pick one with the “Now” button on the project board.</div>
-            <div id="currentTask" class="is-hidden">
-              <div class="task-kicker" id="currentPhase"></div>
-              <h2 id="currentTitle"></h2>
-              <p id="currentDescription"></p>
-              <div class="action-row">
-                <button id="copyPromptButton" type="button">Copy Codex / Claude Prompt</button>
-                <button id="completeCurrentButton" type="button" class="secondary">Mark Done</button>
-                <button id="putBackButton" type="button" class="secondary">Put Back</button>
-              </div>
-            </div>
+          <section class="panel mc-ideas-panel" data-panel="ideas">
+            <p class="panel-code">04 // IDEAS LOG</p>
+            <form id="mcIdeaForm" class="mc-idea-form">
+              <input id="mcIdeaInput" type="text" placeholder="Add an idea — tomorrow's build…" maxlength="200" autocomplete="off" />
+              <button type="submit">Add</button>
+            </form>
+            <div id="mcIdeasList" class="mc-ideas-list"></div>
           </section>
         </div>
 
@@ -342,11 +336,12 @@
     <!-- Local-only overrides (gitignored, 404s harmlessly on the public build) -->
     <script src="./mission-config.local.js"></script>
     <!-- bump ?v= when mission-data.js/app.js change so browsers fetch the new file -->
-    <script src="./mc-ui.js?v=20260612i"></script>
-    <script src="./mission-data.js?v=20260612i"></script>
-    <script src="./app.js?v=20260612i"></script>
-    <script src="./mc.js?v=20260612i"></script>
-    <script src="./mc-layout.js?v=20260612i"></script>
-    <script src="./mc-settings.js?v=20260612i"></script>
+    <script src="./mc-ui.js?v=20260613a"></script>
+    <script src="./mission-data.js?v=20260613a"></script>
+    <script src="./app.js?v=20260613a"></script>
+    <script src="./mc.js?v=20260613a"></script>
+    <script src="./mc-layout.js?v=20260613a"></script>
+    <script src="./mc-settings.js?v=20260613a"></script>
+    <script src="./mc-ideas.js?v=20260613a"></script>
   </body>
 </html>

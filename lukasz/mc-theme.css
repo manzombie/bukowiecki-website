@@ -947,6 +947,176 @@ textarea::placeholder {
   color: var(--text-2);
 }
 
+/* ---- IDEAS LOG (panel 04) — lab.bukowiecki.co 10-day project tracker --------------------------------- */
+
+.mc-idea-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+}
+
+.mc-idea-form input {
+  width: 100%;
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-1);
+  font-size: 13px;
+}
+
+.mc-idea-form input:focus {
+  border-color: var(--glass-border-active);
+  outline: none;
+}
+
+.mc-ideas-list {
+  display: grid;
+  gap: 2px;
+}
+
+.mc-idea {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s1);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.mc-idea:hover {
+  background: var(--glass-1);
+  border-color: var(--glass-border);
+}
+
+.mc-idea-reorder {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mc-idea-reorder button {
+  line-height: 1;
+  padding: 0 4px;
+  font-size: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+}
+
+.mc-idea-reorder button:hover:not(:disabled) {
+  color: var(--text-1);
+}
+
+.mc-idea-reorder button:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.mc-idea-tick {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border: 1.5px solid var(--text-3);
+  border-radius: 7px;
+  background: transparent;
+  color: transparent;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background var(--dur-med) var(--ease-spring), border-color var(--dur-fast) var(--ease-out);
+}
+
+.mc-idea-tick:hover {
+  border-color: var(--accent-2);
+}
+
+.mc-idea-text {
+  font-size: 13px;
+  color: var(--text-1);
+  cursor: text;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mc-idea.is-done .mc-idea-tick {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  color: var(--bg-base);
+}
+
+.mc-idea.is-done .mc-idea-text {
+  text-decoration: line-through var(--text-3);
+  color: var(--text-3);
+}
+
+.mc-idea-actions {
+  display: inline-flex;
+  gap: var(--s1);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.mc-idea:hover .mc-idea-actions {
+  opacity: 1;
+}
+
+.mc-idea-actions button {
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.mc-idea-actions button:hover {
+  color: var(--text-1);
+}
+
+.mc-idea-actions .mc-idea-del:hover {
+  color: var(--danger);
+}
+
+.mc-idea-edit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--s2);
+  width: 100%;
+}
+
+.mc-idea-edit input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--glass-border-active);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-1);
+  font-size: 13px;
+}
+
+.mc-idea-edit button {
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.mc-idea-edit button[type="submit"]:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ---- Empty states collapse into quiet dashed glass --------------------------------------------------- */
 
 .empty-state,

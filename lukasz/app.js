@@ -74,9 +74,11 @@
     els.lockButton.addEventListener("click", lock);
     els.avatarButton.addEventListener("click", () => els.avatarInput.click());
     els.avatarInput.addEventListener("change", onAvatarSelected);
-    els.copyPromptButton.addEventListener("click", copyPrompt);
-    els.completeCurrentButton.addEventListener("click", completeCurrent);
-    els.putBackButton.addEventListener("click", putBackCurrent);
+    // Active-task panel was repurposed into the IDEAS LOG (mc-ideas.js); its
+    // controls no longer exist. Guard so the board still boots.
+    if (els.copyPromptButton) els.copyPromptButton.addEventListener("click", copyPrompt);
+    if (els.completeCurrentButton) els.completeCurrentButton.addEventListener("click", completeCurrent);
+    if (els.putBackButton) els.putBackButton.addEventListener("click", putBackCurrent);
     els.agentRefresh.addEventListener("click", fetchAgentBriefing);
     els.newTaskButton.addEventListener("click", openNewTaskPrompt);
     els.newStageButton.addEventListener("click", openNewProjectPrompt);
@@ -628,6 +630,7 @@
   }
 
   function renderCurrentTask() {
+    if (!els.currentTask) return; // panel repurposed into the IDEAS LOG
     const current = state.currentTask ? findTaskRef(state.currentTask) : null;
     if (!current) {
       els.currentTask.classList.add("is-hidden");
