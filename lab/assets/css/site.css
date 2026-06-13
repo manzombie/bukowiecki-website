@@ -52,6 +52,9 @@ a:hover { color: var(--accent); }
 .logo-mark .dot circle { fill: var(--ink); }
 .logo-mark .hot { fill: var(--accent); }
 .masthead .logo:hover .hot { fill: var(--accent); }
+
+/* large logo feature in the hero */
+.hero-mark { width: clamp(64px, 9vw, 96px); height: clamp(64px, 9vw, 96px); display: block; margin: 0 0 30px; }
 .masthead nav { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
 .masthead nav a { text-decoration: none; margin-left: 18px; }
 
