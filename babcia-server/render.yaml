@@ -1,0 +1,26 @@
+# Render blueprint — ONE Web Service. Reuses an EXISTING Postgres (e.g.
+# frameshift-db) so no new database is created. In Render: New → Web Service →
+# connect this repo → Root Directory "babcia-server". Then set the env vars
+# below in the service's Environment tab (all sync:false = never stored in repo).
+# Babcia uses its own table (babcia_messages) so it won't touch other apps' data.
+
+services:
+  - type: web
+    name: babcia-server
+    runtime: node
+    rootDir: babcia-server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: LLM_PROVIDER
+        value: anthropic
+      - key: LLM_API_KEY
+        sync: false               # your key — set in the dashboard
+      - key: LLM_MODEL
+        sync: false               # optional model override
+      - key: CORS_ORIGIN
+        value: https://lab.bukowiecki.co
+      - key: DATABASE_URL
+        sync: false               # paste frameshift-db's Internal Database URL here

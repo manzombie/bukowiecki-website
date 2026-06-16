@@ -10,6 +10,7 @@ on:
     paths-ignore:
       - 'lukasz/**'
       - 'lab/**'
+      - 'babcia-server/**'
       - '.github/workflows/deploy-lukasz.yml'
       - '.github/workflows/deploy-lab.yml'
       - '**.md'
