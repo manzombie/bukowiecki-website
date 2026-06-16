@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lab.bukowiecki.co/deeplight/deeplight.level.schema.json",
+  "title": "Deeplight level graph",
+  "description": "A submarine tunnel level as a navigable graph, extracted from a hand-drawn top-down PNG. All coordinates are normalized 0..1 (x: left->right, y: top->bottom of the source map) so geometry is resolution-independent. The 3D engine builds tunnel geometry procedurally from this graph; it never reads the image.",
+  "type": "object",
+  "required": ["id", "name", "startNodeId", "exitNodeId", "nodes", "edges", "payloads"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "description": "stable id, e.g. 'level01'" },
+    "name": { "type": "string", "description": "display name, e.g. 'Level 1'" },
+    "theme": { "type": "string", "description": "optional art/mood tag" },
+    "difficulty": { "type": "integer", "minimum": 1, "maximum": 10 },
+    "startNodeId": { "type": "string" },
+    "exitNodeId": { "type": "string" },
+
+    "nodes": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "x", "y", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "x": { "type": "number", "minimum": 0, "maximum": 1 },
+          "y": { "type": "number", "minimum": 0, "maximum": 1 },
+          "kind": {
+            "type": "string",
+            "enum": ["start", "exit", "junction", "deadend"],
+            "description": "start/exit are the entry+goal; junction = 3+ way branch; deadend = a dangling tunnel end (punishes greedy routing)."
+          }
+        }
+      }
+    },
+
+    "edges": {
+      "type": "array",
+      "minItems": 1,
+      "description": "A tunnel segment between two nodes. The polyline is the centerline spine the 3D tunnel is extruded along.",
+      "items": {
+        "type": "object",
+        "required": ["id", "from", "to", "polyline"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "from": { "type": "string", "description": "node id" },
+          "to": { "type": "string", "description": "node id" },
+          "polyline": {
+            "type": "array",
+            "minItems": 2,
+            "description": "ordered [x,y] points from 'from' to 'to', normalized 0..1",
+            "items": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          },
+          "lengthN": {
+            "type": "number",
+            "description": "optional: normalized arc length, used by scoring to weight long/risky branches"
+          }
+        }
+      }
+    },
+
+    "payloads": {
+      "type": "array",
+      "description": "Everything placed in the tunnels: hostiles, debris, score pickups, multiplier gates, shipwreck markers. Each is snapped to an edge (with t along it) or to a node.",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "edgeOrNodeId"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["debris", "hostile", "shipwreck", "star", "mult2x", "mult3x"],
+            "description": "debris=destructible obstacle; hostile=enemy; shipwreck=set-dressing/loot region; star=flat score; mult2x/mult3x=banked multiplier gate."
+          },
+          "edgeOrNodeId": { "type": "string", "description": "id of the edge or node it sits on" },
+          "t": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "position along the edge polyline (0=from, 1=to). Omitted/ignored when attached to a node."
+          },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "extractor match confidence (debug aid)" }
+        }
+      }
+    },
+
+    "meta": {
+      "type": "object",
+      "description": "optional extraction provenance (not used by the game)",
+      "additionalProperties": true,
+      "properties": {
+        "sourceImage": { "type": "string" },
+        "sourcePixelSize": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+        "extractorVersion": { "type": "string" },
+        "warnings": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

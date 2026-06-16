@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Deeplight — Research #02 · Research Studio</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><path d=%22M28 16 L13 16 L13 84 L28 84%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%227%22/><path d=%22M72 16 L87 16 L87 84 L72 84%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%227%22/><circle cx=%2234%22 cy=%2234%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2266%22 cy=%2234%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2234%22 cy=%2266%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2266%22 cy=%2266%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2250%22 cy=%2250%22 r=%2210%22 fill=%22%23c0392b%22/></svg>" />
+<style>
+  :root { --accent:#c0392b; --teal:#3fb7a6; --paper:#f4f1ea; --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; background:#04070c; overflow:hidden; color:var(--paper); font-family:var(--mono); }
+  #app { position:fixed; inset:0; }
+  canvas { display:block; }
+
+  /* ---- HUD ---- */
+  #hud { position:fixed; inset:0; pointer-events:none; z-index:10; }
+  #crosshair { position:absolute; left:50%; top:50%; width:34px; height:34px; transform:translate(-50%,-50%);
+    border:1px solid rgba(255,255,255,.5); border-radius:50%; }
+  #crosshair::before, #crosshair::after { content:""; position:absolute; background:rgba(255,255,255,.6); }
+  #crosshair::before { left:50%; top:-8px; width:1px; height:8px; }
+  #crosshair::after { top:50%; left:-8px; height:1px; width:8px; }
+  .hud-tl { position:absolute; top:18px; left:20px; font-size:13px; line-height:1.7; }
+  .hud-tr { position:absolute; top:18px; right:20px; text-align:right; font-size:13px; line-height:1.7; }
+  .hud-bl { position:absolute; bottom:18px; left:20px; font-size:14px; opacity:.7; line-height:1.7; }
+  #hp { letter-spacing:3px; font-size:18px; color:var(--accent); }
+  #score { font-size:22px; font-weight:bold; }
+  #mult { color:var(--teal); }
+  #progress-wrap { position:absolute; bottom:18px; left:50%; transform:translateX(-50%); width:240px; }
+  #progress-bar { height:2px; background:rgba(255,255,255,.15); }
+  #progress-bar > i { display:block; height:100%; width:0; background:var(--accent); transition:width .2s; }
+  #progress-label { text-align:center; font-size:10px; opacity:.5; margin-top:5px; letter-spacing:.1em; }
+  #toast { position:absolute; left:50%; top:34%; transform:translateX(-50%); font-size:15px; opacity:0;
+    transition:opacity .25s; text-shadow:0 2px 8px #000; white-space:nowrap; }
+  .audio-ctrls { position:absolute; bottom:18px; right:20px; display:flex; align-items:center; gap:8px; pointer-events:auto; }
+  .ac-label { font-family:var(--mono); font-size:13px; letter-spacing:.1em; color:rgba(244,241,234,.45); margin-right:2px; }
+  .ac { font-family:var(--mono); font-size:15px; letter-spacing:.04em; padding:9px 15px; cursor:pointer;
+    background:rgba(8,20,28,.6); color:rgba(244,241,234,.45); border:1px solid rgba(255,255,255,.16); border-radius:3px; }
+  .ac.trk { padding:9px 14px; min-width:38px; }
+  .ac:hover { border-color:rgba(255,255,255,.45); color:rgba(244,241,234,.8); }
+  .ac:disabled { opacity:.3; cursor:not-allowed; }
+  .ac.on { color:var(--teal); border-color:rgba(63,183,166,.6); background:rgba(63,183,166,.12); }
+
+  /* ---- overlays ---- */
+  .screen { position:fixed; inset:0; z-index:20; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at center, rgba(8,14,22,.85), rgba(2,4,8,.97)); text-align:center; padding:24px; }
+  .screen[hidden] { display:none; }
+  .screen h1 { font-size:clamp(34px,7vw,68px); font-weight:600; letter-spacing:-.02em; margin-bottom:8px; }
+  .screen h1 em { color:var(--accent); font-style:normal; }
+  .screen p { opacity:.7; font-size:14px; max-width:46ch; line-height:1.6; margin-bottom:22px; }
+  .screen .stat { font-size:14px; opacity:.85; line-height:2; }
+  .btn { pointer-events:auto; cursor:pointer; font-family:var(--mono); font-size:14px; letter-spacing:.04em;
+    padding:13px 26px; background:var(--paper); color:#04070c; border:none; border-radius:2px; margin-top:18px; }
+  .btn:hover { background:var(--accent); color:#fff; }
+  .keys { font-size:12px; opacity:.55; margin-top:20px; line-height:1.9; }
+  .keys b { color:var(--teal); font-weight:normal; }
+  .brand { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:21; font-size:11px; opacity:.5; letter-spacing:.08em; }
+  .brand a { color:inherit; text-decoration:none; }
+  #loading { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:30; background:#04070c; font-size:13px; letter-spacing:.15em; opacity:.7; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="hud" hidden>
+  <div id="crosshair"></div>
+  <div class="hud-tl">
+    <div>DEPTH <span id="depthval">0</span>m</div>
+    <div id="hp">♥ ♥ ♥</div>
+  </div>
+  <div class="hud-tr">
+    <div id="score">0</div>
+    <div id="mult">×1</div>
+  </div>
+  <div class="hud-bl">
+    <div>[A]/[D] turn &amp; branch · [W]/[S] rise/dive</div>
+    <div>mouse aim · click fire · [M] map · [C] view</div>
+  </div>
+  <div id="progress-wrap">
+    <div id="progress-bar"><i></i></div>
+    <div id="progress-label">TO EXIT</div>
+  </div>
+  <div id="toast"></div>
+  <div class="audio-ctrls">
+    <span class="ac-label">MUSIC</span>
+    <button class="ac trk" data-trk="track1" type="button">1</button>
+    <button class="ac trk" data-trk="track2" type="button">2</button>
+    <button class="ac trk" data-trk="track3" type="button">3</button>
+    <button id="btn-sfx" class="ac on" type="button">► SFX</button>
+  </div>
+</div>
+
+<div class="brand"><a href="/">Research Studio</a> / Research #02 — Deeplight</div>
+
+<!-- start screen -->
+<div class="screen" id="start-screen">
+  <h1>Deep<em>light</em></h1>
+  <p>You are carried forward by the current through a flooded cave network.
+     Read the glowing passages, choose your route, and use your headlights as your gun.</p>
+  <button class="btn" id="play-btn">Dive</button>
+  <div class="keys">
+    <b>A</b> / <b>D</b> (or <b>←</b>/<b>→</b>) — turn &amp; choose branches<br>
+    <b>W</b> / <b>S</b> (or <b>↑</b>/<b>↓</b>) — rise / dive to dodge<br>
+    <b>mouse</b> — aim &nbsp;·&nbsp; <b>click</b> — fire &nbsp;·&nbsp; <b>M</b> — map &nbsp;·&nbsp; <b>R</b> — restart
+  </div>
+</div>
+
+<!-- end screen -->
+<div class="screen" id="end-screen" hidden>
+  <h1 id="end-title">Surfaced</h1>
+  <div class="stat" id="end-stats"></div>
+  <button class="btn" id="again-btn">Dive again</button>
+</div>
+
+<div id="loading">DESCENDING…</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="src/engine.js"></script>
+</body>
+</html>

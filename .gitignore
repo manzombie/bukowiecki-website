@@ -22,3 +22,14 @@ lukasz/archive/
 
 # Dependencies / build
 node_modules/
+
+# Babcia Chat (Day 04) — backend secrets/deps (never commit)
+babcia-server/.env
+babcia-server/node_modules/
+
+# Deeplight (Day 02) — local Python authoring env (never commit/deploy)
+lab/deeplight/tools/.venv/
+**/__pycache__/
+# authoring inputs + debug overlays (not needed live; only level 1 ships)
+lab/deeplight/levels/source/
+lab/deeplight/levels/*.debug.png

@@ -47,6 +47,10 @@ jobs:
           cp -r lab/* _deploy/
           find _deploy -name '.DS_Store' -delete
           find _deploy -name '_test.html' -delete
+          # Authoring-only artifacts the shipped site never needs:
+          rm -rf _deploy/deeplight/tools/.venv          # local Python env
+          rm -rf _deploy/deeplight/levels/source        # source level PNGs (game loads JSON only)
+          find _deploy -type d -name '__pycache__' -prune -exec rm -rf {} +
           echo "Staged $(find _deploy -type f | wc -l) files."
 
       - name: Upload to one.com via SFTP
