@@ -69,7 +69,8 @@ app.get("/api/admin/history", async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
 });
 
-// PRIVATE: wipe cached translations for a room so they regenerate (after a fix).
+// PRIVATE: clear cached translations for a room AND regenerate them now, for the
+// languages already in use (so the fix shows immediately, not on next read).
 app.post("/api/admin/retranslate", async (req, res) => {
   try {
     const ADMIN = process.env.ADMIN_KEY || "";
@@ -78,7 +79,31 @@ app.post("/api/admin/retranslate", async (req, res) => {
     if (key !== ADMIN) return res.status(401).json({ error: "bad key" });
     const room = String(req.query.room || "").slice(0, ROOM_MAX);
     if (!room) return res.status(400).json({ error: "room required" });
-    res.json({ ok: true, cleared: await clearTranslations(room) });
+
+    // Target languages = every language anyone WRITES in here (each message's
+    // source) plus any previously-cached target — i.e. all reader languages.
+    // Robust even when the cache was already cleared.
+    const before = await getFullMessages(room);
+    const langs = new Set();
+    for (const m of before) {
+      if (m.sourceLang) langs.add(m.sourceLang);
+      for (const l of Object.keys(m.translations || {})) langs.add(l);
+    }
+    if (req.query.langs) String(req.query.langs).split(",").map((s) => s.trim()).filter(Boolean).forEach((l) => langs.add(l));
+
+    await clearTranslations(room);
+
+    let regenerated = 0;
+    const rows = await getMessages(room);
+    for (const m of rows) {
+      for (const lang of langs) {
+        if (lang === m.source_lang) continue;
+        const text = await translate(m.original_text, m.source_lang, lang);
+        await cacheTranslation(m.id, lang, text);
+        regenerated++;
+      }
+    }
+    res.json({ ok: true, cleared: rows.length, languages: [...langs], regenerated });
   } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
 });
 
