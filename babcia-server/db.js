@@ -85,6 +85,21 @@ export async function getFullMessages(room) {
   }));
 }
 
+/** wipe cached translations for a room (keep originals) so they regenerate on
+ * next read — used after a translation-prompt fix. Returns count affected. */
+export async function clearTranslations(room) {
+  if (!pool) {
+    let n = 0;
+    for (const m of mem) if (m.room === room) { m.translations = { [m.source_lang]: m.original_text }; n++; }
+    return n;
+  }
+  const { rowCount } = await pool.query(
+    `UPDATE ${TABLE}
+       SET translations = jsonb_build_object(source_lang, to_jsonb(original_text))
+     WHERE room=$1`, [room]);
+  return rowCount;
+}
+
 /** persist a freshly-computed translation into a message's cache */
 export async function cacheTranslation(id, lang, text) {
   if (!pool) {

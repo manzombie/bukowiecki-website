@@ -41,6 +41,8 @@
       <button class="big-btn" id="load" type="button" style="margin-top:0;min-width:120px;">Load</button>
     </div>
   </div>
+  <button class="ghost-btn" id="retranslate" type="button" style="background:var(--paper);color:var(--ink-soft);border:2px solid var(--line);">↻ Re-translate this conversation</button>
+  <p class="sub" style="margin:6px 0 0;">Use after a translation fix — clears the cached translations so every message is re-translated fresh on next read.</p>
   <p class="note" id="note"></p>
   <p class="count" id="count"></p>
   <div id="out"></div>
@@ -105,7 +107,26 @@
     $("#out").innerHTML = html;
   }
 
+  async function retranslate() {
+    var room = $("#room").value.trim(), key = $("#key").value.trim();
+    if (!room || !key) { $("#note").textContent = "Enter a passcode and your admin key."; return; }
+    if (!confirm("Re-translate every message in this conversation? The cached translations are cleared and regenerated fresh.")) return;
+    $("#retranslate").disabled = true; $("#note").textContent = "Clearing cached translations…";
+    try {
+      var r = await fetch(API + "/api/admin/retranslate?room=" + encodeURIComponent(room), {
+        method: "POST", headers: { "x-admin-key": key }, cache: "no-store",
+      });
+      if (!r.ok) { $("#note").textContent = "Error " + r.status + "."; return; }
+      var d = await r.json();
+      $("#note").textContent = "Cleared " + d.cleared + " message(s). Reloading…";
+      await load();   // re-reading regenerates translations with the current prompt
+    } catch (e) {
+      $("#note").textContent = "Couldn’t reach the server.";
+    } finally { $("#retranslate").disabled = false; }
+  }
+
   $("#load").addEventListener("click", load);
+  $("#retranslate").addEventListener("click", retranslate);
   ["#room", "#key"].forEach(function (s) {
     $(s).addEventListener("keydown", function (e) { if (e.key === "Enter") load(); });
   });

@@ -9,7 +9,7 @@
 import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { initDb, insertMessage, getMessages, cacheTranslation, getCounts, saveSubscription, getFullMessages } from "./db.js";
+import { initDb, insertMessage, getMessages, cacheTranslation, getCounts, saveSubscription, getFullMessages, clearTranslations } from "./db.js";
 import { translate, usingMock } from "./translate.js";
 import { notifyRoom, usingPush, vapidPublicKey } from "./push.js";
 
@@ -66,6 +66,19 @@ app.get("/api/admin/history", async (req, res) => {
     const room = String(req.query.room || "").slice(0, ROOM_MAX);
     if (!room) return res.status(400).json({ error: "room required" });
     res.json({ room, messages: await getFullMessages(room) });
+  } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
+});
+
+// PRIVATE: wipe cached translations for a room so they regenerate (after a fix).
+app.post("/api/admin/retranslate", async (req, res) => {
+  try {
+    const ADMIN = process.env.ADMIN_KEY || "";
+    if (!ADMIN) return res.status(403).json({ error: "admin disabled (no ADMIN_KEY set)" });
+    const key = req.get("x-admin-key") || req.query.key || "";
+    if (key !== ADMIN) return res.status(401).json({ error: "bad key" });
+    const room = String(req.query.room || "").slice(0, ROOM_MAX);
+    if (!room) return res.status(400).json({ error: "room required" });
+    res.json({ ok: true, cleared: await clearTranslations(room) });
   } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
 });
 
