@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Research #03 — Darts Coach · Research Studio</title>
+<meta name="description" content="A client-side darts companion: webcam posture coaching for beginners + simple 101/301/501 scoring. Everything runs on-device; nothing is uploaded." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2244%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%2226%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%226%22/><circle cx=%2250%22 cy=%2250%22 r=%228%22 fill=%22%23c0392b%22/></svg>" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><b>Research Studio</b><span class="sep">/</span>Research #03 — Darts Coach</div>
+  <a class="back" href="/">← all tools</a>
+</header>
+
+<main id="app">
+
+  <!-- ============================ SETUP ============================ -->
+  <section class="screen" id="setup" data-active="true">
+    <div class="setup-card">
+      <h1>Darts <em>Coach</em></h1>
+      <p class="lede">Your webcam watches your throwing form and coaches the
+        fundamentals — stance, stillness, follow-through, rhythm. Play a game or
+        just practise. <b>Everything runs on your device; nothing is uploaded.</b></p>
+
+      <div class="field">
+        <label>Game</label>
+        <div class="seg" id="seg-game" role="group" aria-label="Game type">
+          <button type="button" data-v="101">101</button>
+          <button type="button" data-v="301" aria-pressed="true">301</button>
+          <button type="button" data-v="501">501</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Throwing hand</label>
+        <div class="seg" id="seg-hand" role="group" aria-label="Handedness">
+          <button type="button" data-v="right" aria-pressed="true">Right</button>
+          <button type="button" data-v="left">Left</button>
+        </div>
+        <p class="hint">Put the laptop on your <b>front-left</b> (for a right-hander),
+          angled at your body. The placement helper will confirm it sees you.</p>
+      </div>
+
+      <div class="field">
+        <label>Players</label>
+        <div class="players" id="players"></div>
+        <div class="btn-row">
+          <button class="btn ghost" id="add-player" type="button">+ add player</button>
+          <button class="btn ghost" id="solo" type="button">Solo practice</button>
+        </div>
+        <p class="hint" id="players-note">Solo practice = posture feedback only, no score.</p>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn primary" id="start-btn" type="button">Enable camera &amp; start</button>
+        <a class="btn ghost" id="sessions-link" href="#">Past sessions</a>
+      </div>
+      <p class="cam-status" id="cam-status"></p>
+    </div>
+  </section>
+
+  <!-- ============================ PLAY ============================ -->
+  <section class="screen" id="play" hidden>
+    <!-- placement helper overlay (first run) -->
+    <div class="placement" id="placement" hidden>
+      <div class="placement-card">
+        <h2>Camera placement</h2>
+        <p>Stand where you throw. We need to see your <b id="ph-side">left</b> side.
+           Nudge the laptop until the key joints turn <span class="ok">green</span>.</p>
+        <ul class="joint-list" id="joint-list"></ul>
+        <button class="btn primary" id="placement-done" type="button" disabled>Looks good — begin</button>
+      </div>
+    </div>
+
+    <div class="play-grid">
+      <!-- LEFT: active player live feed -->
+      <div class="panel feed-panel">
+        <div class="panel-head"><span id="active-name">Player</span><span class="tag live" id="live-tag">● live</span></div>
+        <div class="stage">
+          <video id="video" playsinline muted></video>
+          <canvas id="overlay"></canvas>
+          <div class="live-cue" id="live-cue">—</div>
+        </div>
+      </div>
+
+      <!-- CENTRE: score + keypad -->
+      <div class="panel score-panel">
+        <div class="score-head">
+          <div class="big-score" id="big-score">301</div>
+          <div class="score-sub" id="score-sub">to throw</div>
+        </div>
+        <div class="darts" id="darts">
+          <div class="dart" data-i="0"><span>1</span><b>—</b></div>
+          <div class="dart" data-i="1"><span>2</span><b>—</b></div>
+          <div class="dart" data-i="2"><span>3</span><b>—</b></div>
+        </div>
+        <div class="keypad" id="keypad">
+          <div class="mult" id="mult" role="group" aria-label="Multiplier">
+            <button type="button" data-m="1" aria-pressed="true">Single</button>
+            <button type="button" data-m="2">Double</button>
+            <button type="button" data-m="3">Treble</button>
+          </div>
+          <div class="nums" id="nums"></div>
+          <div class="special">
+            <button type="button" class="k" data-n="25">25</button>
+            <button type="button" class="k" data-n="0">Miss</button>
+            <button type="button" class="k undo" id="undo">↶ undo</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" id="quit-btn" type="button">End session</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: other players / trend -->
+      <div class="panel others-panel">
+        <div class="panel-head"><span>Players</span></div>
+        <div id="others"></div>
+        <div class="turn-report" id="turn-report" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ SESSIONS ============================ -->
+  <section class="screen" id="sessions" hidden>
+    <div class="sessions-card">
+      <div class="panel-head"><h2>Past sessions</h2><button class="btn ghost" id="sessions-back" type="button">← back</button></div>
+      <div id="sessions-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span>Research Studio · lab.bukowiecki.co · on-device, no uploads, no tracking</span>
+</footer>
+
+<script type="module" src="ui.js"></script>
+</body>
+</html>
