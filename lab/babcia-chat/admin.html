@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Babcia Chat — translation audit</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .admin { max-width: 820px; margin: 0 auto; padding: 20px 16px 60px; }
+  .admin h1 { color: var(--teal-d); font-size: 24px; margin: 6px 0 4px; }
+  .admin .sub { color: var(--ink-soft); font-size: 15px; margin: 0 0 20px; }
+  .admin .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
+  .admin .row > div { flex: 1; min-width: 160px; }
+  .admin .note { color: var(--coral); font-size: 14px; min-height: 1.2em; margin: 4px 0 0; }
+  .msg { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
+  .msg .top { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
+  .msg .who { font-weight: 700; color: var(--teal-d); }
+  .orig { background: var(--mine); border-radius: 10px; padding: 10px 12px; font-size: 17px; }
+  .orig .lbl, .tr .lbl { display: inline-block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-soft); margin-bottom: 3px; }
+  .tr { padding: 9px 12px; border-top: 1px dashed var(--line); margin-top: 8px; font-size: 16px; }
+  .tr:first-of-type { border-top: none; }
+  .count { color: var(--ink-soft); font-size: 14px; margin: 0 0 14px; }
+</style>
+</head>
+<body>
+<div class="admin">
+  <h1>Translation audit</h1>
+  <p class="sub">Private view — shows what was actually sent and how each message was translated. Keep this page and your key to yourself.</p>
+
+  <div class="row">
+    <div>
+      <label class="big-label" for="room">Conversation passcode</label>
+      <input class="big-input" id="room" type="text" autocomplete="off" placeholder="e.g. zosia2026" />
+    </div>
+    <div>
+      <label class="big-label" for="key">Admin key</label>
+      <input class="big-input" id="key" type="password" autocomplete="off" placeholder="your ADMIN_KEY" />
+    </div>
+    <div style="flex:0 0 auto;">
+      <button class="big-btn" id="load" type="button" style="margin-top:0;min-width:120px;">Load</button>
+    </div>
+  </div>
+  <p class="note" id="note"></p>
+  <p class="count" id="count"></p>
+  <div id="out"></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var RENDER_URL = "https://babcia-server.onrender.com";
+  var API = location.search.includes("dev") ? "http://localhost:8790" : RENDER_URL;
+  var $ = function (s) { return document.querySelector(s); };
+  var STORE = "babcia-admin";
+
+  try {
+    var s = JSON.parse(localStorage.getItem(STORE) || "{}");
+    if (s.room) $("#room").value = s.room;
+    if (s.key) $("#key").value = s.key;
+  } catch (e) {}
+
+  function esc(t) { var d = document.createElement("div"); d.textContent = t == null ? "" : t; return d.innerHTML; }
+  function fmt(iso) { try { return new Date(iso).toLocaleString(); } catch (e) { return iso; } }
+
+  async function load() {
+    var room = $("#room").value.trim(), key = $("#key").value.trim();
+    $("#note").textContent = ""; $("#out").innerHTML = ""; $("#count").textContent = "";
+    if (!room || !key) { $("#note").textContent = "Enter a passcode and your admin key."; return; }
+    localStorage.setItem(STORE, JSON.stringify({ room: room, key: key }));
+    $("#load").disabled = true; $("#note").textContent = "Loading…";
+    try {
+      var r = await fetch(API + "/api/admin/history?room=" + encodeURIComponent(room), {
+        headers: { "x-admin-key": key }, cache: "no-store",
+      });
+      if (r.status === 401) { $("#note").textContent = "Wrong admin key."; return; }
+      if (r.status === 403) { $("#note").textContent = "Admin view is disabled — ADMIN_KEY isn’t set on the server yet."; return; }
+      if (!r.ok) { $("#note").textContent = "Error " + r.status + "."; return; }
+      var data = await r.json();
+      render(data.messages || []);
+      $("#note").textContent = "";
+    } catch (e) {
+      $("#note").textContent = "Couldn’t reach the server.";
+    } finally { $("#load").disabled = false; }
+  }
+
+  function render(msgs) {
+    if (!msgs.length) { $("#count").textContent = "No messages in this conversation yet."; return; }
+    $("#count").textContent = msgs.length + " message" + (msgs.length === 1 ? "" : "s");
+    var html = "";
+    for (var i = 0; i < msgs.length; i++) {
+      var m = msgs[i];
+      html += '<div class="msg"><div class="top"><span class="who">' + esc(m.sender) + "</span><span>" + esc(fmt(m.createdAt)) + "</span></div>";
+      html += '<div class="orig"><span class="lbl">Original · ' + esc(m.sourceLang) + '</span><div>' + esc(m.original) + "</div></div>";
+      var langs = Object.keys(m.translations || {}).filter(function (l) { return l !== m.sourceLang; }).sort();
+      if (!langs.length) {
+        html += '<div class="tr"><span class="lbl">No translations generated yet</span></div>';
+      } else {
+        for (var j = 0; j < langs.length; j++) {
+          html += '<div class="tr"><span class="lbl">' + esc(langs[j]) + "</span><div>" + esc(m.translations[langs[j]]) + "</div></div>";
+        }
+      }
+      html += "</div>";
+    }
+    $("#out").innerHTML = html;
+  }
+
+  $("#load").addEventListener("click", load);
+  ["#room", "#key"].forEach(function (s) {
+    $(s).addEventListener("keydown", function (e) { if (e.key === "Enter") load(); });
+  });
+})();
+</script>
+</body>
+</html>

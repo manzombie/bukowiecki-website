@@ -9,7 +9,7 @@
 import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { initDb, insertMessage, getMessages, cacheTranslation, getCounts, saveSubscription } from "./db.js";
+import { initDb, insertMessage, getMessages, cacheTranslation, getCounts, saveSubscription, getFullMessages } from "./db.js";
 import { translate, usingMock } from "./translate.js";
 import { notifyRoom, usingPush, vapidPublicKey } from "./push.js";
 
@@ -52,6 +52,20 @@ app.post("/api/message", postLimiter, async (req, res) => {
     await insertMessage({ room, sender, sourceLang, text });
     res.json({ ok: true });
     notifyRoom(room, sender).catch((e) => console.error("[push] notifyRoom", e));  // fire-and-forget
+  } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
+});
+
+// PRIVATE audit view: original + every cached translation for a room. Locked
+// behind ADMIN_KEY (set in env). Disabled entirely if ADMIN_KEY is unset.
+app.get("/api/admin/history", async (req, res) => {
+  try {
+    const ADMIN = process.env.ADMIN_KEY || "";
+    if (!ADMIN) return res.status(403).json({ error: "admin disabled (no ADMIN_KEY set)" });
+    const key = req.get("x-admin-key") || req.query.key || "";
+    if (key !== ADMIN) return res.status(401).json({ error: "bad key" });
+    const room = String(req.query.room || "").slice(0, ROOM_MAX);
+    if (!room) return res.status(400).json({ error: "room required" });
+    res.json({ room, messages: await getFullMessages(room) });
   } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
 });
 

@@ -75,6 +75,16 @@ export async function getMessages(room) {
   return rows;
 }
 
+/** full audit view for a room: original text + every cached translation */
+export async function getFullMessages(room) {
+  const rows = await getMessages(room);
+  return rows.map((m) => ({
+    id: m.id, sender: m.sender, sourceLang: m.source_lang,
+    original: m.original_text, translations: m.translations || {},
+    createdAt: m.created_at instanceof Date ? m.created_at.toISOString() : m.created_at,
+  }));
+}
+
 /** persist a freshly-computed translation into a message's cache */
 export async function cacheTranslation(id, lang, text) {
   if (!pool) {

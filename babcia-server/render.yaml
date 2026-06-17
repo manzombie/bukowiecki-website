@@ -30,3 +30,5 @@ services:
         sync: false               # Web Push private key — KEEP SECRET
       - key: VAPID_SUBJECT
         value: mailto:lukasz.vfx@gmail.com
+      - key: ADMIN_KEY
+        sync: false               # unlocks the private /api/admin/history audit view
