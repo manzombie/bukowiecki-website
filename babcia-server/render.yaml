@@ -24,3 +24,9 @@ services:
         value: https://lab.bukowiecki.co
       - key: DATABASE_URL
         sync: false               # paste frameshift-db's Internal Database URL here
+      - key: VAPID_PUBLIC
+        sync: false               # Web Push public key (safe to expose)
+      - key: VAPID_PRIVATE
+        sync: false               # Web Push private key — KEEP SECRET
+      - key: VAPID_SUBJECT
+        value: mailto:lukasz.vfx@gmail.com

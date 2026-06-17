@@ -9,8 +9,9 @@
 import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { initDb, insertMessage, getMessages, cacheTranslation } from "./db.js";
+import { initDb, insertMessage, getMessages, cacheTranslation, getCounts, saveSubscription } from "./db.js";
 import { translate, usingMock } from "./translate.js";
+import { notifyRoom, usingPush, vapidPublicKey } from "./push.js";
 
 const PORT = process.env.PORT || 8790;
 const MAX_LEN = 2000;          // cap message length
@@ -36,6 +37,9 @@ app.use(express.json({ limit: "16kb" }));
 
 app.get("/api/health", (_req, res) => res.json({ ok: true, mock: usingMock }));
 
+// client config — tells the frontend whether push is available + the public key
+app.get("/api/config", (_req, res) => res.json({ push: usingPush, vapidPublicKey }));
+
 const postLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false });
 
 app.post("/api/message", postLimiter, async (req, res) => {
@@ -47,6 +51,31 @@ app.post("/api/message", postLimiter, async (req, res) => {
     if (!text) return res.status(400).json({ error: "empty message" });
     await insertMessage({ room, sender, sourceLang, text });
     res.json({ ok: true });
+    notifyRoom(room, sender).catch((e) => console.error("[push] notifyRoom", e));  // fire-and-forget
+  } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
+});
+
+// unread counts for a set of rooms (no translation) — for the conversation list
+app.get("/api/counts", async (req, res) => {
+  try {
+    const rooms = String(req.query.rooms || "").split(",").map((r) => r.slice(0, ROOM_MAX)).filter(Boolean);
+    if (!rooms.length) return res.json({ counts: {} });
+    res.json({ counts: await getCounts(rooms) });
+  } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
+});
+
+// register / refresh a push subscription (idempotent, keyed by endpoint)
+app.post("/api/subscribe", postLimiter, async (req, res) => {
+  try {
+    const { subscription, name, lang, rooms } = req.body || {};
+    if (!subscription?.endpoint || !name) return res.status(400).json({ error: "missing fields" });
+    await saveSubscription({
+      subscription,
+      name: String(name).slice(0, NAME_MAX),
+      lang: String(lang || "English").slice(0, LANG_MAX),
+      rooms: Array.isArray(rooms) ? rooms.slice(0, 50).map((r) => String(r).slice(0, ROOM_MAX)) : [],
+    });
+    res.json({ ok: true, push: usingPush });
   } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
 });
 
