@@ -21,7 +21,8 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 const R   = 1.35;          // round radius
 const SQ  = 2.45;          // square full side
 const PLATE_H = 0.14;
-const SLICE_GAP = THREE.MathUtils.degToRad(70); // wedge removed in round slice
+const SLICE_WEDGE = THREE.MathUtils.degToRad(66);  // size of the single slice wedge
+const SLICE_BIS   = Math.atan2(3.7, 5.2);          // wedge bisector aimed at default camera azimuth
 
 const isMobile = matchMedia("(max-width:720px)").matches;
 
@@ -174,14 +175,14 @@ function layerGeometries(shape, view, h){
     if(eff === "heart")  return [{ geom:heartGeometry(h) }];
     return [{ geom:new THREE.CylinderGeometry(R, R, h, 80, 1) }];
   }
-  // ---- slice view ----
+  // ---- slice view: render a SINGLE slice sitting on the plate ----
   if(eff === "square"){
-    const g = new THREE.BoxGeometry(SQ, h, SQ/2);
-    g.translate(0, 0, -SQ/4);           // cut face at z=0, solid behind
-    return [{ geom:g }];
+    // a single square slice (small block), centred on the plate
+    const s = SQ*0.46;
+    return [{ geom:new THREE.BoxGeometry(s, h, s) }];
   }
-  // round (and heart fallback): wedge removed + capped cross-sections
-  const tStart = SLICE_GAP/2, tLen = Math.PI*2 - SLICE_GAP;
+  // round (and heart fallback): one wedge, point toward the camera, both cut faces capped
+  const tStart = SLICE_BIS - SLICE_WEDGE/2, tLen = SLICE_WEDGE;
   const cyl = new THREE.CylinderGeometry(R, R, h, 80, 1, false, tStart, tLen);
   return [
     { geom:cyl },
@@ -472,18 +473,25 @@ export function createCake(canvas){
   function buildDecorations(list, topY, view){
     const g = new THREE.Group();
     if(!list.length) return g;
-    // place around a ring on top; in slice view bias to the back (avoid wedge at +z)
-    const ring = R*0.5;
-    const baseAngle = view==="slice" ? Math.PI : 0;
     const sinkY = topY - 0.04;   // nestle slightly into the surface so they rest, not float
     list.forEach((id, i)=>{
       const builder = DECO_BUILDERS[id];
       if(!builder) return;
       const prop = builder();
       prop.scale.setScalar(DECO_SCALE);
-      const a = baseAngle + (i - (list.length-1)/2) * (view==="slice"?0.7:1.05);
-      const rr = list.length===1 ? 0 : ring;
-      prop.position.set(Math.cos(a)*rr, sinkY, Math.sin(a)*rr);
+      let x, z;
+      if(view === "slice"){
+        // cluster on top of the single slice, along its bisector (uses cylinder's sin/cos axes)
+        const a = SLICE_BIS + (i - (list.length-1)/2) * 0.26;
+        const rr = R*0.42;
+        x = Math.sin(a)*rr; z = Math.cos(a)*rr;
+      } else {
+        // ring around the top of the whole cake
+        const a = (i - (list.length-1)/2) * 1.05;
+        const rr = list.length===1 ? 0 : R*0.5;
+        x = Math.cos(a)*rr; z = Math.sin(a)*rr;
+      }
+      prop.position.set(x, sinkY, z);
       g.add(prop);
     });
     return g;
