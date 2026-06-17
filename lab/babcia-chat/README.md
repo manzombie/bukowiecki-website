@@ -5,7 +5,7 @@ reads the **whole** conversation in **their own** language. Named for *babcia*
 (Polish: grandmother) — built so a grandparent and grandchild can text across a
 language gap, on a phone, like a real app.
 
-- **Frontend:** `lab/babcia/` — static, ships on the lab site sync → `lab.bukowiecki.co/babcia/`.
+- **Frontend:** `lab/babcia-chat/` — static, ships on the lab site sync → `lab.bukowiecki.co/babcia-chat/` (published UNLISTED — live, but not linked from the landing page).
 - **Backend:** `babcia-server/` — Node/Express **Render Web Service** (holds the LLM key; the key never reaches the browser).
 
 ---

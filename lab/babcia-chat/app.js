@@ -15,13 +15,242 @@
   const dev = location.search.includes("dev");
   const API = dev ? "http://localhost:8790" : RENDER_URL;
 
+  // name = canonical value sent to the backend (keep English — translation key);
+  // label = shown in the picker (endonym); locale = for dates/times + detection.
   const LANGS = [
-    { name: "Polish", flag: "🇵🇱" }, { name: "English", flag: "🇬🇧" },
-    { name: "Spanish", flag: "🇪🇸" }, { name: "German", flag: "🇩🇪" },
-    { name: "French", flag: "🇫🇷" }, { name: "Ukrainian", flag: "🇺🇦" },
-    { name: "Italian", flag: "🇮🇹" }, { name: "Portuguese", flag: "🇵🇹" },
-    { name: "Dutch", flag: "🇳🇱" }, { name: "Russian", flag: "🇷🇺" },
+    { name: "Polish",     flag: "🇵🇱", label: "Polski",     locale: "pl" },
+    { name: "English",    flag: "🇬🇧", label: "English",    locale: "en" },
+    { name: "Spanish",    flag: "🇪🇸", label: "Español",    locale: "es" },
+    { name: "German",     flag: "🇩🇪", label: "Deutsch",    locale: "de" },
+    { name: "French",     flag: "🇫🇷", label: "Français",   locale: "fr" },
+    { name: "Ukrainian",  flag: "🇺🇦", label: "Українська", locale: "uk" },
+    { name: "Italian",    flag: "🇮🇹", label: "Italiano",   locale: "it" },
+    { name: "Portuguese", flag: "🇵🇹", label: "Português",  locale: "pt" },
+    { name: "Dutch",      flag: "🇳🇱", label: "Nederlands", locale: "nl" },
+    { name: "Russian",    flag: "🇷🇺", label: "Русский",    locale: "ru" },
   ];
+  const langInfo = (name) => LANGS.find((l) => l.name === name) || LANGS[1];
+
+  /* ---------- UI translations (interface chrome) ---------- *
+   * Keyed by canonical language name. English is the per-key fallback.
+   * {label}/{lang} are interpolated by t(). */
+  const I18N = {
+    English: {
+      tagline: "Talk to your family — everyone reads in their own language.",
+      label_name: "Your name", ph_name: "e.g. Babcia", label_lang: "Your language",
+      btn_continue: "Continue", rooms_title: "Your chats", edit: "Edit",
+      readingIn: "reading in {lang}",
+      alerts_on_btn: "🔔 Turn on alerts", alerts_are_on: "🔔 Alerts are on", alerts_blocked: "🔕 Alerts blocked",
+      hint_off: "Get notified when someone writes — even when the app is closed.",
+      hint_on: "You’ll be notified of new messages.",
+      hint_blocked: "Notifications are blocked in your browser settings.",
+      hint_unavailable: "Alerts aren’t available on the server yet.",
+      hint_fail: "Couldn’t turn on alerts. Try again.",
+      new_conversation: "＋ New conversation", ph_addlabel: "Their name (e.g. Zosia)", ph_addpass: "Shared passcode",
+      cancel: "Cancel", add: "Add", add_need: "Give it a name and a passcode.",
+      add_dup: "You already have a chat with that passcode.", passcode: "passcode",
+      rooms_empty: "No conversations yet.\nTap “New conversation”, give it a name and the passcode you agreed with them.",
+      msgs_empty: "No messages yet.\nSay hello — it will wait here for them.",
+      ph_message: "Write a message…", send: "Send", waking: "Waking up, one moment…", you: "You",
+      remove_confirm: "Remove the chat with {label}? Messages stay on the server — you can re-add it with the same passcode.",
+    },
+    Polish: {
+      tagline: "Rozmawiaj z rodziną — każdy czyta w swoim języku.",
+      label_name: "Twoje imię", ph_name: "np. Babcia", label_lang: "Twój język",
+      btn_continue: "Dalej", rooms_title: "Twoje rozmowy", edit: "Zmień",
+      readingIn: "język: {lang}",
+      alerts_on_btn: "🔔 Włącz powiadomienia", alerts_are_on: "🔔 Powiadomienia włączone", alerts_blocked: "🔕 Powiadomienia zablokowane",
+      hint_off: "Otrzymuj powiadomienia o nowych wiadomościach — nawet gdy aplikacja jest zamknięta.",
+      hint_on: "Będziesz powiadamiana o nowych wiadomościach.",
+      hint_blocked: "Powiadomienia są zablokowane w ustawieniach przeglądarki.",
+      hint_unavailable: "Powiadomienia nie są jeszcze dostępne na serwerze.",
+      hint_fail: "Nie udało się włączyć powiadomień. Spróbuj ponownie.",
+      new_conversation: "＋ Nowa rozmowa", ph_addlabel: "Ich imię (np. Zosia)", ph_addpass: "Wspólne hasło",
+      cancel: "Anuluj", add: "Dodaj", add_need: "Podaj imię i hasło.",
+      add_dup: "Masz już rozmowę z tym hasłem.", passcode: "hasło",
+      rooms_empty: "Brak rozmów.\nKliknij „Nowa rozmowa”, podaj imię i ustalone wspólne hasło.",
+      msgs_empty: "Brak wiadomości.\nPrzywitaj się — wiadomość poczeka tutaj na nich.",
+      ph_message: "Napisz wiadomość…", send: "Wyślij", waking: "Budzę się, chwileczkę…", you: "Ty",
+      remove_confirm: "Usunąć rozmowę z {label}? Wiadomości pozostaną na serwerze — możesz ją dodać ponownie z tym samym hasłem.",
+    },
+    Spanish: {
+      tagline: "Habla con tu familia — cada uno lee en su propio idioma.",
+      label_name: "Tu nombre", ph_name: "p. ej. Abuela", label_lang: "Tu idioma",
+      btn_continue: "Continuar", rooms_title: "Tus chats", edit: "Editar",
+      readingIn: "leyendo en {lang}",
+      alerts_on_btn: "🔔 Activar avisos", alerts_are_on: "🔔 Avisos activados", alerts_blocked: "🔕 Avisos bloqueados",
+      hint_off: "Recibe un aviso cuando alguien escriba — incluso con la app cerrada.",
+      hint_on: "Recibirás avisos de mensajes nuevos.",
+      hint_blocked: "Las notificaciones están bloqueadas en los ajustes del navegador.",
+      hint_unavailable: "Los avisos aún no están disponibles en el servidor.",
+      hint_fail: "No se pudieron activar los avisos. Inténtalo de nuevo.",
+      new_conversation: "＋ Nueva conversación", ph_addlabel: "Su nombre (p. ej. Zosia)", ph_addpass: "Contraseña compartida",
+      cancel: "Cancelar", add: "Añadir", add_need: "Ponle un nombre y una contraseña.",
+      add_dup: "Ya tienes un chat con esa contraseña.", passcode: "contraseña",
+      rooms_empty: "Aún no hay conversaciones.\nPulsa «Nueva conversación», ponle un nombre y la contraseña acordada.",
+      msgs_empty: "Aún no hay mensajes.\nSaluda — esperará aquí a que lo lean.",
+      ph_message: "Escribe un mensaje…", send: "Enviar", waking: "Despertando, un momento…", you: "Tú",
+      remove_confirm: "¿Eliminar el chat con {label}? Los mensajes se quedan en el servidor — puedes volver a añadirlo con la misma contraseña.",
+    },
+    German: {
+      tagline: "Sprich mit deiner Familie — jeder liest in seiner eigenen Sprache.",
+      label_name: "Dein Name", ph_name: "z. B. Oma", label_lang: "Deine Sprache",
+      btn_continue: "Weiter", rooms_title: "Deine Chats", edit: "Ändern",
+      readingIn: "liest auf {lang}",
+      alerts_on_btn: "🔔 Hinweise einschalten", alerts_are_on: "🔔 Hinweise an", alerts_blocked: "🔕 Hinweise blockiert",
+      hint_off: "Lass dich benachrichtigen, wenn jemand schreibt — auch bei geschlossener App.",
+      hint_on: "Du wirst über neue Nachrichten benachrichtigt.",
+      hint_blocked: "Benachrichtigungen sind in den Browser-Einstellungen blockiert.",
+      hint_unavailable: "Hinweise sind auf dem Server noch nicht verfügbar.",
+      hint_fail: "Hinweise konnten nicht eingeschaltet werden. Bitte erneut versuchen.",
+      new_conversation: "＋ Neue Unterhaltung", ph_addlabel: "Ihr Name (z. B. Zosia)", ph_addpass: "Gemeinsames Kennwort",
+      cancel: "Abbrechen", add: "Hinzufügen", add_need: "Gib einen Namen und ein Kennwort ein.",
+      add_dup: "Du hast bereits einen Chat mit diesem Kennwort.", passcode: "Kennwort",
+      rooms_empty: "Noch keine Unterhaltungen.\nTippe auf „Neue Unterhaltung“, gib einen Namen und das vereinbarte Kennwort ein.",
+      msgs_empty: "Noch keine Nachrichten.\nSag Hallo — sie wartet hier auf sie.",
+      ph_message: "Nachricht schreiben…", send: "Senden", waking: "Wird aufgeweckt, einen Moment…", you: "Du",
+      remove_confirm: "Chat mit {label} entfernen? Nachrichten bleiben auf dem Server — du kannst ihn mit demselben Kennwort wieder hinzufügen.",
+    },
+    French: {
+      tagline: "Parlez à votre famille — chacun lit dans sa propre langue.",
+      label_name: "Votre nom", ph_name: "ex. Mamie", label_lang: "Votre langue",
+      btn_continue: "Continuer", rooms_title: "Vos discussions", edit: "Modifier",
+      readingIn: "lit en {lang}",
+      alerts_on_btn: "🔔 Activer les alertes", alerts_are_on: "🔔 Alertes activées", alerts_blocked: "🔕 Alertes bloquées",
+      hint_off: "Soyez averti quand quelqu’un écrit — même appli fermée.",
+      hint_on: "Vous serez averti des nouveaux messages.",
+      hint_blocked: "Les notifications sont bloquées dans les réglages du navigateur.",
+      hint_unavailable: "Les alertes ne sont pas encore disponibles sur le serveur.",
+      hint_fail: "Impossible d’activer les alertes. Réessayez.",
+      new_conversation: "＋ Nouvelle conversation", ph_addlabel: "Son nom (ex. Zosia)", ph_addpass: "Code partagé",
+      cancel: "Annuler", add: "Ajouter", add_need: "Donnez un nom et un code.",
+      add_dup: "Vous avez déjà une discussion avec ce code.", passcode: "code",
+      rooms_empty: "Aucune conversation.\nAppuyez sur « Nouvelle conversation », donnez un nom et le code convenu.",
+      msgs_empty: "Aucun message.\nDites bonjour — il attendra ici qu’on le lise.",
+      ph_message: "Écrivez un message…", send: "Envoyer", waking: "Réveil en cours, un instant…", you: "Vous",
+      remove_confirm: "Supprimer la discussion avec {label} ? Les messages restent sur le serveur — vous pouvez la rajouter avec le même code.",
+    },
+    Ukrainian: {
+      tagline: "Спілкуйтеся з родиною — кожен читає своєю мовою.",
+      label_name: "Ваше ім’я", ph_name: "напр. Бабуся", label_lang: "Ваша мова",
+      btn_continue: "Далі", rooms_title: "Ваші чати", edit: "Змінити",
+      readingIn: "читає мовою: {lang}",
+      alerts_on_btn: "🔔 Увімкнути сповіщення", alerts_are_on: "🔔 Сповіщення увімкнені", alerts_blocked: "🔕 Сповіщення заблоковані",
+      hint_off: "Отримуйте сповіщення, коли хтось пише — навіть коли застосунок закрито.",
+      hint_on: "Ви отримуватимете сповіщення про нові повідомлення.",
+      hint_blocked: "Сповіщення заблоковані в налаштуваннях браузера.",
+      hint_unavailable: "Сповіщення поки недоступні на сервері.",
+      hint_fail: "Не вдалося увімкнути сповіщення. Спробуйте ще раз.",
+      new_conversation: "＋ Нова розмова", ph_addlabel: "Їхнє ім’я (напр. Zosia)", ph_addpass: "Спільний пароль",
+      cancel: "Скасувати", add: "Додати", add_need: "Вкажіть ім’я та пароль.",
+      add_dup: "У вас уже є чат із цим паролем.", passcode: "пароль",
+      rooms_empty: "Поки немає розмов.\nНатисніть «Нова розмова», вкажіть ім’я та узгоджений пароль.",
+      msgs_empty: "Поки немає повідомлень.\nПривітайтеся — воно чекатиме тут на них.",
+      ph_message: "Напишіть повідомлення…", send: "Надіслати", waking: "Прокидаюся, хвилинку…", you: "Ви",
+      remove_confirm: "Видалити чат із {label}? Повідомлення лишаються на сервері — ви можете додати його знову з тим самим паролем.",
+    },
+    Italian: {
+      tagline: "Parla con la tua famiglia — ognuno legge nella propria lingua.",
+      label_name: "Il tuo nome", ph_name: "es. Nonna", label_lang: "La tua lingua",
+      btn_continue: "Continua", rooms_title: "Le tue chat", edit: "Modifica",
+      readingIn: "legge in {lang}",
+      alerts_on_btn: "🔔 Attiva avvisi", alerts_are_on: "🔔 Avvisi attivi", alerts_blocked: "🔕 Avvisi bloccati",
+      hint_off: "Ricevi un avviso quando qualcuno scrive — anche ad app chiusa.",
+      hint_on: "Riceverai avvisi per i nuovi messaggi.",
+      hint_blocked: "Le notifiche sono bloccate nelle impostazioni del browser.",
+      hint_unavailable: "Gli avvisi non sono ancora disponibili sul server.",
+      hint_fail: "Impossibile attivare gli avvisi. Riprova.",
+      new_conversation: "＋ Nuova conversazione", ph_addlabel: "Il suo nome (es. Zosia)", ph_addpass: "Password condivisa",
+      cancel: "Annulla", add: "Aggiungi", add_need: "Dai un nome e una password.",
+      add_dup: "Hai già una chat con questa password.", passcode: "password",
+      rooms_empty: "Ancora nessuna conversazione.\nTocca «Nuova conversazione», dai un nome e la password concordata.",
+      msgs_empty: "Ancora nessun messaggio.\nSaluta — resterà qui ad aspettarli.",
+      ph_message: "Scrivi un messaggio…", send: "Invia", waking: "Mi sto svegliando, un attimo…", you: "Tu",
+      remove_confirm: "Rimuovere la chat con {label}? I messaggi restano sul server — puoi riaggiungerla con la stessa password.",
+    },
+    Portuguese: {
+      tagline: "Fale com a sua família — cada um lê no seu próprio idioma.",
+      label_name: "O seu nome", ph_name: "ex. Avó", label_lang: "O seu idioma",
+      btn_continue: "Continuar", rooms_title: "As suas conversas", edit: "Editar",
+      readingIn: "lendo em {lang}",
+      alerts_on_btn: "🔔 Ativar alertas", alerts_are_on: "🔔 Alertas ativados", alerts_blocked: "🔕 Alertas bloqueados",
+      hint_off: "Seja avisado quando alguém escrever — mesmo com a app fechada.",
+      hint_on: "Será avisado de novas mensagens.",
+      hint_blocked: "As notificações estão bloqueadas nas definições do navegador.",
+      hint_unavailable: "Os alertas ainda não estão disponíveis no servidor.",
+      hint_fail: "Não foi possível ativar os alertas. Tente novamente.",
+      new_conversation: "＋ Nova conversa", ph_addlabel: "O nome dele(a) (ex. Zosia)", ph_addpass: "Palavra-passe partilhada",
+      cancel: "Cancelar", add: "Adicionar", add_need: "Dê um nome e uma palavra-passe.",
+      add_dup: "Já tem uma conversa com essa palavra-passe.", passcode: "palavra-passe",
+      rooms_empty: "Ainda sem conversas.\nToque em «Nova conversa», dê um nome e a palavra-passe combinada.",
+      msgs_empty: "Ainda sem mensagens.\nDiga olá — vai esperar aqui por eles.",
+      ph_message: "Escreva uma mensagem…", send: "Enviar", waking: "A acordar, um momento…", you: "Você",
+      remove_confirm: "Remover a conversa com {label}? As mensagens ficam no servidor — pode adicioná-la de novo com a mesma palavra-passe.",
+    },
+    Dutch: {
+      tagline: "Praat met je familie — iedereen leest in zijn eigen taal.",
+      label_name: "Je naam", ph_name: "bijv. Oma", label_lang: "Je taal",
+      btn_continue: "Doorgaan", rooms_title: "Je gesprekken", edit: "Wijzigen",
+      readingIn: "leest in {lang}",
+      alerts_on_btn: "🔔 Meldingen aanzetten", alerts_are_on: "🔔 Meldingen aan", alerts_blocked: "🔕 Meldingen geblokkeerd",
+      hint_off: "Word gewaarschuwd als iemand schrijft — ook als de app dicht is.",
+      hint_on: "Je krijgt meldingen van nieuwe berichten.",
+      hint_blocked: "Meldingen zijn geblokkeerd in je browserinstellingen.",
+      hint_unavailable: "Meldingen zijn nog niet beschikbaar op de server.",
+      hint_fail: "Meldingen konden niet worden ingeschakeld. Probeer opnieuw.",
+      new_conversation: "＋ Nieuw gesprek", ph_addlabel: "Hun naam (bijv. Zosia)", ph_addpass: "Gedeelde toegangscode",
+      cancel: "Annuleren", add: "Toevoegen", add_need: "Geef een naam en een toegangscode.",
+      add_dup: "Je hebt al een gesprek met die toegangscode.", passcode: "toegangscode",
+      rooms_empty: "Nog geen gesprekken.\nTik op ‘Nieuw gesprek’, geef een naam en de afgesproken toegangscode.",
+      msgs_empty: "Nog geen berichten.\nZeg hallo — het wacht hier op ze.",
+      ph_message: "Schrijf een bericht…", send: "Versturen", waking: "Aan het opstarten, een momentje…", you: "Jij",
+      remove_confirm: "Gesprek met {label} verwijderen? Berichten blijven op de server — je kunt het opnieuw toevoegen met dezelfde toegangscode.",
+    },
+    Russian: {
+      tagline: "Общайтесь с семьёй — каждый читает на своём языке.",
+      label_name: "Ваше имя", ph_name: "напр. Бабушка", label_lang: "Ваш язык",
+      btn_continue: "Далее", rooms_title: "Ваши чаты", edit: "Изменить",
+      readingIn: "язык: {lang}",
+      alerts_on_btn: "🔔 Включить уведомления", alerts_are_on: "🔔 Уведомления включены", alerts_blocked: "🔕 Уведомления заблокированы",
+      hint_off: "Получайте уведомления, когда кто-то пишет — даже когда приложение закрыто.",
+      hint_on: "Вы будете получать уведомления о новых сообщениях.",
+      hint_blocked: "Уведомления заблокированы в настройках браузера.",
+      hint_unavailable: "Уведомления пока недоступны на сервере.",
+      hint_fail: "Не удалось включить уведомления. Попробуйте ещё раз.",
+      new_conversation: "＋ Новый разговор", ph_addlabel: "Их имя (напр. Zosia)", ph_addpass: "Общий пароль",
+      cancel: "Отмена", add: "Добавить", add_need: "Укажите имя и пароль.",
+      add_dup: "У вас уже есть чат с этим паролем.", passcode: "пароль",
+      rooms_empty: "Пока нет разговоров.\nНажмите «Новый разговор», укажите имя и согласованный пароль.",
+      msgs_empty: "Пока нет сообщений.\nПоздоровайтесь — оно подождёт их здесь.",
+      ph_message: "Напишите сообщение…", send: "Отправить", waking: "Просыпаюсь, минутку…", you: "Вы",
+      remove_confirm: "Удалить чат с {label}? Сообщения остаются на сервере — вы можете добавить его снова с тем же паролем.",
+    },
+  };
+  // active UI language: profile reading-language, else entry pick, else detected
+  function uiLang() { return store.profile.lang || setupLang || detectLang(); }
+  function t(key, vars) {
+    const dict = I18N[uiLang()] || I18N.English;
+    let s = (dict[key] != null ? dict[key] : I18N.English[key]) || "";
+    if (vars) for (const k in vars) s = s.split("{" + k + "}").join(vars[k]);
+    return s;
+  }
+  // best-effort match of the browser/phone language to one we support
+  function detectLang() {
+    const codes = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "en"]);
+    for (const c of codes) {
+      const two = String(c).slice(0, 2).toLowerCase();
+      const hit = LANGS.find((l) => l.locale === two);
+      if (hit) return hit.name;
+    }
+    return "English";
+  }
+  // apply all static [data-i18n]/[data-i18n-ph] text for the current language
+  function applyI18n() {
+    document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-ph]").forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
+    document.documentElement.lang = langInfo(uiLang()).locale;
+  }
+
   const STORE = "babcia-v2";
   const OLD_STORE = "babcia-chat";
   const $ = (s) => document.querySelector(s);
@@ -60,19 +289,22 @@
       const b = document.createElement("button");
       b.type = "button"; b.className = "lang"; b.dataset.lang = l.name;
       b.setAttribute("aria-pressed", "false");
-      b.innerHTML = `<span class="flag">${l.flag}</span><span>${l.name}</span>`;
+      b.innerHTML = `<span class="flag">${l.flag}</span><span>${l.label}</span>`;
       b.addEventListener("click", () => {
         document.querySelectorAll(".lang").forEach((x) => x.setAttribute("aria-pressed", "false"));
-        b.setAttribute("aria-pressed", "true"); setupLang = l.name; validateEntry();
+        b.setAttribute("aria-pressed", "true"); setupLang = l.name;
+        applyI18n();                      // flip the entry screen to that language live
+        validateEntry();
       });
       wrap.appendChild(b);
     });
   }
   function fillEntry() {
     $("#name").value = store.profile.name || "";
-    setupLang = store.profile.lang || "";
+    setupLang = store.profile.lang || detectLang();   // preselect detected on first run
     document.querySelectorAll(".lang").forEach((x) =>
       x.setAttribute("aria-pressed", String(x.dataset.lang === setupLang)));
+    applyI18n();
     validateEntry();
   }
   function validateEntry() {
@@ -90,7 +322,8 @@
   /* ---------- conversation list ---------- */
   function openRoomList() {
     active = null; stopPolling();
-    $("#rooms-you").textContent = `${store.profile.name} · reading in ${store.profile.lang}`;
+    applyI18n();
+    $("#rooms-you").textContent = `${store.profile.name} · ${t("readingIn", { lang: langInfo(store.profile.lang).label })}`;
     reflectNotifyState();
     renderRoomList();
     show("rooms");
@@ -101,7 +334,7 @@
     const box = $("#room-list");
     box.innerHTML = "";
     if (!store.rooms.length) {
-      box.innerHTML = `<p class="empty-hint">No conversations yet.<br>Tap “New conversation”, give it a name and the passcode you agreed with them.</p>`;
+      box.innerHTML = `<p class="empty-hint">${t("rooms_empty").split("\n").join("<br>")}</p>`;
       return;
     }
     store.rooms.forEach((r, i) => {
@@ -112,17 +345,18 @@
         <span class="room-avatar">${(r.label || "?").trim().charAt(0).toUpperCase()}</span>
         <span class="room-info">
           <span class="room-label"></span>
-          <span class="room-sub">passcode: <b></b></span>
+          <span class="room-sub"><span class="pc-label"></span>: <b></b></span>
         </span>
         <span class="room-badge"${unread ? "" : " hidden"}>${unread}</span>
         <button class="room-del" type="button" aria-label="Remove conversation">✕</button>`;
       card.querySelector(".room-label").textContent = r.label;
+      card.querySelector(".pc-label").textContent = t("passcode");
       card.querySelector(".room-sub b").textContent = r.passcode;
       card.addEventListener("click", () => openRoom(i));
       const del = card.querySelector(".room-del");
       del.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (confirm(`Remove the chat with ${r.label}? (Messages stay on the server — you can re-add it with the same passcode.)`)) {
+        if (confirm(t("remove_confirm", { label: r.label }))) {
           store.rooms.splice(i, 1); save(); syncPush(); renderRoomList();
         }
       });
@@ -140,9 +374,9 @@
       e.preventDefault();
       const label = $("#add-label").value.trim();
       const passcode = $("#add-pass").value.trim();
-      if (!label || !passcode) { $("#add-note").textContent = "Give it a name and a passcode."; return; }
+      if (!label || !passcode) { $("#add-note").textContent = t("add_need"); return; }
       if (store.rooms.some((r) => r.passcode === passcode)) {
-        $("#add-note").textContent = "You already have a chat with that passcode."; return;
+        $("#add-note").textContent = t("add_dup"); return;
       }
       store.rooms.push({ label, passcode, lastCount: 0 });
       save(); syncPush(); closeAdd(); renderRoomList(); refreshCounts();
@@ -157,8 +391,9 @@
   async function openRoom(i) {
     const r = store.rooms[i]; if (!r) return;
     active = r;
+    applyI18n();
     $("#head-room").textContent = r.label;
-    $("#head-you").textContent = `${store.profile.name} · reading in ${store.profile.lang}`;
+    $("#head-you").textContent = `${store.profile.name} · ${t("readingIn", { lang: langInfo(store.profile.lang).label })}`;
     show("chat");
     $("#messages").innerHTML = "";
     lastRendered = -1;
@@ -221,21 +456,22 @@
   }
 
   /* ---------- render messages ---------- */
+  function uiLocale() { return langInfo(store.profile.lang).locale; }
   function fmtTime(iso) {
     const d = new Date(iso);
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString(uiLocale(), { hour: "2-digit", minute: "2-digit" });
   }
   function render(msgs) {
     const box = $("#messages");
     if (!msgs.length) {
-      box.innerHTML = `<p class="empty-hint">No messages yet.<br>Say hello — it will wait here for them.</p>`;
+      box.innerHTML = `<p class="empty-hint">${t("msgs_empty").split("\n").join("<br>")}</p>`;
       lastRendered = 0; return;
     }
     const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
     box.innerHTML = "";
     let lastDay = "";
     for (const m of msgs) {
-      const day = new Date(m.createdAt).toLocaleDateString([], { weekday: "long", day: "numeric", month: "short" });
+      const day = new Date(m.createdAt).toLocaleDateString(uiLocale(), { weekday: "long", day: "numeric", month: "short" });
       if (day !== lastDay) { lastDay = day; box.appendChild(elDay(day)); }
       box.appendChild(elBubble(m));
     }
@@ -247,7 +483,7 @@
     const mine = m.sender === store.profile.name;
     const b = document.createElement("div");
     b.className = "bubble" + (mine ? " mine" : "");
-    const who = document.createElement("div"); who.className = "who"; who.textContent = mine ? "You" : m.sender;
+    const who = document.createElement("div"); who.className = "who"; who.textContent = mine ? t("you") : m.sender;
     const text = document.createElement("div"); text.className = "text"; text.textContent = m.text;
     const meta = document.createElement("div"); meta.className = "meta";
     meta.appendChild(Object.assign(document.createElement("span"), { textContent: fmtTime(m.createdAt) }));
@@ -283,14 +519,14 @@
       $("#notify-bar").hidden = true; return;
     }
     if (Notification.permission === "granted" && store.notify) {
-      btn.textContent = "🔔 Alerts are on"; btn.classList.add("on"); btn.disabled = true;
-      hint.textContent = "You’ll be notified of new messages.";
+      btn.textContent = t("alerts_are_on"); btn.classList.add("on"); btn.disabled = true;
+      hint.textContent = t("hint_on");
     } else if (Notification.permission === "denied") {
-      btn.textContent = "🔕 Alerts blocked"; btn.disabled = true;
-      hint.textContent = "Notifications are blocked in your browser settings.";
+      btn.textContent = t("alerts_blocked"); btn.disabled = true;
+      hint.textContent = t("hint_blocked");
     } else {
-      btn.textContent = "🔔 Turn on alerts"; btn.classList.remove("on"); btn.disabled = false;
-      hint.textContent = "Get notified when someone writes — even when the app is closed.";
+      btn.textContent = t("alerts_on_btn"); btn.classList.remove("on"); btn.disabled = false;
+      hint.textContent = t("hint_off");
     }
   }
   function urlB64ToUint8(base64) {
@@ -306,7 +542,7 @@
       if (perm !== "granted") { reflectNotifyState(); return; }
       const cfg = await (await fetch(API + "/api/config", { cache: "no-store" })).json();
       if (!cfg.push || !cfg.vapidPublicKey) {
-        $("#notify-hint").textContent = "Alerts aren’t available on the server yet.";
+        $("#notify-hint").textContent = t("hint_unavailable");
         return;
       }
       const reg = await navigator.serviceWorker.ready;
@@ -321,7 +557,7 @@
       store.notify = true; save();
       reflectNotifyState();
     } catch (err) {
-      $("#notify-hint").textContent = "Couldn’t turn on alerts. Try again.";
+      $("#notify-hint").textContent = t("hint_fail");
     }
   }
   async function postSubscription(sub) {

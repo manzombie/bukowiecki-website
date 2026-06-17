@@ -24,15 +24,15 @@
   <div class="entry-card">
     <img class="logo" id="logo-entry" src="icons/source/babcia_Chat_logo.png" alt="Babcia Chat" />
     <h1>Babcia Chat</h1>
-    <p class="tagline">Talk to your family — everyone reads in their own language.</p>
+    <p class="tagline" data-i18n="tagline">Talk to your family — everyone reads in their own language.</p>
 
-    <label class="big-label" for="name">Your name</label>
-    <input class="big-input" id="name" type="text" autocomplete="given-name" placeholder="e.g. Babcia" />
+    <label class="big-label" for="name" data-i18n="label_name">Your name</label>
+    <input class="big-input" id="name" type="text" autocomplete="given-name" data-i18n-ph="ph_name" placeholder="e.g. Babcia" />
 
-    <label class="big-label">Your language</label>
+    <label class="big-label" data-i18n="label_lang">Your language</label>
     <div class="langs" id="langs" role="group" aria-label="Choose your language"></div>
 
-    <button class="big-btn" id="enter-btn" type="button">Continue</button>
+    <button class="big-btn" id="enter-btn" type="button" data-i18n="btn_continue">Continue</button>
     <p class="entry-note" id="entry-note"></p>
   </div>
 </section>
@@ -42,10 +42,10 @@
   <header class="rooms-head">
     <img class="logo-sm" src="icons/source/babcia_Chat_logo.png" alt="" />
     <div class="head-meta">
-      <div class="rooms-title">Your chats</div>
+      <div class="rooms-title" data-i18n="rooms_title">Your chats</div>
       <div class="rooms-you" id="rooms-you">you · language</div>
     </div>
-    <button class="ghost-btn" id="edit-profile-btn" type="button">Edit</button>
+    <button class="ghost-btn" id="edit-profile-btn" type="button" data-i18n="edit">Edit</button>
   </header>
 
   <div class="notify-bar" id="notify-bar">
@@ -56,13 +56,13 @@
   <div class="room-list" id="room-list"></div>
 
   <div class="add-room">
-    <button class="add-toggle" id="add-toggle" type="button">＋ New conversation</button>
+    <button class="add-toggle" id="add-toggle" type="button" data-i18n="new_conversation">＋ New conversation</button>
     <form class="add-form" id="add-form" hidden>
-      <input class="big-input" id="add-label" type="text" autocomplete="off" placeholder="Their name (e.g. Zosia)" />
-      <input class="big-input" id="add-pass" type="text" autocomplete="off" placeholder="Shared passcode" />
+      <input class="big-input" id="add-label" type="text" autocomplete="off" data-i18n-ph="ph_addlabel" placeholder="Their name (e.g. Zosia)" />
+      <input class="big-input" id="add-pass" type="text" autocomplete="off" data-i18n-ph="ph_addpass" placeholder="Shared passcode" />
       <div class="add-actions">
-        <button class="ghost-btn" id="add-cancel" type="button">Cancel</button>
-        <button class="big-btn add-save" id="add-save" type="submit">Add</button>
+        <button class="ghost-btn" id="add-cancel" type="button" data-i18n="cancel">Cancel</button>
+        <button class="big-btn add-save" id="add-save" type="submit" data-i18n="add">Add</button>
       </div>
       <p class="entry-note" id="add-note"></p>
     </form>
@@ -82,15 +82,15 @@
   <div class="messages" id="messages" aria-live="polite"></div>
 
   <form class="composer" id="composer">
-    <textarea class="msg-input" id="msg-input" rows="1" placeholder="Write a message…" enterkeyhint="send"></textarea>
-    <button class="send-btn" id="send-btn" type="submit" aria-label="Send">Send</button>
+    <textarea class="msg-input" id="msg-input" rows="1" data-i18n-ph="ph_message" placeholder="Write a message…" enterkeyhint="send"></textarea>
+    <button class="send-btn" id="send-btn" type="submit" aria-label="Send" data-i18n="send">Send</button>
   </form>
 
   <!-- cold-start / waking overlay -->
   <div class="waking" id="waking" hidden>
     <div class="waking-card">
       <div class="spinner" aria-hidden="true"></div>
-      <p>Waking up, one moment…</p>
+      <p data-i18n="waking">Waking up, one moment…</p>
     </div>
   </div>
 </section>
