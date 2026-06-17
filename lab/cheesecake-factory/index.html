@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Cheesecake Factory — Design your perfect cheesecake</title>
+<meta name="description" content="Design a layered cheesecake, see it rendered in 3D in real time, and get an instant recipe. Private concept build." />
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8D%B0</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+<!-- Pinned Three.js, no build step. -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- ========================= HEADER ========================= -->
+<header class="topbar">
+  <div class="brand">
+    <img class="logo" src="assets/logo.png" alt="Cheesecake Factory" />
+    <div class="brand-text">
+      <h1>Cheesecake Factory</h1>
+      <p>Design your perfect cheesecake</p>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" id="act-new" type="button" title="Start a fresh design">New Design</button>
+    <button class="btn btn-ghost" id="act-save" type="button" title="Save to this browser">Save</button>
+    <button class="btn btn-primary" id="act-share" type="button" title="Copy a shareable link">Share</button>
+  </div>
+</header>
+
+<!-- Mobile tab switcher (hidden on desktop) -->
+<nav class="tabbar" aria-label="Sections">
+  <button class="tab is-active" data-tab="layers" type="button">Layers</button>
+  <button class="tab" data-tab="preview" type="button">Preview</button>
+  <button class="tab" data-tab="decor" type="button">Decoration</button>
+</nav>
+
+<!-- ========================= MAIN ========================= -->
+<main class="workspace">
+
+  <!-- ---------- LEFT: layer / ingredient controls ---------- -->
+  <section class="col col-left" data-pane="layers" aria-label="Layer controls">
+
+    <div class="card">
+      <h2 class="card-title">Cake shape</h2>
+      <div class="seg" role="radiogroup" aria-label="Cake shape" id="shape-seg">
+        <button class="seg-btn is-active" role="radio" aria-checked="true" data-val="round" type="button">Round</button>
+        <button class="seg-btn" role="radio" aria-checked="false" data-val="square" type="button">Square</button>
+        <button class="seg-btn" role="radio" aria-checked="false" data-val="heart" type="button">Heart</button>
+      </div>
+      <h2 class="card-title" style="margin-top:18px">Layers</h2>
+      <div class="seg" role="radiogroup" aria-label="Number of layers" id="count-seg">
+        <button class="seg-btn" role="radio" aria-checked="false" data-val="1" type="button">1</button>
+        <button class="seg-btn" role="radio" aria-checked="false" data-val="2" type="button">2</button>
+        <button class="seg-btn is-active" role="radio" aria-checked="true" data-val="3" type="button">3</button>
+      </div>
+    </div>
+
+    <!-- layer cards injected by app.js -->
+    <div id="layer-cards"></div>
+
+  </section>
+
+  <!-- ---------- CENTER: 3D preview ---------- -->
+  <section class="col col-center" data-pane="preview" aria-label="Cake preview">
+    <div class="stage">
+      <div class="stage-toolbar">
+        <div class="seg seg-sm" role="radiogroup" aria-label="View" id="view-seg">
+          <button class="seg-btn is-active" role="radio" aria-checked="true" data-val="whole" type="button">Whole</button>
+          <button class="seg-btn" role="radio" aria-checked="false" data-val="slice" type="button">Slice</button>
+        </div>
+        <button class="icon-btn" id="act-reset-cam" type="button" title="Reset view" aria-label="Reset view">⟳</button>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="cake-canvas" aria-label="3D cheesecake preview"></canvas>
+        <!-- callout tags injected here -->
+        <div class="callouts" id="callouts" aria-hidden="false"></div>
+        <p class="stage-note" id="stage-note" hidden></p>
+      </div>
+
+      <p class="stage-hint">Drag to rotate · scroll / pinch to zoom</p>
+    </div>
+  </section>
+
+  <!-- ---------- RIGHT: decorations + summary + recipe ---------- -->
+  <section class="col col-right" data-pane="decor" aria-label="Decorations and recipe">
+
+    <div class="card">
+      <h2 class="card-title">Decorations</h2>
+      <div class="decor-list" id="decor-list" role="group" aria-label="Decorations"></div>
+    </div>
+
+    <div class="card summary-card">
+      <h2 class="card-title">Your Cheesecake Summary</h2>
+      <div class="summary-head">
+        <canvas id="slice-thumb" width="120" height="120" aria-label="Cross-section thumbnail"></canvas>
+        <dl class="summary-meta" id="summary-meta"></dl>
+      </div>
+      <ul class="summary-layers" id="summary-layers"></ul>
+      <div class="summary-decor" id="summary-decor"></div>
+    </div>
+
+    <div class="card recipe-card">
+      <div class="recipe-actions">
+        <button class="btn btn-primary btn-block" id="act-recipe" type="button">Generate Recipe</button>
+        <div class="recipe-actions-row">
+          <button class="btn btn-ghost" id="act-export" type="button">Export Design</button>
+          <button class="btn btn-ghost" id="act-print" type="button">Print / PDF</button>
+        </div>
+      </div>
+      <article class="recipe" id="recipe" aria-live="polite"></article>
+    </div>
+
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
