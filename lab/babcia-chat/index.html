@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Babcia Chat</title>
+<meta name="description" content="A gentle chat for families who speak different languages — each person reads the whole conversation in their own language. On-device-friendly, no accounts." />
+
+<!-- installable / add-to-home-screen -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1f7d8c" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Babcia" />
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" />
+
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===================== ENTRY (your profile) ===================== -->
+<section class="screen entry" id="entry">
+  <div class="entry-card">
+    <img class="logo" id="logo-entry" src="icons/source/babcia_Chat_logo.png" alt="Babcia Chat" />
+    <h1>Babcia Chat</h1>
+    <p class="tagline">Talk to your family — everyone reads in their own language.</p>
+
+    <label class="big-label" for="name">Your name</label>
+    <input class="big-input" id="name" type="text" autocomplete="given-name" placeholder="e.g. Babcia" />
+
+    <label class="big-label">Your language</label>
+    <div class="langs" id="langs" role="group" aria-label="Choose your language"></div>
+
+    <button class="big-btn" id="enter-btn" type="button">Continue</button>
+    <p class="entry-note" id="entry-note"></p>
+  </div>
+</section>
+
+<!-- =================== CONVERSATIONS (room list) =================== -->
+<section class="screen rooms" id="rooms" hidden>
+  <header class="rooms-head">
+    <img class="logo-sm" src="icons/source/babcia_Chat_logo.png" alt="" />
+    <div class="head-meta">
+      <div class="rooms-title">Your chats</div>
+      <div class="rooms-you" id="rooms-you">you · language</div>
+    </div>
+    <button class="ghost-btn" id="edit-profile-btn" type="button">Edit</button>
+  </header>
+
+  <div class="notify-bar" id="notify-bar">
+    <button class="notify-btn" id="notify-btn" type="button">🔔 Turn on alerts</button>
+    <p class="notify-hint" id="notify-hint">Get notified when someone writes — even when the app is closed.</p>
+  </div>
+
+  <div class="room-list" id="room-list"></div>
+
+  <div class="add-room">
+    <button class="add-toggle" id="add-toggle" type="button">＋ New conversation</button>
+    <form class="add-form" id="add-form" hidden>
+      <input class="big-input" id="add-label" type="text" autocomplete="off" placeholder="Their name (e.g. Zosia)" />
+      <input class="big-input" id="add-pass" type="text" autocomplete="off" placeholder="Shared passcode" />
+      <div class="add-actions">
+        <button class="ghost-btn" id="add-cancel" type="button">Cancel</button>
+        <button class="big-btn add-save" id="add-save" type="submit">Add</button>
+      </div>
+      <p class="entry-note" id="add-note"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ============================ CHAT ============================ -->
+<section class="screen chat" id="chat" hidden>
+  <header class="chat-head">
+    <button class="back-btn" id="back-btn" type="button" aria-label="Back to chats">‹</button>
+    <div class="head-meta">
+      <div class="head-room" id="head-room">Room</div>
+      <div class="head-you" id="head-you">you · language</div>
+    </div>
+  </header>
+
+  <div class="messages" id="messages" aria-live="polite"></div>
+
+  <form class="composer" id="composer">
+    <textarea class="msg-input" id="msg-input" rows="1" placeholder="Write a message…" enterkeyhint="send"></textarea>
+    <button class="send-btn" id="send-btn" type="submit" aria-label="Send">Send</button>
+  </form>
+
+  <!-- cold-start / waking overlay -->
+  <div class="waking" id="waking" hidden>
+    <div class="waking-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Waking up, one moment…</p>
+    </div>
+  </div>
+</section>
+
+<script src="app.js"></script>
+</body>
+</html>
