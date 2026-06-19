@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EDL Checker — Research Studio</title>
+<meta name="description" content="Research #06 — a client-side delivery checker: scan a folder of EDL/QT packages and see what shots and versions were sent in each, all in the browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><path d=%22M28 16 L13 16 L13 84 L28 84%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%227%22/><path d=%22M72 16 L87 16 L87 84 L72 84%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%227%22/><circle cx=%2234%22 cy=%2234%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2266%22 cy=%2234%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2234%22 cy=%2266%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2266%22 cy=%2266%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2250%22 cy=%2250%22 r=%2210%22 fill=%22%23c0392b%22/></svg>">
+<style>
+  /* Research Studio editorial palette — variable NAMES kept from the original so
+     every inline style keeps resolving; only the values + look are restyled. */
+  :root{
+    --bg:#f4f1ea; --panel:#fbfaf6; --panel2:#ece8df; --line:#d8d3c7;
+    --txt:#16130f; --dim:#5a564e; --accent:#c0392b; --final:#2e7d52;
+    --wip:#a8631a; --chip:#ece8df; --bad:#b3261e;
+    --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    --radius:3px;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}   /* keep nav/settings/etc. hidden until shown */
+  body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 var(--sans);
+    -webkit-font-smoothing:antialiased}
+
+  /* ---- studio masthead ---- */
+  .masthead{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    padding:13px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .masthead .logo{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.02em;
+    display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--txt)}
+  .masthead .logo:hover{color:var(--accent)}
+  .logo-mark{width:24px;height:24px;flex:none;display:block}
+  .logo-mark .bk{fill:none;stroke:var(--txt);stroke-width:5;stroke-linecap:square}
+  .logo-mark .link{stroke:var(--txt);stroke-width:2.2;stroke-linecap:round;stroke-dasharray:0 5.5}
+  .logo-mark .dot circle{fill:var(--txt)}
+  .logo-mark .hot{fill:var(--accent)}
+  .masthead .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.04em}
+  .masthead .crumb b{color:var(--accent);font-weight:600}
+
+  /* ---- tool header ---- */
+  header{padding:16px 20px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--bg)}
+  h1{font-size:18px;margin:0;font-weight:600;letter-spacing:-0.01em}
+  .stats{display:flex;gap:16px;color:var(--dim);font-size:12.5px;font-family:var(--mono)}
+  .stats b{color:var(--accent);font-size:14px}
+  .meta{color:var(--dim);font-size:11px;text-align:right;margin-left:8px;font-family:var(--mono)}
+  .btn{background:var(--panel);border:1px solid var(--line);color:var(--txt);
+    padding:8px 14px;border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:600}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{filter:brightness(1.06);color:#fff}
+  .btn:disabled{opacity:.5;cursor:default}
+  #choose{margin-left:auto}
+  #refresh.spin{pointer-events:none}
+  #refresh.spin span{display:inline-block;animation:rot .8s linear infinite}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--txt);border:1px solid var(--txt);color:var(--bg);padding:10px 18px;
+    border-radius:var(--radius);font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:50;
+    box-shadow:0 10px 30px rgba(22,19,15,.18)}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.err{background:var(--bad);border-color:var(--bad);color:#fff}
+  #settings{background:var(--panel2);border-bottom:1px solid var(--line);padding:12px 20px;
+    display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--dim)}
+  #settings input{flex:1;min-width:320px;background:var(--panel);border:1px solid var(--line);
+    color:var(--txt);padding:8px 11px;border-radius:var(--radius);font-size:13px;outline:none;font-family:var(--mono)}
+  #settings input:focus{border-color:var(--accent)}
+
+  /* ---- intro / empty state ---- */
+  #intro{max-width:660px;margin:9vh auto;text-align:center;padding:0 20px}
+  #intro .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:18px}
+  #intro .big{font-size:46px;margin-bottom:4px}
+  #intro h2{font-size:26px;margin:6px 0;letter-spacing:-0.02em;font-weight:600}
+  #intro p{color:var(--dim);font-size:14.5px;margin:12px auto;max-width:52ch;line-height:1.55}
+  #intro .row{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+  #intro .big-btn{font-size:15px;padding:13px 22px}
+  #warn{background:rgba(192,57,43,.07);border:1px solid var(--accent);color:var(--txt);
+    border-radius:var(--radius);padding:14px 18px;margin-top:24px;font-size:13.5px;text-align:left;line-height:1.55}
+  #warn code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);padding:1px 5px;border-radius:3px}
+  #status{color:var(--dim);font-size:13px;margin-top:18px;min-height:20px}
+
+  /* ---- tabs ---- */
+  nav{display:flex;gap:2px;padding:0 20px;border-bottom:1px solid var(--line);background:var(--bg)}
+  nav button{background:none;border:0;color:var(--dim);padding:12px 16px;cursor:pointer;
+    font-size:12.5px;font-family:var(--mono);letter-spacing:.03em;text-transform:uppercase;
+    border-bottom:2px solid transparent;margin-bottom:-1px}
+  nav button:hover{color:var(--txt)}
+  nav button.active{color:var(--txt);border-bottom-color:var(--accent)}
+  main{padding:22px 20px;max-width:1500px}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  input[type=search],select{background:var(--panel);border:1px solid var(--line);color:var(--txt);
+    padding:8px 11px;border-radius:var(--radius);font-size:13.5px;outline:none;font-family:var(--sans)}
+  input[type=search]{min-width:280px}
+  input[type=search]:focus,select:focus{border-color:var(--accent)}
+  .count{color:var(--dim);font-size:12px;margin-left:4px;font-family:var(--mono)}
+
+  /* ---- packages ---- */
+  .pkg{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    margin-bottom:8px;overflow:hidden;position:relative}
+  .pkg::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}
+  .pkg.open::before{background:var(--accent)}
+  .phead{display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;user-select:none}
+  .phead:hover{background:var(--panel2)}
+  .pdate{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600;min-width:92px;font-size:12.5px}
+  .pname{font-weight:600;letter-spacing:-0.01em}
+  .ptags{display:flex;gap:6px;flex-wrap:wrap;margin-left:4px}
+  .chip{background:var(--chip);border:1px solid var(--line);color:var(--dim);
+    padding:2px 9px;border-radius:20px;font-size:11px;white-space:nowrap;font-family:var(--mono)}
+  .chip.ep{color:#6b4fa0;border-color:#d2c7e0}
+  .chip.cut{color:#2a6f97;border-color:#c2d6e0}
+  .chip.flag{color:var(--wip);border-color:#e0d2b4}
+  .pcounts{margin-left:auto;display:flex;gap:14px;color:var(--dim);font-size:12px;white-space:nowrap;font-family:var(--mono)}
+  .pcounts .final{color:var(--final);font-weight:600}
+  .pcounts .nofinal{color:var(--wip)}
+  .pbody{display:none;padding:4px 16px 16px;border-top:1px solid var(--line)}
+  .pkg.open .pbody{display:block}
+  .pkg.open .caret{transform:rotate(90deg)}
+  .caret{transition:transform .15s;color:var(--dim)}
+  .filegrp{margin-top:14px}
+  .filegrp h4{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-family:var(--mono)}
+  .frow{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:var(--radius)}
+  .frow:hover{background:var(--panel2)}
+  .frow a{color:var(--accent);text-decoration:none;font-weight:500}
+  .frow a:hover{text-decoration:underline}
+  .fname{font-weight:500}
+  .kind{font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:.05em;font-family:var(--mono)}
+  .kind.FINAL{background:rgba(46,125,82,.13);color:var(--final)}
+  .kind.WIP{background:rgba(168,99,26,.13);color:var(--wip)}
+  .kind.OTHER{background:var(--chip);color:var(--dim)}
+  .fmeta{color:var(--dim);font-size:11px;margin-left:auto;white-space:nowrap;font-family:var(--mono)}
+  .shotbtn{background:none;border:1px solid var(--line);color:var(--dim);border-radius:var(--radius);
+    font-size:11.5px;padding:2px 8px;cursor:pointer;font-family:var(--mono)}
+  .shotbtn:hover{color:var(--accent);border-color:var(--accent)}
+  .shotlist{margin:6px 0 2px;display:none;flex-wrap:wrap;gap:5px}
+  .shotlist.open{display:flex}
+  .shottag{font-family:var(--mono);font-size:11px;background:var(--panel2);
+    border:1px solid var(--line);padding:2px 7px;border-radius:3px;color:var(--txt);cursor:pointer}
+  .shottag:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* ---- shot search ---- */
+  .hit{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;margin-bottom:9px}
+  .hit h3{margin:0 0 8px;font-family:var(--mono);font-size:14px;color:var(--txt)}
+  .hit .sub{color:var(--dim);font-size:12px;margin-bottom:8px;font-family:var(--mono)}
+  .occ{display:flex;align-items:center;gap:12px;padding:5px 0;border-top:1px dashed var(--line);font-size:12.5px}
+  .occ .od{color:var(--accent);min-width:90px;font-variant-numeric:tabular-nums;font-family:var(--mono)}
+  .occ .op{color:var(--txt)}
+  .occ .oe{color:var(--dim);margin-left:auto;font-family:var(--mono);font-size:11.5px}
+  .empty{color:var(--dim);padding:40px;text-align:center}
+  .hint{color:var(--dim);font-size:12.5px;margin:-4px 0 14px}
+
+  /* ---- timeline ---- */
+  .tl{position:relative;margin-left:8px;padding-left:22px;border-left:2px solid var(--line)}
+  .tlday{margin-bottom:18px;position:relative}
+  .tlday::before{content:"";position:absolute;left:-29px;top:4px;width:11px;height:11px;
+    border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+  .tldate{font-family:var(--mono);font-weight:600;color:var(--accent);margin-bottom:6px;font-variant-numeric:tabular-nums}
+  .tlitem{font-size:13px;padding:3px 0;color:var(--txt)}
+  .tlitem .c{color:var(--dim)}
+  mark{background:rgba(192,57,43,.16);color:var(--txt);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <a class="logo" href="https://lab.bukowiecki.co/" aria-label="Research Studio — home">
+    <svg class="logo-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <path class="bk" d="M27 18 L14 18 L14 82 L27 82" />
+      <path class="bk" d="M73 18 L86 18 L86 82 L73 82" />
+      <g class="link">
+        <line x1="32" y1="34" x2="68" y2="34" /><line x1="32" y1="52" x2="68" y2="52" /><line x1="32" y1="70" x2="68" y2="70" />
+        <line x1="32" y1="34" x2="32" y2="70" /><line x1="50" y1="34" x2="50" y2="70" /><line x1="68" y1="34" x2="68" y2="70" />
+      </g>
+      <g class="dot">
+        <circle cx="32" cy="34" r="5.5" /><circle cx="50" cy="34" r="5.5" /><circle cx="68" cy="34" r="5.5" />
+        <circle cx="32" cy="52" r="5.5" /><circle cx="68" cy="52" r="5.5" />
+        <circle cx="32" cy="70" r="5.5" /><circle cx="50" cy="70" r="5.5" /><circle cx="68" cy="70" r="5.5" />
+      </g>
+      <circle class="hot" cx="50" cy="52" r="6.5" />
+    </svg>
+    <span>Research Studio</span>
+  </a>
+  <div class="crumb">Research <b>#06</b> — EDL Checker</div>
+</div>
+
+<header>
+  <h1>EDL / QT Upload Checker</h1>
+  <div class="stats">
+    <span><b id="s-pkg">0</b> packages</span>
+    <span><b id="s-edl">0</b> EDLs</span>
+    <span><b id="s-qt">0</b> QTs</span>
+    <span><b id="s-shot">0</b> shots</span>
+  </div>
+  <button id="choose" class="btn">Choose folder</button>
+  <button id="refresh" class="btn" hidden title="Re-scan the folder for new EDLs / QTs">⟳ Refresh</button>
+  <button id="gear" class="btn" title="Settings — enable click-to-open file links">⚙</button>
+  <div class="meta"><div id="m-root"></div><div id="m-gen"></div></div>
+</header>
+<div id="toast"></div>
+
+<div id="settings" hidden>
+  <span>Click-to-open links — paste the full path to the uploads folder (optional):</span>
+  <input id="linkbase" type="text" spellcheck="false"
+         placeholder="/Volumes/VFX/POST_OFFICE/EDITORIAL/EDIT_INT/01. UPLOADS">
+  <button id="linksave" class="btn">Save</button>
+</div>
+
+<!-- INTRO / EMPTY STATE -->
+<div id="intro">
+  <div class="kicker">Research #06 · built in public</div>
+  <div class="big">🎬</div>
+  <h2>EDL / QT Upload Checker</h2>
+  <p>Point it at your deliveries folder and this page reads every package, parses
+     the EDLs and lets you browse, search shots and see exactly what was sent when —
+     all in the browser, nothing uploaded anywhere.</p>
+  <div class="row">
+    <button id="choose2" class="btn primary big-btn">📁 Choose uploads folder…</button>
+    <button id="reconnect" class="btn big-btn" hidden></button>
+  </div>
+  <div id="status"></div>
+  <div id="warn" hidden></div>
+</div>
+
+<nav hidden>
+  <button data-tab="packages" class="active">Packages</button>
+  <button data-tab="shots">Shot search</button>
+  <button data-tab="timeline">Timeline</button>
+</nav>
+<main hidden>
+  <section id="tab-packages">
+    <div class="toolbar">
+      <input type="search" id="pkg-q" placeholder="Filter packages, files or shots…">
+      <select id="pkg-ep"><option value="">All episodes</option></select>
+      <select id="pkg-cut"><option value="">All cuts</option></select>
+      <select id="pkg-sort">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="name">Name A–Z</option>
+        <option value="shots">Most shots</option>
+      </select>
+      <span class="count" id="pkg-count"></span>
+    </div>
+    <div id="pkg-list"></div>
+  </section>
+  <section id="tab-shots" hidden>
+    <div class="toolbar">
+      <input type="search" id="shot-q" placeholder="Search a shot id, e.g. 428_KRE_2540 …" autocomplete="off">
+      <label style="color:var(--dim);font-size:12.5px;display:flex;gap:6px;align-items:center">
+        <input type="checkbox" id="shot-group" checked> group versions
+      </label>
+      <span class="count" id="shot-count"></span>
+    </div>
+    <div class="hint">Type part of a shot name to see every package &amp; EDL it was delivered in, and when.</div>
+    <div id="shot-list"></div>
+  </section>
+  <section id="tab-timeline" hidden>
+    <div class="toolbar">
+      <input type="search" id="tl-q" placeholder="Filter timeline…">
+      <span class="count" id="tl-count"></span>
+    </div>
+    <div class="tl" id="tl-list"></div>
+  </section>
+</main>
+
+<script>
+// ===================== state =====================
+let DATA = {packages:[], shot_index:{}, stats:{n_pkg:0,n_edl:0,n_qt:0,n_shots:0}, generated:'', scan_root:''};
+let PK = DATA.packages, IDX = DATA.shot_index, ROOT = '';
+let CURRENT_HANDLE = null;
+let LINK_BASE = localStorage.getItem('edl_link_base') || '';
+
+const $ = s => document.querySelector(s);
+const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hl(text, q){
+  if(!q) return esc(text);
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if(i<0) return esc(text);
+  return esc(text.slice(0,i))+'<mark>'+esc(text.slice(i,i+q.length))+'</mark>'+esc(text.slice(i+q.length));
+}
+function baseShot(s){ const m=s.match(/^(.*?)[_-][vV]\d+$/); return m?m[1]:s; }
+function fileLink(name, rel){
+  if(!LINK_BASE) return `<span class="fname">${esc(name)}</span>`;
+  const full = LINK_BASE.replace(/\/+$/,'') + '/' + rel;
+  const href = 'file://' + full.split('/').map(encodeURIComponent).join('/');
+  return `<a href="${href}">${esc(name)}</a>`;
+}
+
+// ===================== EDL / package parsing (ported from edl_checker.py) =====================
+const PKG_RE = /^(\d{6})_/;
+const FLAGS = new Set(["RECAP","TSO","RESEND","RESUPPLY","UPDATED","WIP","FINAL"]);
+function title(s){ return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(); }
+
+function parsePkgName(name){
+  const info={raw:name,date:null,date_iso:null,show:null,episode:null,cut:null,color:null,flags:[]};
+  const m=PKG_RE.exec(name);
+  if(!m) return info;
+  const ymd=m[1];
+  const yy=ymd.slice(0,2), mm=ymd.slice(2,4), dd=ymd.slice(4,6);
+  const iso=`20${yy}-${mm}-${dd}`;
+  if(+mm>=1&&+mm<=12&&+dd>=1&&+dd<=31){ info.date=iso; info.date_iso=iso; }
+  const rest=name.slice(m[0].length);
+  const cleaned=[];
+  for(const p of rest.split('_')){
+    const up=p.toUpperCase();
+    if(FLAGS.has(up)) info.flags.push(title(p));
+    else if(/^[A-C]$/.test(up) && cleaned.length) info.flags.push('Rev '+up);
+    else cleaned.push(p);
+  }
+  if(cleaned[0]) info.show=cleaned[0];
+  if(cleaned[1]) info.episode=cleaned[1];
+  if(cleaned[2]) info.cut=cleaned[2];
+  if(cleaned[3]) info.color=cleaned[3];
+  return info;
+}
+function edlKind(fn){ const u=fn.toUpperCase(); return u.includes('FINAL')?'FINAL':(u.includes('WIP')?'WIP':'OTHER'); }
+
+const TITLE_RE=/^TITLE:\s*(.+?)\s*$/i;
+const EVENT_RE=/^\d{3,}\s+(\S+)\s+/;
+const SRC_RE=/^\*\s*SOURCE FILE:\s*(.+?)\s*$/i;
+const CLIP_RE=/^\*\s*FROM CLIP NAME:\s*(.+?)\s*$/i;
+function parseEdl(text){
+  const lines=text.split(/\r?\n/);
+  let ttl=null, events=0; const shots=[], seen=new Set();
+  for(let line of lines){
+    if(!line.trim()) continue;
+    const mt=TITLE_RE.exec(line); if(mt&&ttl===null){ ttl=mt[1]; continue; }
+    if(EVENT_RE.test(line)) events++;
+    let shot=null;
+    const ms=SRC_RE.exec(line), mc=CLIP_RE.exec(line);
+    if(ms) shot=ms[1]; else if(mc) shot=mc[1];
+    if(shot){ shot=shot.trim(); if(shot&&!seen.has(shot)){ seen.add(shot); shots.push(shot);} }
+  }
+  if(!shots.length){
+    for(const line of lines){ const me=EVENT_RE.exec(line);
+      if(me){ const r=me[1].trim(); if(r&&!seen.has(r)&&!r.toUpperCase().startsWith('BL')){ seen.add(r); shots.push(r);} } }
+  }
+  return {title:ttl, shots, event_count:events};
+}
+function humanSize(n){
+  const u=['B','KB','MB','GB','TB']; let i=0;
+  while(n>=1024 && i<u.length-1){ n/=1024; i++; }
+  return i===0 ? `${n} B` : `${n.toFixed(1)} ${u[i]}`;
+}
+function fmtDate(ms){ const d=new Date(ms); const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+
+// ===================== File System Access scan =====================
+async function collectPackageDirs(dir, out){
+  for await (const h of dir.values()){
+    if(h.kind==='directory'){
+      if(PKG_RE.test(h.name)) out.push(h);
+      else await collectPackageDirs(h, out);   // descend into _2025 etc.
+    }
+  }
+}
+async function gatherFiles(dir, prefix, files){
+  for await (const h of dir.values()){
+    if(h.name.startsWith('.')) continue;
+    if(h.kind==='directory') await gatherFiles(h, prefix+h.name+'/', files);
+    else files.push({handle:h, rel:prefix+h.name});
+  }
+}
+async function scanPackage(pdir){
+  const info=parsePkgName(pdir.name);
+  const files=[]; await gatherFiles(pdir, pdir.name+'/', files);
+  files.sort((a,b)=>a.rel.localeCompare(b.rel));
+  const edls=[],qts=[],others=[]; const allShots=new Set();
+  for(const {handle,rel} of files){
+    const dot=handle.name.lastIndexOf('.'); const ext=dot<0?'':handle.name.slice(dot).toLowerCase();
+    const file=await handle.getFile();
+    const meta={name:handle.name, rel, size:file.size, size_h:humanSize(file.size), mtime:fmtDate(file.lastModified)};
+    if(ext==='.edl'){
+      const p=parseEdl(await file.text());
+      meta.kind=edlKind(handle.name); meta.title=p.title; meta.shots=p.shots;
+      meta.shot_count=p.shots.length; meta.event_count=p.event_count;
+      p.shots.forEach(s=>allShots.add(s)); edls.push(meta);
+    } else if(ext==='.mov'||ext==='.mp4'||ext==='.mxf'){ qts.push(meta); }
+    else others.push(meta);
+  }
+  const shots=[...allShots].sort();
+  return {...info, edls, qts, others, n_edl:edls.length, n_qt:qts.length,
+          shots, n_shots:shots.length, has_final:edls.some(e=>e.kind==='FINAL')};
+}
+function buildShotIndex(packages){
+  const idx={};
+  for(const p of packages) for(const e of p.edls) for(const s of e.shots){
+    (idx[s]=idx[s]||[]).push({pkg:p.raw, date:p.date, edl:e.name, kind:e.kind});
+  }
+  return idx;
+}
+async function scanHandle(root, onProgress){
+  const pkgDirs=[]; await collectPackageDirs(root, pkgDirs);
+  pkgDirs.sort((a,b)=>a.name.localeCompare(b.name));
+  const packages=[];
+  for(let i=0;i<pkgDirs.length;i++){
+    if(onProgress) onProgress(i+1, pkgDirs.length, pkgDirs[i].name);
+    packages.push(await scanPackage(pkgDirs[i]));
+  }
+  const shot_index=buildShotIndex(packages);
+  return {
+    generated:fmtDate(Date.now()), scan_root:root.name,
+    packages, shot_index,
+    stats:{n_pkg:packages.length, n_edl:packages.reduce((a,p)=>a+p.n_edl,0),
+           n_qt:packages.reduce((a,p)=>a+p.n_qt,0), n_shots:Object.keys(shot_index).length}
+  };
+}
+
+// ===================== IndexedDB handle persistence =====================
+function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open('edlchk',1);
+  r.onupgradeneeded=()=>r.result.createObjectStore('h'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function saveHandle(h){ const db=await idb(); return new Promise((res,rej)=>{
+  const tx=db.transaction('h','readwrite'); tx.objectStore('h').put(h,'dir'); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }
+async function loadHandle(){ try{ const db=await idb(); return await new Promise(res=>{
+  const tx=db.transaction('h','readonly'); const rq=tx.objectStore('h').get('dir');
+  rq.onsuccess=()=>res(rq.result||null); rq.onerror=()=>res(null); }); }catch(e){ return null; } }
+async function ensurePerm(h){
+  const o={mode:'read'};
+  if((await h.queryPermission(o))==='granted') return true;
+  return (await h.requestPermission(o))==='granted';
+}
+
+// ===================== UI: rendering (shared) =====================
+function fillHeader(){
+  $('#s-pkg').textContent=DATA.stats.n_pkg; $('#s-edl').textContent=DATA.stats.n_edl;
+  $('#s-qt').textContent=DATA.stats.n_qt; $('#s-shot').textContent=DATA.stats.n_shots;
+  $('#m-root').textContent=ROOT?('📁 '+ROOT):''; $('#m-gen').textContent=DATA.generated?('scanned '+DATA.generated):'';
+}
+document.querySelectorAll('nav button').forEach(b=>{ b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  ['packages','shots','timeline'].forEach(t=>$('#tab-'+t).hidden=(t!==b.dataset.tab)); }; });
+
+const epSel=$('#pkg-ep'), cutSel=$('#pkg-cut');
+function fillSelects(){
+  const fill=(sel,vals,label)=>{ const cur=sel.value; sel.innerHTML=''; sel.add(new Option(label,''));
+    vals.forEach(v=>sel.add(new Option(v,v))); if([...sel.options].some(o=>o.value===cur)) sel.value=cur; };
+  fill(epSel,[...new Set(PK.map(p=>p.episode).filter(Boolean))].sort(),'All episodes');
+  fill(cutSel,[...new Set(PK.map(p=>p.cut).filter(Boolean))].sort(),'All cuts');
+}
+function pkgMatch(p,q){ if(!q) return true; q=q.toLowerCase();
+  return p.raw.toLowerCase().includes(q) || p.edls.some(e=>e.name.toLowerCase().includes(q))
+      || p.qts.some(f=>f.name.toLowerCase().includes(q)) || p.shots.some(s=>s.toLowerCase().includes(q)); }
+function renderPackages(){
+  const q=$('#pkg-q').value.trim(); const ep=epSel.value, cut=cutSel.value, sort=$('#pkg-sort').value;
+  let list=PK.filter(p=>pkgMatch(p,q)&&(!ep||p.episode===ep)&&(!cut||p.cut===cut));
+  list.sort((a,b)=>{ if(sort==='name') return a.raw.localeCompare(b.raw); if(sort==='shots') return b.n_shots-a.n_shots;
+    const d=(a.date_iso||'').localeCompare(b.date_iso||''); return sort==='date-asc'?d:-d; });
+  $('#pkg-count').textContent=`${list.length} of ${PK.length}`;
+  $('#pkg-list').innerHTML=list.map(p=>{
+    const tags=[ p.episode?`<span class="chip ep">EP ${esc(p.episode)}</span>`:'',
+      p.cut?`<span class="chip cut">${esc(p.cut)}</span>`:'', p.color?`<span class="chip">${esc(p.color)}</span>`:'',
+      ...p.flags.map(f=>`<span class="chip flag">${esc(f)}</span>`) ].join('');
+    const finalTag=p.has_final?'<span class="final">✓ FINAL</span>':'<span class="nofinal">WIP only</span>';
+    return `<div class="pkg" data-raw="${esc(p.raw)}"><div class="phead">
+      <span class="caret">▸</span><span class="pdate">${esc(p.date||'—')}</span>
+      <span class="pname">${esc(p.raw)}</span><span class="ptags">${tags}</span>
+      <span class="pcounts"><span>${p.n_edl} EDL</span><span>${p.n_qt} QT</span>
+      <span>${p.n_shots} shots</span>${finalTag}</span></div>
+      <div class="pbody">${pkgBody(p)}</div></div>`;
+  }).join('')||'<div class="empty">No packages match.</div>';
+}
+function pkgBody(p){
+  let h='';
+  if(p.edls.length){ h+=`<div class="filegrp"><h4>EDLs (${p.edls.length})</h4>`;
+    h+=p.edls.map((e,i)=>{ const shots=e.shots.map(s=>`<span class="shottag" data-shot="${esc(s)}">${esc(s)}</span>`).join('');
+      return `<div class="frow"><span class="kind ${e.kind}">${e.kind}</span>${fileLink(e.name,e.rel)}
+        <button class="shotbtn" data-toggle="${esc(p.raw)}|${i}">${e.shot_count} shots ▾</button>
+        <span class="fmeta">${e.size_h} · ${esc(e.mtime)}</span></div>
+        <div class="shotlist" id="sl-${esc(p.raw)}-${i}">${shots||'<span class="fmeta">no shots parsed</span>'}</div>`;
+    }).join(''); h+='</div>'; }
+  if(p.qts.length){ h+=`<div class="filegrp"><h4>QuickTimes (${p.qts.length})</h4>`;
+    h+=p.qts.map(f=>`<div class="frow"><span class="kind OTHER">MOV</span>${fileLink(f.name,f.rel)}
+      <span class="fmeta">${f.size_h} · ${esc(f.mtime)}</span></div>`).join(''); h+='</div>'; }
+  if(p.others.length){ h+=`<div class="filegrp"><h4>Other files</h4>`;
+    h+=p.others.map(f=>`<div class="frow">${fileLink(f.name,f.rel)}
+      <span class="fmeta">${f.size_h} · ${esc(f.mtime)}</span></div>`).join(''); h+='</div>'; }
+  return h||'<div class="fmeta" style="padding:8px 0">empty package</div>';
+}
+$('#pkg-list').addEventListener('click',e=>{
+  const head=e.target.closest('.phead');
+  if(head && !e.target.closest('a,.shotbtn,.shottag')){ head.parentElement.classList.toggle('open'); return; }
+  const tb=e.target.closest('.shotbtn');
+  if(tb){ const [raw,i]=tb.dataset.toggle.split('|'); document.getElementById('sl-'+raw+'-'+i).classList.toggle('open'); return; }
+  const st=e.target.closest('.shottag'); if(st) gotoShot(st.dataset.shot);
+});
+['#pkg-q','#pkg-ep','#pkg-cut','#pkg-sort'].forEach(s=>$(s).addEventListener('input',renderPackages));
+
+function renderShots(){
+  const q=$('#shot-q').value.trim(); const group=$('#shot-group').checked; const box=$('#shot-list');
+  if(!q){ box.innerHTML='<div class="empty">Start typing a shot id above.</div>'; $('#shot-count').textContent=''; return; }
+  const ql=q.toLowerCase(); const keys=Object.keys(IDX).filter(s=>s.toLowerCase().includes(ql)).sort();
+  if(!keys.length){ box.innerHTML='<div class="empty">No shot matches “'+esc(q)+'”.</div>'; $('#shot-count').textContent='0'; return; }
+  let groups={};
+  if(group) keys.forEach(s=>{ const b=baseShot(s); (groups[b]=groups[b]||[]).push(s); });
+  else keys.forEach(s=>groups[s]=[s]);
+  const names=Object.keys(groups).sort();
+  $('#shot-count').textContent=`${keys.length} shot${keys.length>1?'s':''} in ${names.length} group${names.length>1?'s':''}`;
+  box.innerHTML=names.map(base=>{
+    const variants=groups[base]; let occ=[];
+    variants.forEach(v=>IDX[v].forEach(o=>occ.push({...o,shot:v})));
+    occ.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    const vers=[...new Set(variants)].sort();
+    const sub = group && vers.length>1
+      ? `${vers.length} versions: ${vers.map(v=>esc((v.match(/[_-][vV]\d+$/)||[''])[0].replace(/^[_-]/,'')||v)).join(', ')} · ${occ.length} deliveries`
+      : `${occ.length} deliver${occ.length>1?'ies':'y'}`;
+    const rows=occ.map(o=>`<div class="occ"><span class="od">${esc(o.date||'—')}</span>
+      <span class="op">${esc(o.pkg)}</span><span class="kind ${o.kind}" style="margin-left:6px">${o.kind}</span>
+      <span class="oe">${esc(o.shot)} · ${esc(o.edl)}</span></div>`).join('');
+    return `<div class="hit"><h3>${hl(base,q)}</h3><div class="sub">${sub}</div>${rows}</div>`;
+  }).join('');
+}
+$('#shot-q').addEventListener('input',renderShots);
+$('#shot-group').addEventListener('change',renderShots);
+function gotoShot(s){ document.querySelector('nav button[data-tab=shots]').click(); $('#shot-q').value=s; renderShots(); $('#shot-q').focus(); }
+
+function renderTimeline(){
+  const q=$('#tl-q').value.trim().toLowerCase(); const byDay={};
+  PK.forEach(p=>{ if(q && !pkgMatch(p,q)) return; const d=p.date||'undated'; (byDay[d]=byDay[d]||[]).push(p); });
+  const days=Object.keys(byDay).sort().reverse(); let total=0;
+  $('#tl-list').innerHTML=days.map(d=>{ const items=byDay[d].sort((a,b)=>a.raw.localeCompare(b.raw)); total+=items.length;
+    const rows=items.map(p=>{ const k=p.has_final?'✓':'·';
+      return `<div class="tlitem">${k} ${esc(p.raw)}<span class="c">— ${p.n_edl} EDL, ${p.n_qt} QT, ${p.n_shots} shots</span></div>`; }).join('');
+    return `<div class="tlday"><div class="tldate">${esc(d)}</div>${rows}</div>`; }).join('')||'<div class="empty">Nothing matches.</div>';
+  $('#tl-count').textContent=`${total} deliveries on ${days.length} days`;
+}
+$('#tl-q').addEventListener('input',renderTimeline);
+
+function renderAll(){ fillHeader(); fillSelects(); renderPackages(); renderShots(); renderTimeline(); }
+
+// ===================== toast =====================
+let toastT;
+function toast(msg, err){ const t=$('#toast'); t.textContent=msg; t.className='show'+(err?' err':'');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.className='',3600); }
+
+// ===================== controls =====================
+function showApp(){ $('#intro').style.display='none'; $('nav').hidden=false; $('main').hidden=false; $('#refresh').hidden=false; }
+function setData(d){ DATA=d; PK=DATA.packages; IDX=DATA.shot_index; ROOT=DATA.scan_root; }
+
+async function runScan(handle, announce){
+  const before=DATA.stats;
+  const st=$('#status');
+  $('#refresh').classList.add('spin'); $('#refresh').innerHTML='<span>⟳</span> Scanning…';
+  try{
+    const fresh=await scanHandle(handle,(i,n,name)=>{ if(st) st.textContent=`Scanning ${i}/${n}… ${name}`; });
+    setData(fresh); renderAll(); showApp();
+    if(announce){
+      const dP=DATA.stats.n_pkg-before.n_pkg, dE=DATA.stats.n_edl-before.n_edl, dQ=DATA.stats.n_qt-before.n_qt;
+      toast((dP||dE||dQ)?`Updated — ${dP>=0?'+':''}${dP} pkg, ${dE>=0?'+':''}${dE} EDL, ${dQ>=0?'+':''}${dQ} QT`
+                       :'Up to date — no changes found');
+    } else { toast(`Loaded ${DATA.stats.n_pkg} packages · ${DATA.stats.n_edl} EDLs · ${DATA.stats.n_shots} shots`); }
+  }catch(e){ toast('Scan failed: '+e.message, true); if(st) st.textContent='Scan failed: '+e.message; }
+  finally{ $('#refresh').classList.remove('spin'); $('#refresh').innerHTML='⟳ Refresh'; }
+}
+async function chooseFolder(){
+  if(!window.showDirectoryPicker){ showUnsupported(); return; }
+  try{
+    const h=await window.showDirectoryPicker({id:'edl-uploads', mode:'read'});
+    CURRENT_HANDLE=h; await saveHandle(h); await runScan(h,false);
+  }catch(e){ if(e.name!=='AbortError') toast('Could not open folder: '+e.message, true); }
+}
+function showUnsupported(){
+  const w=$('#warn'); w.hidden=false;
+  w.innerHTML='⚠️ This browser doesn’t support folder access. Open this page in '+
+    '<b>Google Chrome</b> (or Microsoft Edge). Safari and Firefox can’t scan folders — '+
+    'for those, use the <code>edl-check</code> launcher version instead.';
+}
+
+$('#choose').onclick=chooseFolder;
+$('#choose2').onclick=chooseFolder;
+$('#refresh').onclick=async ()=>{
+  if(!CURRENT_HANDLE){ chooseFolder(); return; }
+  if(!(await ensurePerm(CURRENT_HANDLE))){ toast('Permission denied for that folder.', true); return; }
+  await runScan(CURRENT_HANDLE,true);
+};
+$('#reconnect').onclick=async ()=>{
+  if(!CURRENT_HANDLE) return;
+  if(!(await ensurePerm(CURRENT_HANDLE))){ toast('Permission denied.', true); return; }
+  await runScan(CURRENT_HANDLE,false);
+};
+$('#gear').onclick=()=>{ const s=$('#settings'); s.hidden=!s.hidden; if(!s.hidden) $('#linkbase').focus(); };
+$('#linkbase').value=LINK_BASE;
+$('#linksave').onclick=()=>{ LINK_BASE=$('#linkbase').value.trim(); localStorage.setItem('edl_link_base',LINK_BASE);
+  $('#settings').hidden=true; renderPackages(); toast(LINK_BASE?'File links enabled':'File links disabled'); };
+
+// ===================== startup =====================
+(async function init(){
+  if(!window.showDirectoryPicker){ showUnsupported(); $('#choose').disabled=true; $('#choose2').disabled=true; return; }
+  const saved=await loadHandle();
+  if(saved){
+    CURRENT_HANDLE=saved;
+    const rc=$('#reconnect'); rc.hidden=false; rc.textContent=`↻ Reconnect to “${saved.name}”`;
+    $('#status').textContent='Tip: a folder is remembered from last time — click Reconnect, or choose a different one.';
+  }
+})();
+</script>
+</body>
+</html>
