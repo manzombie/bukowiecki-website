@@ -351,7 +351,7 @@ function refresh(){
   renderSummary(spec);
   renderRecipe();
   updateStageNote();
-  persistHash();
+  persistLocal();
 }
 
 // ============================================================
@@ -365,16 +365,21 @@ function decodeState(str){
   try{ return JSON.parse(decodeURIComponent(escape(atob(str)))); }
   catch(e){ return null; }
 }
-let hashTimer=null;
-function persistHash(){
-  clearTimeout(hashTimer);
-  hashTimer = setTimeout(()=>{ history.replaceState(null,"","#d="+encodeState()); }, 250);
+let saveTimer=null;
+// Persist the live design to this browser (NOT the URL) so reloads restore it
+// without cluttering the address bar. Share links are generated on demand.
+function persistLocal(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ try{ localStorage.setItem("cf.design", encodeState()); }catch(e){} }, 250);
 }
 function loadFromURLorStorage(){
   const m = location.hash.match(/d=([^&]+)/);
   let loaded = m ? decodeState(m[1]) : null;
   if(!loaded){ const ls = localStorage.getItem("cf.design"); if(ls) loaded = decodeState(ls); }
   if(loaded) state = mergeState(loaded);
+  // a shared link opened with #d=… — load it, then tidy it out of the address bar
+  // (deferred a tick so it runs after the initial load settles)
+  if(m) setTimeout(()=>history.replaceState(null,"",location.pathname+location.search), 0);
 }
 function mergeState(loaded){
   const s = defaultState();
@@ -443,10 +448,9 @@ function wireUI(){
     state = defaultState(); history.replaceState(null,"",location.pathname); refresh(); toast("New design");
   });
   $("#act-share").addEventListener("click", async ()=>{
-    persistHash();
     const url = location.origin+location.pathname+"#d="+encodeState();
     try{ await navigator.clipboard.writeText(url); toast("Share link copied"); }
-    catch(e){ history.replaceState(null,"","#d="+encodeState()); toast("Share link is in the address bar"); }
+    catch(e){ prompt("Copy your share link:", url); }
   });
 
   // mobile tabs
