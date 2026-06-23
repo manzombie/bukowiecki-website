@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALE Merge Bench — Research Studio</title>
+<meta name="description" content="Research #07 — merge a vendor CSV into an Avid-exported bin ALE and produce a re-importable ALE that fills the bin's columns, with full match review. 100% local in the browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><path d=%22M28 16 L13 16 L13 84 L28 84%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%227%22/><path d=%22M72 16 L87 16 L87 84 L72 84%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%227%22/><circle cx=%2234%22 cy=%2234%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2266%22 cy=%2234%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2234%22 cy=%2266%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2266%22 cy=%2266%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2250%22 cy=%2250%22 r=%2210%22 fill=%22%23c0392b%22/></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="masthead">
+  <a class="logo" href="https://lab.bukowiecki.co/" aria-label="Research Studio — home">
+    <svg class="logo-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <path class="bk" d="M27 18 L14 18 L14 82 L27 82" /><path class="bk" d="M73 18 L86 18 L86 82 L73 82" />
+      <g class="link"><line x1="32" y1="34" x2="68" y2="34"/><line x1="32" y1="52" x2="68" y2="52"/><line x1="32" y1="70" x2="68" y2="70"/><line x1="32" y1="34" x2="32" y2="70"/><line x1="50" y1="34" x2="50" y2="70"/><line x1="68" y1="34" x2="68" y2="70"/></g>
+      <g class="dot"><circle cx="32" cy="34" r="5.5"/><circle cx="50" cy="34" r="5.5"/><circle cx="68" cy="34" r="5.5"/><circle cx="32" cy="52" r="5.5"/><circle cx="68" cy="52" r="5.5"/><circle cx="32" cy="70" r="5.5"/><circle cx="50" cy="70" r="5.5"/><circle cx="68" cy="70" r="5.5"/></g>
+      <circle class="hot" cx="50" cy="52" r="6.5" />
+    </svg>
+    <span>Research Studio</span>
+  </a>
+  <div class="crumb">Research <b>#07</b> — ALE Merge Bench</div>
+</div>
+
+<!-- INTRO / DROP ZONES -->
+<div id="intro">
+  <div class="kicker">Research #07 · built in public</div>
+  <h2>ALE Merge Bench</h2>
+  <p>Merge a vendor submission CSV into an <b>Avid-exported bin ALE</b> and get a
+     re-importable ALE that fills the bin's columns in one go — with every match
+     shown so you can correct it <i>before</i> export. The match keys (Name + exact
+     timecode) and all structure are carried through byte-for-byte; only the columns
+     you choose are written.</p>
+  <p class="local"><b>Everything stays on your machine</b> — both files are read and merged
+     locally in your browser. Nothing is uploaded, sent or stored anywhere.</p>
+
+  <div class="drops">
+    <div class="dz" id="dz-ale" tabindex="0" role="button" aria-label="Load the Avid-exported bin ALE">
+      <div class="dz-step">1</div>
+      <div class="dz-title">Avid-exported bin ALE</div>
+      <div class="dz-hint" id="dz-ale-hint">Drop the <code>.ale</code> here, or click to choose</div>
+      <input type="file" id="file-ale" accept=".ale,.ALE,text/plain" hidden>
+    </div>
+    <div class="dz" id="dz-csv" tabindex="0" role="button" aria-label="Load the vendor CSV">
+      <div class="dz-step">2</div>
+      <div class="dz-title">Vendor CSV</div>
+      <div class="dz-hint" id="dz-csv-hint">Drop the <code>.csv</code> here, or click to choose</div>
+      <input type="file" id="file-csv" accept=".csv,.CSV,text/csv,text/plain" hidden>
+    </div>
+  </div>
+  <div class="introbtns">
+    <button class="btn" id="load-sample">Load sample files</button>
+  </div>
+  <div id="intro-note"></div>
+</div>
+
+<!-- BENCH -->
+<main id="bench" hidden>
+  <div class="benchbar">
+    <div class="files">
+      <span id="b-ale" class="filechip"></span>
+      <span id="b-csv" class="filechip"></span>
+      <button class="btn sm" id="reset">↺ Start over</button>
+    </div>
+    <div class="modes">
+      <div class="seg" id="mode-seg" role="tablist">
+        <button data-mode="key" class="active">Key match</button>
+        <button data-mode="positional">Positional</button>
+      </div>
+      <label class="offwrap" id="offwrap" hidden>offset
+        <button class="btn sm" id="off-dn">−</button>
+        <input type="number" id="offset" value="0" step="1">
+        <button class="btn sm" id="off-up">+</button>
+      </label>
+      <label class="chk"><input type="checkbox" id="preserve-all"> preserve ALL original columns</label>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <!-- COLUMN MAPPING -->
+  <section class="panel">
+    <h3>Column mapping <span class="sub">CSV field → ALE column (writable only; match-keys are read-only)</span></h3>
+    <p class="colnote">Avid only accepts a merge into <b>editable columns</b> — your own custom
+       columns plus free fields like <b>Comments</b>, <b>Vendor</b>, <b>Edit_Note</b>. Columns Avid
+       owns/derives (<b>Package Name</b>, Start, End, Tape, Source File, Duration, Drive…) are
+       flagged ⚠ and <b>won't import</b> on merge — set those in the bin directly. Tip: to land
+       data Avid would otherwise ignore, create a custom column in the bin (e.g. <code>Package</code>)
+       and map to that.</p>
+    <div id="mappings"></div>
+    <button class="btn sm" id="add-map">+ add mapping</button>
+  </section>
+
+  <!-- MATCH TABLE -->
+  <section class="panel">
+    <h3>Match review <span class="sub">one row per ALE clip — confirm before export</span></h3>
+    <div class="tablewrap">
+      <table id="match-table">
+        <thead><tr>
+          <th>#</th><th>ALE clip (Name)</th><th>Start TC</th><th>Matched vendor row</th>
+          <th>Conf.</th><th id="prevhead">Will write</th>
+        </tr></thead>
+        <tbody id="match-body"></tbody>
+      </table>
+    </div>
+    <div id="unused" class="unused"></div>
+  </section>
+
+  <!-- EXPORT -->
+  <div class="exportbar">
+    <label class="chk ack" id="ack-wrap" hidden>
+      <input type="checkbox" id="ack"> I've reviewed the amber / unmatched rows
+    </label>
+    <div class="export-msg" id="export-msg"></div>
+    <button class="btn primary" id="export" disabled>Export merged ALE</button>
+  </div>
+  <div class="reimport">
+    <b>Re-import into Avid:</b> select the clips in the bin → Input ▸ Import → Shot Log →
+    enable <i>“Merge events with known master clips.”</i> The columns populate because the keys never changed.
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script src="ale.js"></script>
+<script src="csv.js"></script>
+<script src="match.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
