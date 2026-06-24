@@ -12,6 +12,7 @@ import rateLimit from "express-rate-limit";
 import { initDb, insertMessage, getMessages, cacheTranslation, getCounts, saveSubscription, getFullMessages, clearTranslations } from "./db.js";
 import { translate, usingMock } from "./translate.js";
 import { notifyRoom, usingPush, vapidPublicKey } from "./push.js";
+import { writeReview, usingMock as reviewMock } from "./review.js";
 
 const PORT = process.env.PORT || 8790;
 const MAX_LEN = 2000;          // cap message length
@@ -41,6 +42,35 @@ app.get("/api/health", (_req, res) => res.json({ ok: true, mock: usingMock }));
 app.get("/api/config", (_req, res) => res.json({ push: usingPush, vapidPublicKey }));
 
 const postLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false });
+
+/* ---- Restaurant Review Builder (Research #08) ---- */
+// One LLM call per finished review. IP-rate-limited so a public page can't run up
+// the API bill; input length capped. The star rating is computed CLIENT-SIDE.
+const REVIEW_PER_HOUR = Number(process.env.REVIEW_PER_HOUR || 12);
+const reviewLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, max: REVIEW_PER_HOUR, standardHeaders: true, legacyHeaders: false,
+  message: { error: "limit", reviewText: "", note: `You've reached the review limit for now (${REVIEW_PER_HOUR}/hour). Please try again later.` },
+});
+
+function sizeOfAnswers(a) {
+  try { return JSON.stringify(a || {}).length; } catch (_) { return Infinity; }
+}
+
+app.get("/api/review/health", (_req, res) => res.json({ ok: true, mock: reviewMock }));
+
+app.post("/api/review", reviewLimiter, async (req, res) => {
+  try {
+    const { answers, stance, length } = req.body || {};
+    if (!answers || typeof answers !== "object") return res.status(400).json({ error: "missing answers" });
+    if (sizeOfAnswers(answers) > 6000) return res.status(413).json({ error: "too long", note: "That's a lot of detail — please trim your notes a little." });
+    const reviewText = await writeReview({
+      answers,
+      stance: String(stance || "balanced").slice(0, 12),
+      length: length === "short" ? "short" : "full",
+    });
+    res.json({ reviewText, mock: reviewMock });
+  } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
+});
 
 app.post("/api/message", postLimiter, async (req, res) => {
   try {
