@@ -139,7 +139,7 @@
     if (showNav) {
       $("#bar").style.width = Math.round((step) / (STEPS.length - 1) * 100) + "%";
       $("#stepcount").textContent = (id === "result") ? "Done" : `${step} / ${STEPS.length - 2}`;
-      $("#back").disabled = step <= 1;
+      $("#back").disabled = step <= 0;   // Back from the first step returns to the welcome screen
       $("#next").hidden = (id === "result");
       $("#next").textContent = id === "verdict" ? "See my rating ›" : "Next ›";
     }
