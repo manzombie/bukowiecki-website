@@ -27,6 +27,8 @@ WRITE A REVIEW THAT:
 - WEAVES IN the customer's specific details verbatim where natural (e.g. "the beer came in a warm glass", "the mayonnaise never arrived"). Specifics are what make it real, never generic. Do not invent details they did not give.
 - Matches the chosen STANCE. ${STANCE_NOTE[stance] || STANCE_NOTE.balanced}
 - Sounds like a real person. No marketing fluff, no cliches ("hidden gem", "culinary journey", "to die for"), no star rating in the text.
+- Write in BRITISH ENGLISH: British spelling (flavour, colour, neighbourhood, theatre, realise, apologise) and idiom.
+- For any price, use POUNDS STERLING with the £ symbol (e.g. "£45 a head", "around £150 for two"). Never write "dollars" or use "$" unless the customer's notes clearly state another currency.
 - ${lengthNote}
 
 ABSOLUTE PUNCTUATION RULE: do NOT use em-dashes or en-dashes anywhere. No "—", no "–". Use commas, periods, colons, or parentheses instead. (Ordinary hyphens inside words like "well-cooked" are fine.)
