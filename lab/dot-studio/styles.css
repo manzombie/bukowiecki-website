@@ -1,0 +1,76 @@
+/* Dot Studio — editorial cream UI; the artwork canvas shows transparency. */
+:root{
+  --bg:#f4f1ea; --panel:#fbfaf6; --panel2:#ece8df; --line:#d8d3c7; --line2:#c8c2b4;
+  --ink:#16130f; --dim:#5a564e; --accent:#c0392b;
+  --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --radius:3px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+b{font-weight:600}
+code{font-family:var(--mono)}
+
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 22px;border-bottom:1px solid var(--line);background:var(--panel)}
+.masthead .logo{font-family:var(--mono);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.masthead .logo:hover{color:var(--accent)}
+.logo-mark{width:24px;height:24px}
+.logo-mark .bk{fill:none;stroke:var(--ink);stroke-width:5;stroke-linecap:square}
+.logo-mark .dot circle{fill:var(--ink)}
+.logo-mark .hot{fill:var(--accent)}
+.masthead .crumb{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.masthead .crumb b{color:var(--accent)}
+
+.bench{max-width:1280px;margin:0 auto;padding:20px 22px 70px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+h1{font-size:28px;margin:0 0 8px;letter-spacing:-0.02em}
+.lede{color:var(--dim);font-size:14.5px;max-width:70ch;margin:0 0 20px;line-height:1.6}
+
+.cols{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+.panel{flex:0 0 330px;min-width:300px}
+.stage{flex:1 1 460px;min-width:320px;position:sticky;top:14px}
+@media (max-width:880px){ .stage{position:static} }
+
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.mode{padding:10px;border:1.5px solid var(--line2);border-radius:var(--radius);background:var(--panel);cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink)}
+.mode:hover{border-color:var(--accent)}
+.mode.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.ctl{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:13px}
+.ctl output{float:right;font-family:var(--mono);font-weight:400;color:var(--ink)}
+.ctl input[type=range]{width:100%}
+.ctl input[type=text],.ctl input[type=number],.ctl select{font:14px var(--sans);padding:8px 10px;border:1.5px solid var(--line2);border-radius:var(--radius);background:var(--bg);color:var(--ink);width:100%}
+.ctl input[type=color]{width:100%;height:38px;border:1.5px solid var(--line2);border-radius:var(--radius);background:var(--bg);padding:3px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.row{display:flex;gap:10px}
+.half{flex:1}
+.grow{flex:1}
+.seedrow{display:flex;gap:10px;align-items:flex-end}
+.seedrow .btn{margin-bottom:13px;white-space:nowrap}
+
+.btn{font:600 13px var(--sans);padding:9px 13px;border:1.5px solid var(--line2);border-radius:var(--radius);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.exports{margin-top:6px;border-top:1px solid var(--line);padding-top:14px}
+.explabel{font-size:12px;font-weight:600;color:var(--dim);display:block;margin-bottom:8px}
+.hint{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:8px;min-height:1.2em}
+
+/* the artwork stage: a transparency checkerboard so transparent export is obvious */
+.checker{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  background-color:#fff;
+  background-image:linear-gradient(45deg,#dcd6ca 25%,transparent 25%),linear-gradient(-45deg,#dcd6ca 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#dcd6ca 75%),linear-gradient(-45deg,transparent 75%,#dcd6ca 75%);
+  background-size:22px 22px;background-position:0 0,0 11px,11px -11px,-11px 0}
+#cv{display:block;width:100%;height:auto}
+.stagenote{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin:10px 2px 0}
+
+.about{margin-top:40px;border-top:1px solid var(--line);padding-top:22px;max-width:880px}
+.about h2{font-size:18px;margin:0 0 8px;letter-spacing:-0.01em}
+.about > p{color:var(--dim);font-size:14px;line-height:1.65;max-width:72ch;margin:0 0 18px}
+.abgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 28px}
+.abgrid h3{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin:0 0 5px}
+.abgrid p{color:var(--dim);font-size:13px;line-height:1.6;margin:0}
+.abgrid b{color:var(--ink)}
+@media (max-width:680px){ .abgrid{grid-template-columns:1fr} }
+
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:var(--radius);font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:50}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}

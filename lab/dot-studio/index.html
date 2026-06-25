@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dot Studio — Research Studio</title>
+<meta name="description" content="Research #09 — a generative halftone dot-field studio: phyllotaxis, flow, radial and wave patterns from a seed, exported as transparent PNG and SVG.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2235%22 cy=%2235%22 r=%2214%22 fill=%22%2316130f%22/><circle cx=%2268%22 cy=%2238%22 r=%229%22 fill=%22%2316130f%22/><circle cx=%2240%22 cy=%2268%22 r=%2210%22 fill=%22%2316130f%22/><circle cx=%2270%22 cy=%2470%22 r=%226%22 fill=%22%23c0392b%22/></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="masthead">
+  <a class="logo" href="https://lab.bukowiecki.co/" aria-label="Research Studio — home">
+    <svg class="logo-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <path class="bk" d="M27 18 L14 18 L14 82 L27 82" /><path class="bk" d="M73 18 L86 18 L86 82 L73 82" />
+      <g class="dot"><circle cx="32" cy="34" r="5.5"/><circle cx="50" cy="34" r="5.5"/><circle cx="68" cy="34" r="5.5"/><circle cx="32" cy="52" r="5.5"/><circle cx="68" cy="52" r="5.5"/><circle cx="32" cy="70" r="5.5"/><circle cx="50" cy="70" r="5.5"/><circle cx="68" cy="70" r="5.5"/></g>
+      <circle class="hot" cx="50" cy="52" r="6.5" />
+    </svg>
+    <span>Research Studio</span>
+  </a>
+  <div class="crumb">Research <b>#09</b> — Dot Studio</div>
+</div>
+
+<main class="bench">
+  <div class="kicker">Research #09 · built in public</div>
+  <h1>Dot Studio</h1>
+  <p class="lede">Generative halftone dot fields, driven by a seed. Tune the maths, then export
+     as a <b>transparent PNG</b> or <b>SVG</b> to drop straight into Canva. The artwork is dots on
+     pure transparency, nothing baked behind.</p>
+
+  <div class="cols">
+    <!-- CONTROLS -->
+    <div class="panel">
+      <div class="modes" id="modes"></div>
+
+      <label class="ctl">Density <output id="o-density"></output>
+        <input type="range" id="density" min="0.3" max="3" step="0.05"></label>
+      <div class="two">
+        <label class="ctl">Dot min <output id="o-sizeMin"></output>
+          <input type="range" id="sizeMin" min="0" max="14" step="0.5"></label>
+        <label class="ctl">Dot max <output id="o-sizeMax"></output>
+          <input type="range" id="sizeMax" min="2" max="40" step="0.5"></label>
+      </div>
+      <label class="ctl">Contrast / falloff <output id="o-contrast"></output>
+        <input type="range" id="contrast" min="0.3" max="4" step="0.05"></label>
+      <label class="ctl">Spread <output id="o-spread"></output>
+        <input type="range" id="spread" min="0.3" max="1.1" step="0.01"></label>
+      <label class="ctl">Edge fade <span class="opt">(float the shape off the frame)</span> <output id="o-fade"></output>
+        <input type="range" id="fade" min="0" max="0.9" step="0.01"></label>
+      <div class="two">
+        <label class="ctl"><span id="l-p1">Param 1</span> <output id="o-p1"></output>
+          <input type="range" id="p1" min="0" max="1" step="0.01"></label>
+        <label class="ctl"><span id="l-p2">Param 2</span> <output id="o-p2"></output>
+          <input type="range" id="p2" min="0" max="1" step="0.01"></label>
+      </div>
+      <label class="ctl">Jitter <output id="o-jitter"></output>
+        <input type="range" id="jitter" min="0" max="10" step="0.5"></label>
+
+      <div class="row">
+        <label class="ctl half">Dot colour
+          <input type="color" id="color" value="#16130f"></label>
+        <label class="ctl half">Shape
+          <select id="shape"><option value="circle">Circle</option><option value="square">Square</option><option value="diamond">Diamond</option></select></label>
+      </div>
+
+      <label class="ctl">Canvas size
+        <select id="aspect">
+          <option value="1080x1080">Square 1080×1080</option>
+          <option value="1920x1080">16:9 1920×1080</option>
+          <option value="1080x1350">Portrait 1080×1350</option>
+          <option value="custom">Custom…</option>
+        </select></label>
+      <div class="two" id="customwh" hidden>
+        <label class="ctl">Width <input type="number" id="cw" value="1080" min="64" max="6000"></label>
+        <label class="ctl">Height <input type="number" id="ch" value="1080" min="64" max="6000"></label>
+      </div>
+
+      <div class="seedrow">
+        <label class="ctl grow">Seed <input type="text" id="seed" autocomplete="off"></label>
+        <button class="btn" id="reroll" title="New random seed">🎲 Re-roll</button>
+      </div>
+
+      <div class="exports">
+        <span class="explabel">Export PNG (transparent):</span>
+        <div class="row">
+          <button class="btn" data-png="1">1×</button>
+          <button class="btn" data-png="2">2×</button>
+          <button class="btn" data-png="4">4×</button>
+          <button class="btn" id="svg">SVG</button>
+        </div>
+        <span class="hint" id="exphint"></span>
+      </div>
+    </div>
+
+    <!-- PREVIEW (transparency checkerboard behind) -->
+    <div class="stage">
+      <div class="checker"><canvas id="cv"></canvas></div>
+      <p class="stagenote" id="stagenote"></p>
+    </div>
+  </div>
+
+  <section class="about">
+    <h2>What this is</h2>
+    <p>Dot Studio generates the dotted, halftone artwork used across this 10-day sprint, the
+       kind where dots of varying size form a shape on their own. Pick a pattern, tune the maths
+       with the sliders, and the preview updates live on a transparency checkerboard so you see
+       exactly what exports.</p>
+    <div class="abgrid">
+      <div><h3>Four patterns</h3><p><b>Phyllotaxis spiral</b> (golden-angle sunflower with a
+        centre void), <b>Flow field</b> (a grid bent along flowing curves), <b>Radial burst</b>
+        (rings from the centre), and <b>Wave field</b> (a sine interference grid). The
+        <b>Edge fade</b> control floats the shape so it never touches the frame.</p></div>
+      <div><h3>Transparent export</h3><p>Export a <b>PNG</b> at 1×/2×/4× or an <b>SVG</b> (vector),
+        both on real transparency, no background baked in, ready to drop onto any colour in Canva.</p></div>
+      <div><h3>Seeded &amp; reproducible</h3><p>Every image is built from a <b>seed</b>: the same
+        seed plus the same settings always makes the identical image. Re-roll for a new one, or
+        type your own. The seed is in the filename so any look is traceable.</p></div>
+      <div><h3>Private</h3><p>100% in your browser. No upload, no server, no tracking. Nothing
+        you make leaves your machine.</p></div>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
