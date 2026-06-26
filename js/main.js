@@ -9,6 +9,7 @@
    ----------------------------------------------------------------- */
 const FRAMESHIFT_URL = "https://frameshift.run/";   // FRAME/SHIFT CTA target
 const VFXTOOLS_URL   = "/vfxtools/index.html";       // existing page in repo â€” link only
+const LAB_URL        = "https://lab.bukowiecki.co/"; // Studio Cipher lab CTA target
 /* ----------------------------------------------------------------- */
 
 (function () {
@@ -26,6 +27,9 @@ const VFXTOOLS_URL   = "/vfxtools/index.html";       // existing page in repo â€
   });
   document.querySelectorAll('[data-link="vfxtools"]').forEach((a) => {
     a.setAttribute("href", VFXTOOLS_URL);
+  });
+  document.querySelectorAll('[data-link="lab"]').forEach((a) => {
+    a.setAttribute("href", LAB_URL);
   });
 
   /* ---------------------------------------------------------------
