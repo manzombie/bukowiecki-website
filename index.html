@@ -56,6 +56,7 @@
       <a href="#work" data-nav="work">Work<span class="nav__dot" aria-hidden="true"></span></a>
       <a href="#frameshift" data-nav="frameshift">FRAME/SHIFT<span class="nav__dot" aria-hidden="true"></span></a>
       <a href="#vfx-tools" data-nav="vfx-tools">VFX Tools<span class="nav__dot" aria-hidden="true"></span></a>
+      <a href="#lab" data-nav="lab">Lab<span class="nav__dot" aria-hidden="true"></span></a>
       <a href="#now" data-nav="now">Now<span class="nav__dot" aria-hidden="true"></span></a>
       <a href="#contact" data-nav="contact">Contact<span class="nav__dot" aria-hidden="true"></span></a>
     </nav>
@@ -289,7 +290,20 @@
   <section class="section product" id="lab">
     <div class="product__inner reveal">
       <div class="product__object">
-        <div class="product__placeholder mono" aria-hidden="true">LAB</div>
+        <svg class="lab-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Research Studio — the Lab">
+          <path class="bk" d="M27 18 L14 18 L14 82 L27 82" />
+          <path class="bk" d="M73 18 L86 18 L86 82 L73 82" />
+          <g class="link">
+            <line x1="32" y1="34" x2="68" y2="34" /><line x1="32" y1="52" x2="68" y2="52" /><line x1="32" y1="70" x2="68" y2="70" />
+            <line x1="32" y1="34" x2="32" y2="70" /><line x1="50" y1="34" x2="50" y2="70" /><line x1="68" y1="34" x2="68" y2="70" />
+          </g>
+          <g class="dot">
+            <circle cx="32" cy="34" r="5.5" /><circle cx="50" cy="34" r="5.5" /><circle cx="68" cy="34" r="5.5" />
+            <circle cx="32" cy="52" r="5.5" /><circle cx="68" cy="52" r="5.5" />
+            <circle cx="32" cy="70" r="5.5" /><circle cx="50" cy="70" r="5.5" /><circle cx="68" cy="70" r="5.5" />
+          </g>
+          <circle class="hot" cx="50" cy="52" r="6.5" />
+        </svg>
       </div>
       <div class="product__copy">
         <h2 class="section__title">The Lab.</h2>
@@ -298,8 +312,8 @@
           practical experiments. Halftone studios, EDL checkers, even an AI
           darts coach. Built fast, shipped daily, kept live.
         </p>
-        <!-- href injected from LAB_URL constant at runtime -->
-        <a class="btn btn--accent mono" data-link="lab" target="_blank" rel="noopener">
+        <!-- hardcoded href (JS LAB_URL also repoints data-link="lab") -->
+        <a class="btn btn--accent mono" href="https://lab.bukowiecki.co/" data-link="lab" target="_blank" rel="noopener">
           &rarr; Enter the Lab &nearr;
         </a>
       </div>
