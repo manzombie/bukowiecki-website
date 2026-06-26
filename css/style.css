@@ -234,8 +234,8 @@ a { color: inherit; text-decoration: none; }
    (hero-style depth — text is allowed to cross the object). */
 .film {
   position: relative;
-  min-height: min(86vh, 760px);
-  margin: clamp(2rem, 8vh, 6rem) 0;
+  min-height: min(58vh, 500px);
+  margin: clamp(0.5rem, 3vh, 2rem) 0;
 }
 .film__viewer {
   position: absolute;
@@ -517,7 +517,7 @@ a { color: inherit; text-decoration: none; }
   .caps { grid-template-columns: 1fr; }
 
   /* Film nodes: shorter, caption full-width overlay with stronger scrim */
-  .film { min-height: 70vh; }
+  .film { min-height: 52vh; }
   .film__caption,
   .film--left .film__caption,
   .film--right .film__caption {
