@@ -1604,6 +1604,13 @@ function filterByCategory(cat) {
 // ===== SORTING =====
 let currentSort = 'date';
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 function formatDate(isoStr) {
   if (!isoStr) return '';
   const d = new Date(isoStr);
@@ -1651,7 +1658,7 @@ function renderLibrary() {
     const canManage = isOwner || isCustom;
     const dateStr = a.dateAdded ? formatDate(a.dateAdded) : '';
     const tagsHtml = a.categories && a.categories.length
-      ? `<div class="card-tags">${a.categories.map(c => `<span class="card-tag">${c}</span>`).join('')}</div>`
+      ? `<div class="card-tags">${a.categories.map(c => `<span class="card-tag">${escapeHtml(c)}</span>`).join('')}</div>`
       : '';
     card.innerHTML = `
       ${canManage ? `<div class="card-actions">
@@ -1659,9 +1666,9 @@ function renderLibrary() {
         <button class="card-action-btn delete" title="Delete" onclick="event.stopPropagation(); confirmDelete(${i})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
       </div>` : ''}
       ${dateStr ? `<div class="card-date">${dateStr}</div>` : ''}
-      <h3>${a.title}</h3>
-      <div class="author">${a.author}</div>
-      <div class="desc">${a.desc}</div>
+      <h3>${escapeHtml(a.title)}</h3>
+      <div class="author">${escapeHtml(a.author)}</div>
+      <div class="desc">${escapeHtml(a.desc)}</div>
       ${tagsHtml}
       ${hasBm ? '<div style="margin-top:10px;display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--pill-active);padding:3px 10px;border-radius:12px;">Continue reading</div>' : ''}`;
     card.onclick = () => showArticle(i);
@@ -2349,7 +2356,7 @@ function restoreBookmark(articleId) {
 </script>
 
 <!-- Lenis smooth scroll -->
-<script src="https://unpkg.com/lenis@1.1.17/dist/lenis.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.17/dist/lenis.min.js" integrity="sha384-NYZ2SnbloixIy+HVnKfw9LkSVfK3CJu9T25+GFGNZDumc5nlqwUlLeofdWXjTsEJ" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 function onScrollUpdate() {
   // Progress bar

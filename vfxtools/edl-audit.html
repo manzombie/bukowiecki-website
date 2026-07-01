@@ -1318,7 +1318,7 @@
                     <td class="delta ${change.net_delta !== 0 ? 'changed' : ''}">${formatDelta(change.net_delta, 'net')}</td>
                     <td class="tc">${change.old.rec_in}<br>${change.old.rec_out}</td>
                     <td class="tc">${change.new.rec_in}<br>${change.new.rec_out}</td>
-                    <td class="${change.reel_changed ? 'reel-changed' : ''}">${change.reel_changed ? `${change.old.reel} → ${change.new.reel}` : change.new.reel}</td>
+                    <td class="${change.reel_changed ? 'reel-changed' : ''}">${change.reel_changed ? `${escapeHtml(change.old.reel)} → ${escapeHtml(change.new.reel)}` : escapeHtml(change.new.reel)}</td>
                     <td class="confidence conf-${change.confidence.toLowerCase()}">${change.confidence}</td>
                 `;
                 changesTbody.appendChild(row);
@@ -1336,7 +1336,7 @@
                     <td class="tc">${shot.src_in}<br>${shot.src_out}</td>
                     <td class="num">${shot.duration}f</td>
                     <td class="tc">${shot.rec_in}<br>${shot.rec_out}</td>
-                    <td>${shot.reel}</td>
+                    <td>${escapeHtml(shot.reel)}</td>
                 `;
                 omitTbody.appendChild(row);
             }
@@ -1353,7 +1353,7 @@
                     <td class="tc">${shot.src_in}<br>${shot.src_out}</td>
                     <td class="num">${shot.duration}f</td>
                     <td class="tc">${shot.rec_in}<br>${shot.rec_out}</td>
-                    <td>${shot.reel}</td>
+                    <td>${escapeHtml(shot.reel)}</td>
                 `;
                 newTbody.appendChild(row);
             }

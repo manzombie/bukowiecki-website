@@ -406,6 +406,14 @@
             reader.readAsText(file);
         }
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;');
+        }
+
         function buildColumnPicker(columns, rows) {
             columnCheckboxes.innerHTML = '';
             // Sample first valid row for preview
@@ -418,9 +426,9 @@
                 // Pre-select Vendor1 and Vendor2 if present
                 const preselect = (col === 'Vendor1' || col === 'Vendor2');
                 div.innerHTML = `
-                    <input type="checkbox" id="${id}" value="${col}" ${preselect ? 'checked' : ''}>
-                    <label for="${id}">${col}</label>
-                    <span class="col-sample">e.g. "${sample[col] || '(empty)'}"</span>
+                    <input type="checkbox" id="${id}" value="${escapeHtml(col)}" ${preselect ? 'checked' : ''}>
+                    <label for="${id}">${escapeHtml(col)}</label>
+                    <span class="col-sample">e.g. "${escapeHtml(sample[col] || '(empty)')}"</span>
                 `;
                 if (preselect) div.classList.add('selected');
                 const cb = div.querySelector('input');

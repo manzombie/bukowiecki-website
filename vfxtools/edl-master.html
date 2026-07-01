@@ -555,7 +555,7 @@
         </div>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         // Global variables
         let currentShotsData = [];
@@ -886,18 +886,18 @@
                 const colorClass = getColorClass(shot, i);
                 
                 row.innerHTML = `
-                    <td>${shot.eventNum}</td>
-                    <td>${shot.timecode}</td>
+                    <td>${escapeHtml(shot.eventNum)}</td>
+                    <td>${escapeHtml(shot.timecode)}</td>
                     <td class="${colorClass}">
-                        <input type="text" class="edl-editable" value="${shot.seqNumber}" 
+                        <input type="text" class="edl-editable" value="${escapeHtml(shot.seqNumber)}"
                                data-field="seqNumber" data-index="${i}" maxlength="10">
                     </td>
                     <td class="${colorClass}">
-                        <input type="text" class="edl-editable" value="${shot.seqCode}" 
+                        <input type="text" class="edl-editable" value="${escapeHtml(shot.seqCode)}"
                                data-field="seqCode" data-index="${i}" maxlength="3">
                     </td>
-                    <td class="${colorClass}"><input type="number" class="edl-editable" value="${shot.startNumber}" data-field="startNumber" data-index="${i}" min="1"></td>
-                    <td>${shot.seqNumber}_${shot.seqCode}_${shot.startNumber}</td>
+                    <td class="${colorClass}"><input type="number" class="edl-editable" value="${escapeHtml(shot.startNumber)}" data-field="startNumber" data-index="${i}" min="1"></td>
+                    <td>${escapeHtml(shot.seqNumber)}_${escapeHtml(shot.seqCode)}_${escapeHtml(shot.startNumber)}</td>
                 `;
                 shotTableBody.appendChild(row);
             }
@@ -1127,12 +1127,19 @@
                 statusMessage.classList.remove('show');
             }, 5000);
         }
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;');
+        }
         function updateFileDisplay(filename) {
             const fileLabel = document.getElementById("edlFileLabel");
             fileLabel.innerHTML = `
                 <div style="font-size: 1.2rem; margin-bottom: 10px; color: var(--success-color);">✅</div>
                 <div style="font-size: 1.1rem; margin-bottom: 10px; font-weight: 600;">File Uploaded Successfully</div>
-                <div style="font-size: 0.9rem; color: var(--text-dark); word-break: break-all;">${filename}</div>
+                <div style="font-size: 0.9rem; color: var(--text-dark); word-break: break-all;">${escapeHtml(filename)}</div>
                 <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 10px;">Click to upload a different file</div>
             `;
         }
