@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beauty Work SubCaps - VFX Tools</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="stylesheet" href="beauty-subcaps/beauty-subcaps.css?v=4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="https://bukowiecki.co/" class="logo-link">
+                        <span class="logo-text">LUKASZ BUKOWIECKI</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">← Back to VFX Tools</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="tool-header beauty-hero">
+        <div class="container">
+            <h1>Beauty Work SubCaps</h1>
+            <p>Match beauty-work call-outs to episode shots and create configurable Avid SubCaps.</p>
+        </div>
+    </div>
+
+    <main class="main">
+        <div class="container">
+            <div class="back-nav">
+                <a href="index.html" class="back-link">← Back to VFX Tools</a>
+            </div>
+
+            <section class="beauty-layout">
+                <aside class="beauty-panel">
+                    <h2>Source Files</h2>
+                    <p>Load the beauty shot list and the full episode VFX ID SubCaps.</p>
+
+                    <div class="upload-stack">
+                        <label class="beauty-dropzone" id="csvDropzone">
+                            <input type="file" id="csvInput" accept=".csv">
+                            <div>
+                                <div class="upload-heading">
+                                    <span>Beauty work CSV</span>
+                                    <span class="upload-number">1</span>
+                                </div>
+                                <p class="upload-help">VFX Shot Name plus VFX Elements/Tasks.</p>
+                            </div>
+                            <div class="file-meta" id="csvMeta">No file loaded</div>
+                        </label>
+
+                        <label class="beauty-dropzone" id="subcapDropzone">
+                            <input type="file" id="subcapInput" accept=".txt">
+                            <div>
+                                <div class="upload-heading">
+                                    <span>Episode VFX SubCaps</span>
+                                    <span class="upload-number">2</span>
+                                </div>
+                                <p class="upload-help">Full shot list with episode timecodes.</p>
+                            </div>
+                            <div class="file-meta" id="subcapMeta">No file loaded</div>
+                        </label>
+                    </div>
+
+                    <div class="analyze-actions">
+                        <button type="button" class="btn" id="analyzeButton" disabled>Analyze Beauty Work</button>
+                    </div>
+                    <div id="status" class="status-message"></div>
+
+                    <div id="controls" hidden>
+                        <div class="control-section">
+                            <h3>Character Recognition</h3>
+                            <p class="control-help">Suggested from repeated proper names and beauty-work context. Review before export.</p>
+                            <p class="control-help">The number beside each character is the number of unique shots, not repeated mentions inside call-outs.</p>
+                            <p class="control-help">Colour is applied per character track in Avid. The ZIP includes one SubCap file per character and a colour key.</p>
+                            <div class="control-toolbar">
+                                <button type="button" class="small-command" id="selectAll">Select all</button>
+                                <button type="button" class="small-command" id="selectNone">Select none</button>
+                            </div>
+                            <div class="character-list" id="characterList"></div>
+                            <div class="custom-character">
+                                <input type="text" id="customCharacter" placeholder="Add character name">
+                                <button type="button" class="small-command" id="addCharacter">Add</button>
+                            </div>
+                        </div>
+
+                        <div class="control-section">
+                            <h3>Subtitle Text</h3>
+                            <div class="output-options">
+                                <label class="output-option">
+                                    <input type="checkbox" id="includeVendor">
+                                    <span>Include vendor</span>
+                                </label>
+                                <label class="output-option">
+                                    <input type="checkbox" id="includeCharacters" checked>
+                                    <span>Include detected character</span>
+                                </label>
+                                <label class="output-option">
+                                    <input type="checkbox" id="includeWork">
+                                    <span>Include full work call-out</span>
+                                </label>
+                                <label class="output-option">
+                                    <input type="checkbox" id="includeUnassigned" checked>
+                                    <span>Mark shots without a selected character</span>
+                                </label>
+                            </div>
+                            <p class="control-help">After your selected words are matched, every remaining beauty-list shot receives the fallback marker.</p>
+                            <div class="unassigned-config">
+                                <label>
+                                    Fallback marker
+                                    <input type="text" id="unassignedMarker" value="X" maxlength="4">
+                                </label>
+                                <label>
+                                    Fallback colour
+                                    <input type="color" id="unassignedColor" value="#7a7a7a">
+                                </label>
+                            </div>
+                            <label class="separator-label">
+                                Character display
+                                <select id="characterDisplay" class="separator-select">
+                                    <option value="name" selected>Character name</option>
+                                    <option value="symbol">Selected symbol</option>
+                                </select>
+                            </label>
+                            <label class="separator-label">
+                                Separator
+                                <select id="separator" class="separator-select">
+                                    <option value="pipe" selected>Pipe: |</option>
+                                    <option value="dash">Dash: -</option>
+                                    <option value="line">New line</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                </aside>
+
+                <section class="beauty-panel">
+                    <div id="emptyState" class="empty-state">
+                        <div>
+                            <strong>No beauty SubCaps yet</strong>
+                            <p>Load both files to review character suggestions and subtitle text.</p>
+                        </div>
+                    </div>
+
+                    <div id="results" hidden>
+                        <div class="download-actions">
+                            <button type="button" class="btn" id="downloadSubcaps" disabled>Download SubCaps</button>
+                            <button type="button" class="btn" id="downloadZip" disabled>Download Character ZIP</button>
+                            <button type="button" class="btn btn-secondary" id="downloadCsv" disabled>Download Audit CSV</button>
+                        </div>
+
+                        <h2>Beauty Work Preview</h2>
+                        <p id="previewCount" class="preview-count"></p>
+
+                        <div class="stat-grid">
+                            <div class="stat">
+                                <strong id="sourceRows">0</strong>
+                                <span>beauty rows</span>
+                            </div>
+                            <div class="stat">
+                                <strong id="matchedRows">0</strong>
+                                <span>matched shots</span>
+                            </div>
+                            <div class="stat">
+                                <strong id="detectedCharacters">0</strong>
+                                <span>selected names</span>
+                            </div>
+                            <div class="stat">
+                                <strong id="generatedEntries">0</strong>
+                                <span>SubCap entries</span>
+                            </div>
+                            <div class="stat">
+                                <strong id="skippedEntries">0</strong>
+                                <span>rows skipped</span>
+                            </div>
+                        </div>
+
+                        <div class="beauty-table-wrap">
+                            <table class="beauty-table">
+                                <thead>
+                                    <tr>
+                                        <th>TC In</th>
+                                        <th>SHOT_ID</th>
+                                        <th>Vendor</th>
+                                        <th>Characters</th>
+                                        <th>SubCap Text</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="previewBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2026 Lukasz Bukowiecki. All rights reserved.</p>
+                <p>Part of <a href="https://bukowiecki.co/" class="footer-link">bukowiecki.co</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.documentElement.setAttribute('data-mood', localStorage.getItem('vfxtools_mood') || 'deep-focus');
+    </script>
+    <script type="module" src="beauty-subcaps/app.js?v=5"></script>
+</body>
+</html>

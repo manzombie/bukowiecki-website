@@ -1,0 +1,252 @@
+.pipeline-hero {
+    background:
+        linear-gradient(180deg, rgba(255, 107, 53, 0.09), transparent),
+        var(--background-light);
+}
+
+.pipeline-layout {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.pipeline-panel {
+    min-width: 0;
+    background: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: var(--shadow-light);
+}
+
+.pipeline-panel h2,
+.pipeline-panel h3 {
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.pipeline-panel p,
+.upload-help,
+.file-meta,
+.preview-count {
+    color: var(--text-light);
+}
+
+.upload-stack {
+    display: grid;
+    gap: 13px;
+    margin-top: 20px;
+}
+
+.pipeline-dropzone {
+    position: relative;
+    min-height: 142px;
+    padding: 18px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    background: var(--background-light);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.pipeline-dropzone:hover,
+.pipeline-dropzone.dragover {
+    border-color: var(--accent-color);
+}
+
+.pipeline-dropzone input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.upload-number {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--accent-color);
+    border-radius: 50%;
+    color: var(--accent-color);
+    font-size: 0.82rem;
+}
+
+.upload-help {
+    margin-top: 6px;
+    font-size: 0.88rem;
+}
+
+.file-meta {
+    display: grid;
+    gap: 2px;
+    margin-top: 12px;
+    font-size: 0.85rem;
+}
+
+.file-meta strong {
+    color: var(--success-color);
+    overflow-wrap: anywhere;
+}
+
+.process-actions,
+.download-actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.download-actions {
+    grid-template-columns: repeat(3, 1fr);
+    margin: 0 0 20px;
+}
+
+.download-actions .btn {
+    padding: 12px 14px;
+    font-size: 0.94rem;
+}
+
+.pipeline-rule {
+    margin-top: 18px;
+    padding-top: 17px;
+    border-top: 1px solid var(--border-color);
+}
+
+.pipeline-rule dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 7px 12px;
+    font-size: 0.88rem;
+}
+
+.pipeline-rule dt {
+    color: var(--text-light);
+}
+
+.pipeline-rule dd {
+    color: var(--text-dark);
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.stat {
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--background-light);
+}
+
+.stat strong {
+    display: block;
+    color: var(--primary-color);
+    font-size: 1.65rem;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.stat span {
+    color: var(--text-light);
+    font-size: 0.84rem;
+}
+
+.pipeline-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    max-height: 650px;
+    overflow: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--background-light);
+}
+
+.pipeline-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.pipeline-table th,
+.pipeline-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+    vertical-align: top;
+    white-space: nowrap;
+}
+
+.pipeline-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.pipeline-table td:nth-child(2),
+.pipeline-table td:nth-child(3),
+.pipeline-table td:nth-child(4) {
+    min-width: 280px;
+    max-width: 520px;
+    white-space: normal;
+}
+
+.pipeline-table td:nth-child(3) {
+    color: var(--success-color);
+}
+
+.empty-state {
+    min-height: 500px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+}
+
+.empty-state strong {
+    display: block;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 1040px) {
+    .pipeline-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 720px) {
+    .pipeline-panel {
+        padding: 18px;
+    }
+
+    .pipeline-dropzone,
+    .process-actions .btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .stat-grid,
+    .download-actions {
+        grid-template-columns: 1fr;
+    }
+}

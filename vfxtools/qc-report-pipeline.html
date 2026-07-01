@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QC Report Pipeline - VFX Tools</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="stylesheet" href="qc-report-pipeline/qc-report-pipeline.css?v=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="https://bukowiecki.co/" class="logo-link">
+                        <span class="logo-text">LUKASZ BUKOWIECKI</span>
+                    </a>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">← Back to VFX Tools</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="tool-header pipeline-hero">
+        <div class="container">
+            <h1>QC Report Pipeline</h1>
+            <p>Turn a Pixelogic report, VFX SubCaps, and version EDL into a producer-ready CSV and Avid-ready QC SubCaps.</p>
+        </div>
+    </div>
+
+    <main class="main">
+        <div class="container">
+            <div class="back-nav">
+                <a href="index.html" class="back-link">← Back to VFX Tools</a>
+            </div>
+
+            <section class="pipeline-layout">
+                <aside class="pipeline-panel">
+                    <h2>Source Files</h2>
+                    <p>Load all three files from the same episode and QC delivery.</p>
+
+                    <div class="upload-stack">
+                        <label class="pipeline-dropzone" id="qcDropzone">
+                            <input type="file" id="qcInput" accept=".xlsx,.csv">
+                            <div>
+                                <div class="upload-heading">
+                                    <span>Pixelogic QC report</span>
+                                    <span class="upload-number">1</span>
+                                </div>
+                                <p class="upload-help">Original XLSX preferred; CSV also supported.</p>
+                            </div>
+                            <div class="file-meta" id="qcMeta">No file loaded</div>
+                        </label>
+
+                        <label class="pipeline-dropzone" id="subcapDropzone">
+                            <input type="file" id="subcapInput" accept=".txt">
+                            <div>
+                                <div class="upload-heading">
+                                    <span>VFX ID SubCaps</span>
+                                    <span class="upload-number">2</span>
+                                </div>
+                                <p class="upload-help">Avid SubCap export on the editorial 01-hour timeline.</p>
+                            </div>
+                            <div class="file-meta" id="subcapMeta">No file loaded</div>
+                        </label>
+
+                        <label class="pipeline-dropzone" id="edlDropzone">
+                            <input type="file" id="edlInput" accept=".edl,.txt">
+                            <div>
+                                <div class="upload-heading">
+                                    <span>VFX version EDL</span>
+                                    <span class="upload-number">3</span>
+                                </div>
+                                <p class="upload-help">The graded timeline version Pixelogic reviewed.</p>
+                            </div>
+                            <div class="file-meta" id="edlMeta">No file loaded</div>
+                        </label>
+                    </div>
+
+                    <div class="process-actions">
+                        <button type="button" class="btn" id="processButton" disabled>Build QC Package</button>
+                    </div>
+                    <div id="status" class="status-message"></div>
+
+                    <div class="pipeline-rule">
+                        <h3>Timeline Rules</h3>
+                        <dl>
+                            <dt>Pixelogic</dt>
+                            <dd>00:00:00:00</dd>
+                            <dt>VFX SubCaps</dt>
+                            <dd>01:00:00:00 → converted to 00</dd>
+                            <dt>Rate</dt>
+                            <dd>24 fps, non-drop</dd>
+                            <dt>SubCap text</dt>
+                            <dd>QC Description</dd>
+                        </dl>
+                    </div>
+                </aside>
+
+                <section class="pipeline-panel">
+                    <div id="emptyState" class="empty-state">
+                        <div>
+                            <strong>No QC package yet</strong>
+                            <p>Load the report, VFX SubCaps, and version EDL to produce both deliverables.</p>
+                        </div>
+                    </div>
+
+                    <div id="results" hidden>
+                        <div class="download-actions">
+                            <button type="button" class="btn" id="bothButton" disabled>Download Both</button>
+                            <button type="button" class="btn btn-secondary" id="csvButton" disabled>Download CSV</button>
+                            <button type="button" class="btn btn-secondary" id="subcapButton" disabled>Download SubCaps</button>
+                        </div>
+
+                        <h2>QC Package Summary</h2>
+                        <p id="previewCount" class="preview-count"></p>
+
+                        <div class="stat-grid">
+                            <div class="stat">
+                                <strong id="qcIssues">0</strong>
+                                <span>QC lines</span>
+                            </div>
+                            <div class="stat">
+                                <strong id="matchedIssues">0</strong>
+                                <span>VFX-matched lines</span>
+                            </div>
+                            <div class="stat">
+                                <strong id="affectedShots">0</strong>
+                                <span>affected VFX shots</span>
+                            </div>
+                            <div class="stat">
+                                <strong id="matchedVersions">0</strong>
+                                <span>matched versions</span>
+                            </div>
+                            <div class="stat">
+                                <strong id="subcapEntries">0</strong>
+                                <span>SubCap entries</span>
+                            </div>
+                            <div class="stat">
+                                <strong id="unmatchedIssues">0</strong>
+                                <span>non-VFX QC lines</span>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-table-wrap">
+                            <table class="pipeline-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timecode In</th>
+                                        <th>VFX_ID</th>
+                                        <th>versions</th>
+                                        <th>Description</th>
+                                        <th>Scale</th>
+                                        <th>Sign-off</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="previewBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2026 Lukasz Bukowiecki. All rights reserved.</p>
+                <p>Part of <a href="https://bukowiecki.co/" class="footer-link">bukowiecki.co</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.documentElement.setAttribute('data-mood', localStorage.getItem('vfxtools_mood') || 'deep-focus');
+    </script>
+    <script src="vendor/xlsx.full.min.js?v=1"></script>
+    <script type="module" src="qc-report-pipeline/app.js?v=2"></script>
+</body>
+</html>

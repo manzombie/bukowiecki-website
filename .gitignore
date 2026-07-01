@@ -33,3 +33,6 @@ lab/deeplight/tools/.venv/
 # authoring inputs + debug overlays (not needed live; only level 1 ships)
 lab/deeplight/levels/source/
 lab/deeplight/levels/*.debug.png
+
+# Local backup copies of vfxtools (never commit)
+vfxtools_backup_*/
