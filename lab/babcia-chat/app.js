@@ -46,6 +46,7 @@
       hint_blocked: "Notifications are blocked in your browser settings.",
       hint_unavailable: "Alerts aren’t available on the server yet.",
       hint_fail: "Couldn’t turn on alerts. Try again.",
+      send_failed: "Couldn’t send — check your connection and try again.",
       new_conversation: "＋ New conversation", ph_addlabel: "Their name (e.g. Zosia)", ph_addpass: "Shared passcode",
       cancel: "Cancel", add: "Add", add_need: "Give it a name and a passcode.",
       add_dup: "You already have a chat with that passcode.", passcode: "passcode",
@@ -65,6 +66,7 @@
       hint_blocked: "Powiadomienia są zablokowane w ustawieniach przeglądarki.",
       hint_unavailable: "Powiadomienia nie są jeszcze dostępne na serwerze.",
       hint_fail: "Nie udało się włączyć powiadomień. Spróbuj ponownie.",
+      send_failed: "Nie udało się wysłać — sprawdź połączenie i spróbuj ponownie.",
       new_conversation: "＋ Nowa rozmowa", ph_addlabel: "Ich imię (np. Zosia)", ph_addpass: "Wspólne hasło",
       cancel: "Anuluj", add: "Dodaj", add_need: "Podaj imię i hasło.",
       add_dup: "Masz już rozmowę z tym hasłem.", passcode: "hasło",
@@ -84,6 +86,7 @@
       hint_blocked: "Las notificaciones están bloqueadas en los ajustes del navegador.",
       hint_unavailable: "Los avisos aún no están disponibles en el servidor.",
       hint_fail: "No se pudieron activar los avisos. Inténtalo de nuevo.",
+      send_failed: "No se pudo enviar — comprueba tu conexión e inténtalo de nuevo.",
       new_conversation: "＋ Nueva conversación", ph_addlabel: "Su nombre (p. ej. Zosia)", ph_addpass: "Contraseña compartida",
       cancel: "Cancelar", add: "Añadir", add_need: "Ponle un nombre y una contraseña.",
       add_dup: "Ya tienes un chat con esa contraseña.", passcode: "contraseña",
@@ -103,6 +106,7 @@
       hint_blocked: "Benachrichtigungen sind in den Browser-Einstellungen blockiert.",
       hint_unavailable: "Hinweise sind auf dem Server noch nicht verfügbar.",
       hint_fail: "Hinweise konnten nicht eingeschaltet werden. Bitte erneut versuchen.",
+      send_failed: "Konnte nicht gesendet werden — prüfe deine Verbindung und versuche es erneut.",
       new_conversation: "＋ Neue Unterhaltung", ph_addlabel: "Ihr Name (z. B. Zosia)", ph_addpass: "Gemeinsames Kennwort",
       cancel: "Abbrechen", add: "Hinzufügen", add_need: "Gib einen Namen und ein Kennwort ein.",
       add_dup: "Du hast bereits einen Chat mit diesem Kennwort.", passcode: "Kennwort",
@@ -122,6 +126,7 @@
       hint_blocked: "Les notifications sont bloquées dans les réglages du navigateur.",
       hint_unavailable: "Les alertes ne sont pas encore disponibles sur le serveur.",
       hint_fail: "Impossible d’activer les alertes. Réessayez.",
+      send_failed: "Échec de l’envoi — vérifiez votre connexion et réessayez.",
       new_conversation: "＋ Nouvelle conversation", ph_addlabel: "Son nom (ex. Zosia)", ph_addpass: "Code partagé",
       cancel: "Annuler", add: "Ajouter", add_need: "Donnez un nom et un code.",
       add_dup: "Vous avez déjà une discussion avec ce code.", passcode: "code",
@@ -141,6 +146,7 @@
       hint_blocked: "Сповіщення заблоковані в налаштуваннях браузера.",
       hint_unavailable: "Сповіщення поки недоступні на сервері.",
       hint_fail: "Не вдалося увімкнути сповіщення. Спробуйте ще раз.",
+      send_failed: "Не вдалося надіслати — перевірте з’єднання та спробуйте ще раз.",
       new_conversation: "＋ Нова розмова", ph_addlabel: "Їхнє ім’я (напр. Zosia)", ph_addpass: "Спільний пароль",
       cancel: "Скасувати", add: "Додати", add_need: "Вкажіть ім’я та пароль.",
       add_dup: "У вас уже є чат із цим паролем.", passcode: "пароль",
@@ -160,6 +166,7 @@
       hint_blocked: "Le notifiche sono bloccate nelle impostazioni del browser.",
       hint_unavailable: "Gli avvisi non sono ancora disponibili sul server.",
       hint_fail: "Impossibile attivare gli avvisi. Riprova.",
+      send_failed: "Invio non riuscito — controlla la connessione e riprova.",
       new_conversation: "＋ Nuova conversazione", ph_addlabel: "Il suo nome (es. Zosia)", ph_addpass: "Password condivisa",
       cancel: "Annulla", add: "Aggiungi", add_need: "Dai un nome e una password.",
       add_dup: "Hai già una chat con questa password.", passcode: "password",
@@ -179,6 +186,7 @@
       hint_blocked: "As notificações estão bloqueadas nas definições do navegador.",
       hint_unavailable: "Os alertas ainda não estão disponíveis no servidor.",
       hint_fail: "Não foi possível ativar os alertas. Tente novamente.",
+      send_failed: "Não foi possível enviar — verifique a ligação e tente novamente.",
       new_conversation: "＋ Nova conversa", ph_addlabel: "O nome dele(a) (ex. Zosia)", ph_addpass: "Palavra-passe partilhada",
       cancel: "Cancelar", add: "Adicionar", add_need: "Dê um nome e uma palavra-passe.",
       add_dup: "Já tem uma conversa com essa palavra-passe.", passcode: "palavra-passe",
@@ -198,6 +206,7 @@
       hint_blocked: "Meldingen zijn geblokkeerd in je browserinstellingen.",
       hint_unavailable: "Meldingen zijn nog niet beschikbaar op de server.",
       hint_fail: "Meldingen konden niet worden ingeschakeld. Probeer opnieuw.",
+      send_failed: "Verzenden mislukt — controleer je verbinding en probeer opnieuw.",
       new_conversation: "＋ Nieuw gesprek", ph_addlabel: "Hun naam (bijv. Zosia)", ph_addpass: "Gedeelde toegangscode",
       cancel: "Annuleren", add: "Toevoegen", add_need: "Geef een naam en een toegangscode.",
       add_dup: "Je hebt al een gesprek met die toegangscode.", passcode: "toegangscode",
@@ -217,6 +226,7 @@
       hint_blocked: "Уведомления заблокированы в настройках браузера.",
       hint_unavailable: "Уведомления пока недоступны на сервере.",
       hint_fail: "Не удалось включить уведомления. Попробуйте ещё раз.",
+      send_failed: "Не удалось отправить — проверьте соединение и повторите попытку.",
       new_conversation: "＋ Новый разговор", ph_addlabel: "Их имя (напр. Zosia)", ph_addpass: "Общий пароль",
       cancel: "Отмена", add: "Добавить", add_need: "Укажите имя и пароль.",
       add_dup: "У вас уже есть чат с этим паролем.", passcode: "пароль",
@@ -498,16 +508,20 @@
     if (!active) return;
     const ta = $("#msg-input"); const text = ta.value.trim();
     if (!text) return;
+    const err = $("#send-err"); if (err) { err.hidden = true; err.textContent = ""; }
     $("#send-btn").disabled = true;
     try {
-      await fetch(API + "/api/message", {
+      const res = await fetch(API + "/api/message", {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ room: active.passcode, sender: store.profile.name, sourceLang: store.profile.lang, text }),
       });
-      ta.value = ""; ta.style.height = "auto";
+      if (!res.ok) throw new Error("http " + res.status);   // fetch resolves on 4xx/5xx — must check
+      ta.value = ""; ta.style.height = "auto";               // only clear once it's actually stored
       await refresh();
       $("#messages").scrollTop = $("#messages").scrollHeight;
-    } catch (_) {}
+    } catch (_) {
+      if (err) { err.textContent = t("send_failed"); err.hidden = false; }  // keep the text — nothing lost
+    }
     $("#send-btn").disabled = false; ta.focus();
   }
 

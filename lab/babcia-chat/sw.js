@@ -3,7 +3,7 @@
  * 2) Receives Web Push and shows a notification even when the app is closed.
  * 3) On tap, focuses an open tab (or opens one) at the right conversation. */
 
-const CACHE = "babcia-v2";
+const CACHE = "babcia-v3";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png",

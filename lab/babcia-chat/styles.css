@@ -28,6 +28,7 @@ body {
 [hidden] { display: none !important; }
 button, input, textarea { font-family: inherit; }
 button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.send-err { color: #b3261e; background: #fdecea; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.4; text-align: center; padding: 7px 14px; }
 
 .screen { min-height: 100dvh; display: flex; flex-direction: column; }
 
