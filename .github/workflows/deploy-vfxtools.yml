@@ -1,0 +1,62 @@
+name: Deploy vfxtools to one.com (bukowiecki.co/vfxtools)
+
+# Every push to main that touches vfxtools/ SFTP-uploads the tool files to the
+# server's vfxtools/ folder. delete_remote_files:false so server-only data that
+# is NOT in the repo (bookmark-app/articles.json + config.php, both gitignored)
+# is never deleted. A belt-and-braces rm also strips those from the staged copy
+# in case they ever appear locally.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'vfxtools/**'
+      - '.github/workflows/deploy-vfxtools.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: onecom-vfxtools-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check SFTP secrets are configured
+        id: gate
+        run: |
+          if [ -z "${{ secrets.SFTP_HOST }}" ]; then
+            echo "::warning::SFTP secrets not set — skipping deploy. Add SFTP_HOST / SFTP_USER / SFTP_PASSWORD in Settings → Secrets → Actions."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/checkout@v4
+
+      - name: Stage vfxtools (strip cruft + any local PII)
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          mkdir -p _deploy/vfxtools
+          cp -r vfxtools/. _deploy/vfxtools/
+          find _deploy -name '.DS_Store' -delete
+          # Never ship the bookmark-app's private data or config, even if a
+          # local copy exists (checkout already excludes gitignored files).
+          rm -f  _deploy/vfxtools/bookmark-app/config.php
+          rm -f  _deploy/vfxtools/bookmark-app/articles*.json
+          echo "Staged $(find _deploy/vfxtools -type f | wc -l) files."
+
+      - name: Upload vfxtools to one.com via SFTP
+        if: steps.gate.outputs.ready == 'true'
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.5
+        with:
+          server: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 22
+          local_path: './_deploy/vfxtools/*'
+          remote_path: '/customers/7/2/5/c0a6ymhhe/users/c0a6ymhhe_ssh/webroots/b08cb06d/vfxtools'
+          sftp_only: true
+          delete_remote_files: false

@@ -2,7 +2,8 @@ name: Deploy main site to one.com (bukowiecki.co)
 
 # Pushes the redesign's own files to the one.com web root over SFTP on every
 # push to main. Deliberately does NOT touch lukasz/ (served by GitHub Pages),
-# nor vfxtools/ or frameshift/ on the server (their live copies + PII stay put).
+# frameshift/ on the server, nor vfxtools/ (its own deploy-vfxtools.yml handles
+# that) — their live copies + PII stay put.
 
 on:
   push:
@@ -10,9 +11,11 @@ on:
     paths-ignore:
       - 'lukasz/**'
       - 'lab/**'
+      - 'vfxtools/**'
       - 'babcia-server/**'
       - '.github/workflows/deploy-lukasz.yml'
       - '.github/workflows/deploy-lab.yml'
+      - '.github/workflows/deploy-vfxtools.yml'
       - '**.md'
   workflow_dispatch:
 
