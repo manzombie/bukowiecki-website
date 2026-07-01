@@ -6,7 +6,7 @@
 <title>ALE Merge Bench — Research Studio</title>
 <meta name="description" content="Research #07 — merge a vendor CSV into an Avid-exported bin ALE and produce a re-importable ALE that fills the bin's columns, with full match review. 100% local in the browser.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><path d=%22M28 16 L13 16 L13 84 L28 84%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%227%22/><path d=%22M72 16 L87 16 L87 84 L72 84%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%227%22/><circle cx=%2234%22 cy=%2234%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2266%22 cy=%2234%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2234%22 cy=%2266%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2266%22 cy=%2266%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2250%22 cy=%2250%22 r=%2210%22 fill=%22%23c0392b%22/></svg>">
-<link rel="stylesheet" href="styles.css?v=2">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -20,7 +20,7 @@
     </svg>
     <span>Research Studio</span>
   </a>
-  <div class="crumb">Research <b>#07</b> — ALE Merge Bench<a class="v1" href="v1/" title="The original day-one build">v1</a></div>
+  <div class="crumb">Research <b>#07</b> — ALE Merge Bench</div>
 </div>
 
 <!-- INTRO / DROP ZONES -->
@@ -73,7 +73,7 @@
         <input type="number" id="offset" value="0" step="1">
         <button class="btn sm" id="off-up">+</button>
       </label>
-      <label class="chk" title="When on, only writes into cells that are currently empty — existing bin values are never overwritten"><input type="checkbox" id="fill-blanks"> only fill blank cells (never overwrite)</label>
+      <label class="chk"><input type="checkbox" id="preserve-all"> preserve ALL original columns</label>
     </div>
   </div>
 
@@ -123,9 +123,9 @@
 
 <div id="toast"></div>
 
-<script src="ale.js?v=2"></script>
-<script src="csv.js?v=2"></script>
-<script src="match.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="ale.js"></script>
+<script src="csv.js"></script>
+<script src="match.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

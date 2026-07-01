@@ -13,7 +13,7 @@
     overrides: {},           // clipIndex -> rowIndex | null  (manual)
     assign: [],              // computed per clip {row,status,diff}
     unusedRows: [],
-    fillBlanks: false,       // when true: only write into empty cells (never overwrite)
+    preserveAll: false,
     acked: false,
   };
 
@@ -201,11 +201,9 @@
           const ci = ALE.colIndex(m, mp.to);
           const oldV = ci >= 0 ? (m.rows[i][ci] || "") : "";
           const newV = ALE.sanitizeCell(valForWrite(a.row, mp.from));
-          const oldNonBlank = String(oldV).trim() !== "";
           const over = oldV && oldV !== newV;
           html += `<span class="w"><span class="wk">${esc(mp.to)}:</span> `;
-          if (state.fillBlanks && oldNonBlank) html += `<span class="wv">${esc(oldV)} <span class="blank">· kept (fill-blanks)</span></span>`;
-          else if (over) html += `<span class="over">${esc(oldV)} → ${esc(newV) || "(blank)"}</span> ⚠ overwrite`;
+          if (over) html += `<span class="over">${esc(oldV)} → ${esc(newV) || "(blank)"}</span> ⚠ overwrite`;
           else html += `<span class="wv">${esc(newV) || '<span class="blank">(blank)</span>'}</span>`;
           html += `</span>`;
         });
@@ -263,9 +261,7 @@
       if (a.row == null) return;
       state.mappings.forEach((mp) => {
         if (ALE.isKeyLocked(mp.to)) return;     // never touch keys (defensive; setCell also refuses)
-        const ci = ALE.colIndex(m, mp.to);
-        if (ci < 0) return;
-        if (state.fillBlanks && String(m.rows[i][ci] || "").trim() !== "") return;  // only fill blanks
+        if (ALE.colIndex(m, mp.to) < 0) return;
         ALE.setCell(m, i, mp.to, valForWrite(a.row, mp.from));
       });
     });
@@ -308,7 +304,7 @@
     $("#offset").onchange = () => setOff(+$("#offset").value);
     $("#off-up").onclick = () => setOff(state.offset + 1);
     $("#off-dn").onclick = () => setOff(state.offset - 1);
-    $("#fill-blanks").onchange = () => { state.fillBlanks = $("#fill-blanks").checked; renderTable(); refreshExport(); };
+    $("#preserve-all").onchange = () => { state.preserveAll = $("#preserve-all").checked; };
     $("#add-map").onclick = () => { state.mappings.push({ from: state.csv.headers[0], to: firstWritable() }); renderMappings(); renderTable(); refreshExport(); };
     $("#ack").onchange = () => { state.acked = $("#ack").checked; refreshExport(); };
     $("#export").onclick = exportAle;
