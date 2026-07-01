@@ -35,15 +35,6 @@
   .logo-mark .hot{fill:var(--accent)}
   .masthead .crumb{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.04em}
   .masthead .crumb b{color:var(--accent);font-weight:600}
-  .masthead .crumb a.v1{color:var(--dim);text-decoration:none;border:1px solid var(--line);border-radius:20px;padding:1px 8px;margin-left:8px;font-size:11px}
-  .masthead .crumb a.v1:hover{color:var(--accent);border-color:var(--accent)}
-  /* visible keyboard focus everywhere (a11y) */
-  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{
-    outline:2px solid var(--accent);outline-offset:2px}
-  /* scan progress bar */
-  #prog{height:3px;background:transparent;overflow:hidden}
-  #prog.on{background:var(--panel2)}
-  #prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s ease}
 
   /* ---- tool header ---- */
   header{padding:16px 20px;border-bottom:1px solid var(--line);
@@ -188,7 +179,7 @@
     </svg>
     <span>Research Studio</span>
   </a>
-  <div class="crumb">Research <b>#06</b> — EDL Checker<a class="v1" href="v1/" title="The original day-one build">v1</a></div>
+  <div class="crumb">Research <b>#06</b> — EDL Checker</div>
 </div>
 
 <header>
@@ -201,12 +192,9 @@
   </div>
   <button id="choose" class="btn">Choose folder</button>
   <button id="refresh" class="btn" hidden title="Re-scan the folder for new EDLs / QTs">⟳ Refresh</button>
-  <button id="export-csv" class="btn" hidden title="Download the shot-delivery table as CSV">⬇ CSV</button>
-  <button id="export-json" class="btn" hidden title="Download the full scan as JSON">⬇ JSON</button>
   <button id="gear" class="btn" title="Settings — enable click-to-open file links">⚙</button>
   <div class="meta"><div id="m-root"></div><div id="m-gen"></div></div>
 </header>
-<div id="prog"><i></i></div>
 <div id="toast"></div>
 
 <div id="settings" hidden>
@@ -233,10 +221,10 @@
   <div id="warn" hidden></div>
 </div>
 
-<nav hidden role="tablist" aria-label="Views">
-  <button data-tab="packages" class="active" role="tab" aria-selected="true">Packages</button>
-  <button data-tab="shots" role="tab" aria-selected="false">Shot search</button>
-  <button data-tab="timeline" role="tab" aria-selected="false">Timeline</button>
+<nav hidden>
+  <button data-tab="packages" class="active">Packages</button>
+  <button data-tab="shots">Shot search</button>
+  <button data-tab="timeline">Timeline</button>
 </nav>
 <main hidden>
   <section id="tab-packages">
@@ -437,13 +425,9 @@ function fillHeader(){
   $('#s-qt').textContent=DATA.stats.n_qt; $('#s-shot').textContent=DATA.stats.n_shots;
   $('#m-root').textContent=ROOT?('📁 '+ROOT):''; $('#m-gen').textContent=DATA.generated?('scanned '+DATA.generated):'';
 }
-function setTab(name){
-  document.querySelectorAll('nav button').forEach(x=>{ const on=x.dataset.tab===name;
-    x.classList.toggle('active',on); x.setAttribute('aria-selected',on?'true':'false'); });
-  ['packages','shots','timeline'].forEach(t=>{ const s=$('#tab-'+t); if(s) s.hidden=(t!==name); });
-  try{ localStorage.setItem('edl_tab',name); }catch(_){}
-}
-document.querySelectorAll('nav button').forEach(b=>{ b.onclick=()=>setTab(b.dataset.tab); });
+document.querySelectorAll('nav button').forEach(b=>{ b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  ['packages','shots','timeline'].forEach(t=>$('#tab-'+t).hidden=(t!==b.dataset.tab)); }; });
 
 const epSel=$('#pkg-ep'), cutSel=$('#pkg-cut');
 function fillSelects(){
@@ -524,12 +508,9 @@ function renderShots(){
     return `<div class="hit"><h3>${hl(base,q)}</h3><div class="sub">${sub}</div>${rows}</div>`;
   }).join('');
 }
-function reflectShotHash(){ const q=$('#shot-q').value.trim();
-  try{ history.replaceState(null,'', q?('#shot='+encodeURIComponent(q)):location.pathname+location.search); }catch(_){}}
-$('#shot-q').addEventListener('input',()=>{ renderShots(); reflectShotHash(); });
+$('#shot-q').addEventListener('input',renderShots);
 $('#shot-group').addEventListener('change',renderShots);
-function gotoShot(s){ setTab('shots'); document.querySelector('nav button[data-tab=shots]').classList.add('active');
-  $('#shot-q').value=s; renderShots(); reflectShotHash(); $('#shot-q').focus(); }
+function gotoShot(s){ document.querySelector('nav button[data-tab=shots]').click(); $('#shot-q').value=s; renderShots(); $('#shot-q').focus(); }
 
 function renderTimeline(){
   const q=$('#tl-q').value.trim().toLowerCase(); const byDay={};
@@ -551,43 +532,15 @@ function toast(msg, err){ const t=$('#toast'); t.textContent=msg; t.className='s
   clearTimeout(toastT); toastT=setTimeout(()=>t.className='',3600); }
 
 // ===================== controls =====================
-function showApp(){
-  $('#intro').style.display='none'; $('nav').hidden=false; $('main').hidden=false;
-  $('#refresh').hidden=false; $('#export-csv').hidden=false; $('#export-json').hidden=false;
-  let tab='packages'; try{ tab=localStorage.getItem('edl_tab')||'packages'; }catch(_){}
-  const m=location.hash.match(/^#shot=(.*)$/);
-  if(m) tab='shots';
-  setTab(tab);
-  if(m){ $('#shot-q').value=decodeURIComponent(m[1]); renderShots(); }
-}
+function showApp(){ $('#intro').style.display='none'; $('nav').hidden=false; $('main').hidden=false; $('#refresh').hidden=false; }
 function setData(d){ DATA=d; PK=DATA.packages; IDX=DATA.shot_index; ROOT=DATA.scan_root; }
-
-// ---- export (all client-side; nothing leaves the browser) ----
-function download(name, text, type){ const b=new Blob([text],{type}); const u=URL.createObjectURL(b);
-  const a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click();
-  a.remove(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
-function csvCell(v){ let s=(v==null?'':String(v)); if(/^[=+\-@\t\r]/.test(s)) s="'"+s; return '"'+s.replace(/"/g,'""')+'"'; }
-function exportCsv(){
-  if(!PK.length){ toast('Nothing to export yet', true); return; }
-  const rows=[['shot','package','date','edl','kind']];
-  Object.keys(IDX).sort().forEach(shot=>IDX[shot].forEach(o=>rows.push([shot,o.pkg,o.date||'',o.edl,o.kind])));
-  download(`edl-check_${DATA.scan_root||'scan'}.csv`, rows.map(r=>r.map(csvCell).join(',')).join('\r\n'), 'text/csv');
-  toast(`Exported ${rows.length-1} shot-deliveries to CSV`);
-}
-function exportJson(){ if(!PK.length){ toast('Nothing to export yet', true); return; }
-  download(`edl-check_${DATA.scan_root||'scan'}.json`, JSON.stringify(DATA,null,2), 'application/json');
-  toast('Exported full scan to JSON'); }
-$('#export-csv').onclick=exportCsv;
-$('#export-json').onclick=exportJson;
 
 async function runScan(handle, announce){
   const before=DATA.stats;
   const st=$('#status');
-  const prog=$('#prog'), bar=prog.firstElementChild; prog.classList.add('on'); bar.style.width='0%';
   $('#refresh').classList.add('spin'); $('#refresh').innerHTML='<span>⟳</span> Scanning…';
   try{
-    const fresh=await scanHandle(handle,(i,n,name)=>{ if(st) st.textContent=`Scanning ${i}/${n}… ${name}`;
-      bar.style.width=(n?Math.round(i/n*100):100)+'%'; });
+    const fresh=await scanHandle(handle,(i,n,name)=>{ if(st) st.textContent=`Scanning ${i}/${n}… ${name}`; });
     setData(fresh); renderAll(); showApp();
     if(announce){
       const dP=DATA.stats.n_pkg-before.n_pkg, dE=DATA.stats.n_edl-before.n_edl, dQ=DATA.stats.n_qt-before.n_qt;
@@ -595,8 +548,7 @@ async function runScan(handle, announce){
                        :'Up to date — no changes found');
     } else { toast(`Loaded ${DATA.stats.n_pkg} packages · ${DATA.stats.n_edl} EDLs · ${DATA.stats.n_shots} shots`); }
   }catch(e){ toast('Scan failed: '+e.message, true); if(st) st.textContent='Scan failed: '+e.message; }
-  finally{ $('#refresh').classList.remove('spin'); $('#refresh').innerHTML='⟳ Refresh';
-    setTimeout(()=>{ prog.classList.remove('on'); bar.style.width='0%'; }, 400); }
+  finally{ $('#refresh').classList.remove('spin'); $('#refresh').innerHTML='⟳ Refresh'; }
 }
 async function chooseFolder(){
   if(!window.showDirectoryPicker){ showUnsupported(); return; }
@@ -607,9 +559,9 @@ async function chooseFolder(){
 }
 function showUnsupported(){
   const w=$('#warn'); w.hidden=false;
-  w.innerHTML='🖥️ <b>This is a desktop tool.</b> It reads a folder straight from your computer, which '+
-    'needs <b>Chrome</b> or <b>Edge</b> on a desktop. Phones, Safari and Firefox can’t open local '+
-    'folders — please open this page on a computer in Chrome or Edge.';
+  w.innerHTML='⚠️ This browser doesn’t support folder access. Open this page in '+
+    '<b>Google Chrome</b> (or Microsoft Edge). Safari and Firefox can’t scan folders — '+
+    'for those, use the <code>edl-check</code> launcher version instead.';
 }
 
 $('#choose').onclick=chooseFolder;
@@ -631,9 +583,6 @@ $('#linksave').onclick=()=>{ LINK_BASE=$('#linkbase').value.trim(); localStorage
 
 // ===================== startup =====================
 (async function init(){
-  // file:// links only work when the page itself is opened from disk; hide the
-  // dead setting when served over http(s).
-  if(location.protocol!=='file:') $('#gear').hidden=true;
   if(!window.showDirectoryPicker){ showUnsupported(); $('#choose').disabled=true; $('#choose2').disabled=true; return; }
   const saved=await loadHandle();
   if(saved){
