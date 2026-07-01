@@ -8,6 +8,7 @@
 
 import express from "express";
 import cors from "cors";
+import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { initDb, insertMessage, getMessages, cacheTranslation, getCounts, saveSubscription, getFullMessages, clearTranslations } from "./db.js";
 import { translate, usingMock } from "./translate.js";
@@ -56,6 +57,36 @@ function sizeOfAnswers(a) {
   try { return JSON.stringify(a || {}).length; } catch (_) { return Infinity; }
 }
 
+// GET /api/messages triggers a paid translate-on-read for any language not yet
+// cached. Cap requests per IP so it can't be polled to burn the API bill.
+const messagesLimiter = rateLimit({ windowMs: 60_000, max: 40, standardHeaders: true, legacyHeaders: false });
+
+// Per-room ceiling on how many distinct translation languages we'll ever pay to
+// generate. A real family uses a handful; this bounds worst-case spend even if an
+// attacker rotates IPs and cycles fake language names. Tune via env if needed.
+const LANG_CAP = Number(process.env.LANG_CAP || 12);
+
+// Timing-safe admin key check + per-IP brute-force guard. Key is accepted ONLY in
+// the x-admin-key header now (never the query string, which leaks into logs/history).
+const adminFails = new Map();
+function safeEq(a, b) {
+  const ha = crypto.createHash("sha256").update(String(a)).digest();
+  const hb = crypto.createHash("sha256").update(String(b)).digest();
+  return crypto.timingSafeEqual(ha, hb);
+}
+function adminOk(req, res) {
+  const ADMIN = process.env.ADMIN_KEY || "";
+  if (!ADMIN) { res.status(403).json({ error: "admin disabled (no ADMIN_KEY set)" }); return false; }
+  const ipk = req.ip || "?"; const now = Date.now();
+  const fails = (adminFails.get(ipk) || []).filter((t) => now - t < 600_000);
+  if (fails.length >= 5) { res.status(429).json({ error: "too many attempts, try later" }); return false; }
+  if (!safeEq(req.get("x-admin-key") || "", ADMIN)) {
+    fails.push(now); adminFails.set(ipk, fails);
+    res.status(401).json({ error: "bad key" }); return false;
+  }
+  adminFails.delete(ipk); return true;
+}
+
 app.get("/api/review/health", (_req, res) => res.json({ ok: true, mock: reviewMock }));
 
 app.post("/api/review", reviewLimiter, async (req, res) => {
@@ -89,10 +120,7 @@ app.post("/api/message", postLimiter, async (req, res) => {
 // behind ADMIN_KEY (set in env). Disabled entirely if ADMIN_KEY is unset.
 app.get("/api/admin/history", async (req, res) => {
   try {
-    const ADMIN = process.env.ADMIN_KEY || "";
-    if (!ADMIN) return res.status(403).json({ error: "admin disabled (no ADMIN_KEY set)" });
-    const key = req.get("x-admin-key") || req.query.key || "";
-    if (key !== ADMIN) return res.status(401).json({ error: "bad key" });
+    if (!adminOk(req, res)) return;
     const room = String(req.query.room || "").slice(0, ROOM_MAX);
     if (!room) return res.status(400).json({ error: "room required" });
     res.json({ room, messages: await getFullMessages(room) });
@@ -103,10 +131,7 @@ app.get("/api/admin/history", async (req, res) => {
 // languages already in use (so the fix shows immediately, not on next read).
 app.post("/api/admin/retranslate", async (req, res) => {
   try {
-    const ADMIN = process.env.ADMIN_KEY || "";
-    if (!ADMIN) return res.status(403).json({ error: "admin disabled (no ADMIN_KEY set)" });
-    const key = req.get("x-admin-key") || req.query.key || "";
-    if (key !== ADMIN) return res.status(401).json({ error: "bad key" });
+    if (!adminOk(req, res)) return;
     const room = String(req.query.room || "").slice(0, ROOM_MAX);
     if (!room) return res.status(400).json({ error: "room required" });
 
@@ -161,12 +186,20 @@ app.post("/api/subscribe", postLimiter, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "server error" }); }
 });
 
-app.get("/api/messages", async (req, res) => {
+app.get("/api/messages", messagesLimiter, async (req, res) => {
   try {
     const room = String(req.query.room || "").slice(0, ROOM_MAX);
     const lang = String(req.query.lang || "").slice(0, LANG_MAX);
     if (!room || !lang) return res.status(400).json({ error: "room and lang required" });
     const rows = await getMessages(room);
+    // Distinct languages already paid-for in this room. A new language is only
+    // translated while the room is under LANG_CAP — bounding total spend per room.
+    const known = new Set();
+    for (const m of rows) for (const k of Object.keys(m.translations || {})) known.add(k);
+    if (!known.has(lang) && known.size >= LANG_CAP) {
+      return res.status(429).json({ error: "language-limit",
+        note: "This room has reached its translation-language limit." });
+    }
     const out = [];
     for (const m of rows) {
       let text = m.translations?.[lang];
