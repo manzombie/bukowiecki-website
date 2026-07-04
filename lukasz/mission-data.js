@@ -16,7 +16,7 @@ window.MISSION_CONFIG = Object.assign({
   mcApiUrl: "https://tools.bukowiecki.co",
   mcToken: "",
   githubRepo: "manzombie/mrlobster-website",
-  gistId: "f438e3b860e2a5fe35e5750e96c4ffca",
+  gistId: "",   // set in mission-config.local.js (gitignored) — never commit the id (public repo)
   gistToken: "",
   anthropicKey: "",
   projectStartDate: "2026-05-02",
