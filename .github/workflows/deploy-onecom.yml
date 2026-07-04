@@ -46,6 +46,7 @@ jobs:
         run: |
           mkdir -p _deploy
           cp -r index.html css js hero films images _deploy/
+          cp robots.txt sitemap.xml _deploy/
           [ -f glb-test.html ] && cp glb-test.html _deploy/ || true
           find _deploy -name '.DS_Store' -delete
           echo "Staged $(find _deploy -type f | wc -l) files."

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://bukowiecki.co/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://bukowiecki.co/vfxtools/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://bukowiecki.co/vfxtools/qc-report-pipeline.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://bukowiecki.co/vfxtools/beauty-subcaps.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://bukowiecki.co/vfxtools/edl-audit.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://bukowiecki.co/vfxtools/edl-master.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://bukowiecki.co/vfxtools/editorial-converter.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://bukowiecki.co/vfxtools/subcap-converter.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://bukowiecki.co/vfxtools/subcap-generator.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+</urlset>
