@@ -7,29 +7,32 @@
 
 :root,
 [data-mood="deep-focus"] {
-    --primary-color: #ffffff;
-    --secondary-color: #0b0c0f;
-    --accent-color: #ff6b35;
-    --text-light: #a6a8b3;
-    --text-dark: #e9e9ee;
-    --border-color: #2a3142;
-    --background-light: #12141a;
-    --background-dark: #1a1a1a;
+    --primary-color: #F4F2EE;
+    --secondary-color: #0a0a0c;
+    --accent-color: #FF4D00;
+    --accent-hover: #B23600;
+    --text-light: #8A8A8A;
+    --text-dark: #F4F2EE;
+    --border-color: #24262e;
+    --background-light: #101014;
+    --background-dark: #070708;
     --success-color: #27ae60;
     --error-color: #e74c3c;
     --warning-color: #f39c12;
     --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.3);
     --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.4);
     --shadow-heavy: 0 8px 30px rgba(0, 0, 0, 0.5);
-    --border-radius: 8px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --mood-pill: #5b8af0;
+    --border-radius: 2px;
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --mood-pill: #FF4D00;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 [data-mood="quiet-mind"] {
     --primary-color: #d8d9e0;
     --secondary-color: #1e2028;
-    --accent-color: #ff6b35;
+    --accent-color: #FF4D00;
+    --accent-hover: #B23600;
     --text-light: #8e90a0;
     --text-dark: #d8d9e0;
     --border-color: #3d4054;
@@ -44,7 +47,8 @@
 [data-mood="soft-morning"] {
     --primary-color: #2c2a26;
     --secondary-color: #f0ece4;
-    --accent-color: #c06830;
+    --accent-color: #C43C00;
+    --accent-hover: #9a2f00;
     --text-light: #7a7770;
     --text-dark: #2c2a26;
     --border-color: #d6d2ca;
@@ -190,8 +194,6 @@ body {
 }
 
 .tool-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-medium);
     border-color: var(--accent-color);
 }
 
@@ -234,11 +236,15 @@ body {
 
 .feature-tag {
     background: var(--background-light);
-    color: var(--text-dark);
+    color: var(--text-light);
     padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    border-radius: 2px;
+    font-size: 0.72rem;
     font-weight: 500;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 1px solid var(--border-color);
 }
 
 .tool-link {
@@ -307,7 +313,7 @@ body {
 }
 
 .footer-link:hover {
-    color: var(--secondary-color);
+    color: var(--primary-color);
 }
 
 /* Tool Page Specific Styles */
@@ -402,8 +408,8 @@ body {
 
 /* Buttons */
 .btn {
-    background: linear-gradient(135deg, var(--accent-color) 0%, #e55a2b 100%);
-    color: var(--secondary-color);
+    background: var(--accent-color);
+    color: #0a0a0c;
     border: none;
     padding: 15px 30px;
     font-size: 1.1rem;
@@ -418,23 +424,24 @@ body {
 }
 
 .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+    background: var(--accent-hover);
+    color: #F4F2EE;
 }
 
 .btn:disabled {
-    background: #bdc3c7;
+    background: #3a3a3a;
+    color: #7a7a7a;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, var(--success-color) 0%, #2ecc71 100%);
+    background: var(--success-color);
+    color: #0a0a0c;
 }
 
 .btn-secondary:hover {
-    box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+    background: #1f8a4c;
+    color: #F4F2EE;
 }
 
 /* Status Messages */
@@ -478,7 +485,7 @@ body {
     padding: 20px;
     max-height: 300px;
     overflow-y: auto;
-    font-family: 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-size: 0.9rem;
     border: 1px solid var(--border-color);
     white-space: pre-wrap;
@@ -779,4 +786,48 @@ body {
     margin-top: 8px;
     margin-bottom: 18px;
     line-height: 1.7;
+}
+
+/* FRAME/SHIFT funnel band (vfxtools index) */
+.fs-funnel {
+    border-top: 1px solid var(--border-color);
+    background: var(--background-light);
+    padding: 36px 0;
+}
+.fs-funnel-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+.fs-funnel-kicker {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.7rem;
+    color: var(--accent-color);
+}
+.fs-funnel-text {
+    color: var(--text-dark);
+    font-size: 1.05rem;
+    margin-top: 6px;
+    max-width: 640px;
+}
+.fs-funnel-link {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+    background: var(--accent-color);
+    padding: 12px 22px;
+    border-radius: 2px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+.fs-funnel-link:hover {
+    background: var(--accent-hover);
+    color: #F4F2EE;
 }
