@@ -1,0 +1,12 @@
+# Deny direct web access to config + runtime backups (articles.json stays
+# reachable — the app reads it directly). Backups are created server-side by
+# the save action and must never be fetchable.
+<FilesMatch "^(config\.php|articles_backup_.*\.json)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
