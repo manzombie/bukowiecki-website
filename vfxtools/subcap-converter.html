@@ -302,7 +302,9 @@
                     // Get the subcap name from the next line
                     const nextLineIndex = i + 1;
                     if (nextLineIndex < lines.length) {
-                        const subcapName = lines[nextLineIndex].trim();
+                        // Strip control chars (e.g. vertical tab U+000B from FileMaker/older
+                        // exports) so they don't carry into the Avid locator as a box.
+                        const subcapName = lines[nextLineIndex].replace(/[\u0000-\u001F\u0085\u2028\u2029]+/g, ' ').trim();
                         if (subcapName && !subcapName.match(/^\d{2}:\d{2}:\d{2}:\d{2}/)) {
                             const middleTime = calculateMiddlePoint(startTime, endTime, fps);
                             

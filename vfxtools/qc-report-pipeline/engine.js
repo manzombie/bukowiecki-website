@@ -422,7 +422,12 @@ function getCell(row, index) {
 }
 
 function cellText(value) {
-    return String(value ?? "").trim();
+    // Strip control / line-separator chars (e.g. in-cell line breaks from XLSX or
+    // FileMaker exports use vertical tab U+000B, which Avid renders as a box).
+    // Replace any run with a single space so subcap + CSV text stays clean.
+    return String(value ?? "")
+        .replace(/[\u0000-\u001F\u0085\u2028\u2029]+/g, " ")
+        .trim();
 }
 
 function rangesOverlap(leftIn, leftOut, rightIn, rightOut) {

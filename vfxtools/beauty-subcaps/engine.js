@@ -316,10 +316,10 @@ export function parseEpisodeSubcaps(text, fps = 24) {
 
 export function parseCallout(callout) {
     const lines = String(callout ?? "")
-        .replace(/\r\n/g, "\n")
-        .replace(/\r/g, "\n")
+        .replace(/\r\n?/g, "\n")
+        .replace(/[\u000B\u000C\u0085\u2028\u2029]/g, "\n")
         .split("\n")
-        .map((line) => line.trim())
+        .map((line) => line.replace(/[\u0000-\u001F]+/g, " ").trim())
         .filter(Boolean);
     const vendors = [];
     const taskLines = [];
