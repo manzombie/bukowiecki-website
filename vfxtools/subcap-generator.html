@@ -325,17 +325,46 @@
             return [h, m, s, f].map(v => String(v).padStart(2, '0')).join(':');
         }
 
-        // ── CSV parser ──
+        // ── CSV parser (quote-aware) ──
+        // Handles quoted cells ("...") so commas inside notes don't shift columns
+        // and CSV escaping quotes don't leak into the subcap text. "" inside a
+        // quoted cell is an escaped quote.
+        function parseCSVLine(line) {
+            const values = [];
+            let cell = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const c = line[i];
+                if (inQuotes) {
+                    if (c === '"') {
+                        if (line[i + 1] === '"') { cell += '"'; i++; }
+                        else { inQuotes = false; }
+                    } else {
+                        cell += c;
+                    }
+                } else if (c === '"') {
+                    inQuotes = true;
+                } else if (c === ',') {
+                    values.push(cell);
+                    cell = '';
+                } else {
+                    cell += c;
+                }
+            }
+            values.push(cell);
+            return values;
+        }
+
         function parseCSV(text) {
             const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
             if (lines.length < 2) return { headers: [], rows: [] };
 
-            const headers = lines[0].split(',').map(h => h.trim());
+            const headers = parseCSVLine(lines[0]).map(h => h.trim());
             const rows = [];
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
-                const values = line.split(',');
+                const values = parseCSVLine(line);
                 const row = {};
                 headers.forEach((h, idx) => {
                     row[h] = (values[idx] || '').trim();
