@@ -489,7 +489,7 @@
                 const framesOut = framesIn + parseInt(cut, 10);
                 const tcOut = framesToTime(framesOut, fps);
 
-                const textParts = selectedFields.map(f => row[f] || '').filter(v => v);
+                const textParts = selectedFields.map(f => cleanField(row[f])).filter(v => v);
                 const text = textParts.join(sep);
 
                 previewEntries.push({ framesIn, tcIn, tcOut, text });
@@ -520,6 +520,17 @@
             }
             previewContent.textContent = preview;
             previewSection.classList.add('show');
+        }
+
+        // Source exports (e.g. FileMaker / Counts) use control characters such as
+        // the vertical tab (\x0B) as an in-cell line break. Avid's Caption plugin
+        // renders those as a box (□) instead of a space. Replace any run of
+        // control / line-separator chars in a field value with a single space so
+        // the subcap text stays clean. (Ordinary spaces are left untouched.)
+        function cleanField(v) {
+            return String(v == null ? '' : v)
+                .replace(/[\u0000-\u001F\u0085\u2028\u2029]+/g, ' ')
+                .trim();
         }
 
         function getSeparator() {
@@ -568,7 +579,7 @@
                 const framesOut = framesIn + parseInt(cut, 10);
                 const tcOut = framesToTime(framesOut, fps);
 
-                const textParts = selectedFields.map(f => row[f] || '').filter(v => v);
+                const textParts = selectedFields.map(f => cleanField(row[f])).filter(v => v);
                 const text = textParts.join(sep);
 
                 entries.push({ framesIn, tcIn, tcOut, text });
