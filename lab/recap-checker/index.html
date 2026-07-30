@@ -25,7 +25,7 @@ table{width:100%;border-collapse:collapse;background:var(--panel);border:1px sol
 <section class="summary"><div class="stat"><b id="s-missing">—</b><span>Not found in EDLs</span></div><div class="stat"><b id="s-sent">—</b><span>Versions found</span></div><div class="stat"><b id="s-edl">—</b><span>EDLs scanned</span></div><div class="stat"><b id="s-total">—</b><span>Recap shots</span></div></section>
 <main><div id="notice"></div><div class="tabs" id="tabs"></div><div class="toolbar"><input id="search" type="search" placeholder="Filter shot, version or EDL…"></div><div class="table-wrap"><table><thead><tr><th>Status</th><th>Recap shot</th><th>Recap TC</th><th>Highest version sent</th><th>Sent date</th><th>Delivery EDL</th></tr></thead><tbody id="rows"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody></table></div></main>
 <script>
-const SUBCAPS=["302_LC3_SUBCAPS.txt","303_LC5_SUBCAPS.txt","304_LC6_SUBCAPS.txt","305_LC7_SUBCAPS.txt","306_LC_SUBCAPS.txt","307_LC7_SUBCAPS.txt","308_LC5_SUBCAPS.txt"];
+const SUBCAPS=["302_LC3_SUBCAPS.txt","303_LC5_SUBCAPS.txt","304_LC6_SUBCAPS.txt","305_LC7_SUBCAPS.txt","306_LC4_SUBCAPS.txt","307_LC7_SUBCAPS.txt","308_LC5_SUBCAPS.txt"];
 const SHOT=/\b(\d{3}[A-Z]?_[A-Z0-9]+_\d{3,5})\b/i, VERSION=/\b(\d{3}[A-Z]?_[A-Z0-9]+_\d{3,5})(?:_[A-Z0-9]+)*[_-]V(\d{1,5})\b/ig;
 const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let recaps=[],delivery={},edlCount=0,active="",rootHandle=null;
