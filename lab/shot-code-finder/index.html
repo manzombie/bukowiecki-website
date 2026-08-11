@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shot Code Finder — Research Studio</title>
+<meta name="description" content="Paste record timecodes, get the shot codes burned into the master subcaps for that reel.">
+<style>
+:root{--paper:#f4f1ea;--panel:#fbfaf6;--ink:#17140f;--muted:#6c675d;--line:#d8d2c6;--red:#c23b2e;--green:#28734d;--amber:#a65d0c;--blue:#245d7a;--mono:"SFMono-Regular",ui-monospace,Menlo,monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}
+.mast{height:54px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:var(--panel)}.brand{font:700 13px var(--mono)}.crumb{font:12px var(--mono);color:var(--muted)}.crumb b{color:var(--red)}
+.hero{padding:28px 22px 22px;border-bottom:1px solid var(--line)}.eyebrow{font:11px var(--mono);color:var(--red);letter-spacing:.13em;text-transform:uppercase}h1{font-size:34px;letter-spacing:-.035em;margin:8px 0 7px}.lede{color:var(--muted);max-width:760px;margin:0}
+main{padding:22px;max-width:1100px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:18px 20px;margin-bottom:18px}
+.field{margin-bottom:14px}.field label{display:block;font:11px var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px}
+select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);background:#fff;border-radius:3px;color:var(--ink)}
+textarea{min-height:170px;resize:vertical;font:13px var(--mono);line-height:1.5}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);padding:9px 13px;border-radius:3px;font-weight:650;cursor:pointer}.btn:hover{border-color:var(--red);color:var(--red)}.btn.primary{background:var(--red);border-color:var(--red);color:#fff}.btn.primary:hover{color:#fff;opacity:.9}.btn:disabled{opacity:.5;cursor:default}
+.status{font:11px var(--mono);color:var(--muted)}
+.notice{padding:11px 13px;border:1px solid #d9bd8d;background:#fff7e9;color:#70420a;border-radius:3px;font-size:13px;margin-top:10px}
+.notice.ok{border-color:#a8c9b3;background:#edf7f0;color:#245b3d}.notice.error{border-color:#e2a39d;background:#fff0ee;color:#8d2118}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line)}
+th{text-align:left;font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--line)}
+td{padding:10px 12px;border-bottom:1px solid #e7e2d8;vertical-align:middle;font-size:13px}
+.tc{font:12px var(--mono)}.shot{font:700 12px var(--mono)}
+.badge{display:inline-block;padding:3px 7px;border-radius:20px;font:700 10px var(--mono);text-transform:uppercase}
+.found{background:#dceddf;color:#25603f}.miss{background:#f7ddd9;color:#a52d22}.bad{background:#e7edf0;color:#32596c}
+.empty{text-align:center;color:var(--muted);padding:40px}
+details.admin{margin-top:26px}
+details.admin>summary{cursor:pointer;font:11px var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:8px 0}
+.admin-box{border:1px dashed var(--line);border-radius:4px;padding:16px 18px;margin-top:8px}
+.admin-box input[type=password]{padding:9px 11px;border:1px solid var(--line);border-radius:3px;width:220px}
+.src{font:11px var(--mono);color:var(--muted);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="mast"><div class="brand">[ B ] Research Studio</div><div class="crumb">Research <b>#12</b> — Shot Code Finder</div></div>
+<section class="hero">
+  <div class="eyebrow">Editorial lookup</div>
+  <h1>Shot Code Finder</h1>
+  <p class="lede">Pick an episode, paste record timecodes, get back the shot code burned into that episode's master subcaps at each one. Reads the same Avid caption exports as Recap Checker.</p>
+</section>
+<main>
+  <div class="panel">
+    <div class="field">
+      <label for="reel">Episode</label>
+      <select id="reel"></select>
+    </div>
+    <div class="field">
+      <label for="tcs">Timecodes (one per line)</label>
+      <textarea id="tcs" placeholder="01:00:32:13&#10;01:44:12:14&#10;01:45:48:00&#10;01:45:48:00&#10;01:46:36:08&#10;01:55:51:23&#10;01:56:19:12&#10;01:56:22:11&#10;02:02:48:02"></textarea>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="find">Find shot codes</button>
+      <button class="btn" id="copy" hidden>Copy shot codes</button>
+      <button class="btn" id="csv" hidden>Download CSV</button>
+      <span class="status" id="status">Loading master data…</span>
+    </div>
+    <div id="notice"></div>
+  </div>
+
+  <table>
+    <thead><tr><th>#</th><th>Timecode</th><th>Shot code</th><th>Matched range</th><th>Status</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="5" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr></tbody>
+  </table>
+
+  <details class="admin">
+    <summary>Admin — update master data</summary>
+    <div class="admin-box">
+      <p class="src" id="admin-src">Serving the bundled snapshot checked into this page.</p>
+      <div id="admin-locked">
+        <div class="row">
+          <input type="password" id="admin-pass" placeholder="admin password" autocomplete="off">
+          <button class="btn" id="admin-unlock">Unlock</button>
+        </div>
+        <p class="status" id="admin-note"></p>
+      </div>
+      <div id="admin-unlocked" hidden>
+        <div class="row">
+          <button class="btn" id="admin-choose">Choose master folder…</button>
+          <button class="btn" id="admin-rescan" hidden>Re-scan now</button>
+          <button class="btn" id="admin-clear" hidden>Use bundled data instead</button>
+        </div>
+        <p class="status" id="admin-note2"></p>
+      </div>
+    </div>
+  </details>
+</main>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+// ---- change this before going live ----
+const ADMIN_PASSWORD = "TROP2026";
+// ----------------------------------------
+
+const BUNDLED = ["301_LC2_SUBCAPS.txt","302_LC3_SUBCAPS.txt","303_LC5_SUBCAPS.txt","304_LC6_SUBCAPS.txt","305_LC7_SUBCAPS.txt","306_LC4_SUBCAPS.txt","307_LC7_SUBCAPS.txt","308_LC5_SUBCAPS.txt"];
+const TC_RE = /^\d\d:\d\d:\d\d:\d\d$/;
+const TC_PAIR_RE = /^(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)$/;
+
+let reels = [];        // [{key,label,rows:[{start,end,shot}]}]
+let overrideActive = false;
+let rootHandle = null;
+
+function decode(buffer){
+  const bytes=new Uint8Array(buffer);
+  if(bytes[0]===255&&bytes[1]===254) return new TextDecoder("utf-16le").decode(buffer);
+  if(bytes[0]===254&&bytes[1]===255) return new TextDecoder("utf-16be").decode(buffer);
+  return new TextDecoder().decode(buffer);
+}
+
+function parseSubcap(text){
+  const rows=[];
+  let pending=null;
+  for(const raw of text.replaceAll("\r","\n").split("\n")){
+    const line=raw.trim();
+    const m=line.match(TC_PAIR_RE);
+    if(m){ pending=[m[1],m[2]]; continue; }
+    if(pending && line){
+      rows.push({start:pending[0], end:pending[1], shot:line.toUpperCase()});
+      pending=null;
+    }
+  }
+  rows.sort((a,b)=> a.start<b.start?-1:a.start>b.start?1:0);
+  return rows;
+}
+
+function labelFor(filename){
+  const m=filename.match(/^(\d{3})_([A-Z0-9]+)_SUBCAPS\.txt$/i);
+  return m ? `${m[1]} · ${m[2]}` : filename.replace(/\.txt$/i,"");
+}
+
+async function loadBundled(){
+  const out=[];
+  for(const name of BUNDLED){
+    try{
+      const r=await fetch("SUBCAPS-RECORDS/"+name);
+      if(!r.ok) continue;
+      out.push({key:name, label:labelFor(name), rows:parseSubcap(decode(await r.arrayBuffer()))});
+    }catch{}
+  }
+  return out;
+}
+
+async function loadFromFolder(dir){
+  const out=[];
+  for await (const h of dir.values()){
+    if(h.kind!=="file") continue;
+    if(!/_SUBCAPS\.txt$/i.test(h.name)) continue;
+    const f=await h.getFile();
+    out.push({key:h.name, label:labelFor(h.name), rows:parseSubcap(decode(await f.arrayBuffer()))});
+  }
+  out.sort((a,b)=> a.key<b.key?-1:a.key>b.key?1:0);
+  return out;
+}
+
+function populateReelSelect(){
+  const sel=$("#reel");
+  const prev=sel.value;
+  sel.innerHTML = reels.map(r=>`<option value="${esc(r.key)}">${esc(r.label)}</option>`).join("");
+  if(reels.some(r=>r.key===prev)) sel.value=prev;
+}
+
+function findShot(tc, rows){
+  for(const r of rows){
+    if(tc>=r.start && tc<r.end) return r;
+  }
+  return null;
+}
+
+function runFind(){
+  const reel=reels.find(r=>r.key===$("#reel").value);
+  const lines=$("#tcs").value.split("\n").map(l=>l.trim()).filter(Boolean);
+  if(!reel || !lines.length){
+    $("#rows").innerHTML = `<tr><td colspan="5" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr>`;
+    $("#copy").hidden = true; $("#csv").hidden = true;
+    return;
+  }
+  const results = lines.map((tc,i)=>{
+    if(!TC_RE.test(tc)) return {i:i+1, tc, shot:null, range:null, status:"bad", label:"Invalid format"};
+    const hit = findShot(tc, reel.rows);
+    if(!hit) return {i:i+1, tc, shot:null, range:null, status:"miss", label:"No shot at this TC"};
+    return {i:i+1, tc, shot:hit.shot, range:`${hit.start} – ${hit.end}`, status:"found", label:"Found"};
+  });
+  $("#rows").innerHTML = results.map(r=>`<tr>
+    <td>${r.i}</td>
+    <td class="tc">${esc(r.tc)}</td>
+    <td class="shot">${esc(r.shot||"—")}</td>
+    <td class="tc">${esc(r.range||"—")}</td>
+    <td><span class="badge ${r.status}">${esc(r.label)}</span></td>
+  </tr>`).join("");
+  $("#copy").hidden=false; $("#csv").hidden=false;
+  window.__scfResults = results;
+}
+
+$("#find").onclick = runFind;
+$("#reel").onchange = ()=>{ if($("#rows").children[0]?.children.length>1) runFind(); };
+
+$("#copy").onclick = async ()=>{
+  const results = window.__scfResults || [];
+  const text = results.map(r=>r.shot||"").join("\n");
+  try{ await navigator.clipboard.writeText(text); $("#status").textContent="Shot codes copied."; }
+  catch{ $("#status").textContent="Couldn't access clipboard."; }
+};
+$("#csv").onclick = ()=>{
+  const results = window.__scfResults || [];
+  const lines=[["#","timecode","shot_code","matched_range","status"]];
+  for(const r of results) lines.push([r.i, r.tc, r.shot||"", r.range||"", r.label]);
+  const csv = lines.map(row=>row.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download="shot-code-finder.csv";
+  a.click();
+};
+
+// ---- Admin: password gate + live folder override (IndexedDB-remembered, same pattern as Recap Checker) ----
+function db(){ return new Promise((ok,no)=>{ const r=indexedDB.open("shot-code-finder",1); r.onupgradeneeded=()=>r.result.createObjectStore("handles"); r.onsuccess=()=>ok(r.result); r.onerror=()=>no(r.error); }); }
+async function saveHandle(h){ const d=await db(); return new Promise((ok,no)=>{ const t=d.transaction("handles","readwrite"); t.objectStore("handles").put(h,"master"); t.oncomplete=ok; t.onerror=()=>no(t.error); }); }
+async function loadHandle(){ try{ const d=await db(); return await new Promise(ok=>{ const r=d.transaction("handles").objectStore("handles").get("master"); r.onsuccess=()=>ok(r.result); r.onerror=()=>ok(null); }); }catch{ return null; } }
+async function clearHandle(){ try{ const d=await db(); return new Promise(ok=>{ const t=d.transaction("handles","readwrite"); t.objectStore("handles").delete("master"); t.oncomplete=ok; }); }catch{} }
+
+async function activateOverride(dir, {silent}={}){
+  try{
+    const perm = silent ? await dir.queryPermission({mode:"read"}) : await dir.requestPermission({mode:"read"});
+    if(perm!=="granted") return false;
+    const loaded = await loadFromFolder(dir);
+    if(!loaded.length) throw new Error("No *_SUBCAPS.txt files found in that folder.");
+    reels = loaded; overrideActive = true; rootHandle = dir;
+    populateReelSelect();
+    $("#admin-src").textContent = `Live override active — reading ${loaded.length} file(s) from “${dir.name}”.`;
+    $("#status").textContent = "Master data: live folder · " + new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+    $("#admin-rescan").hidden = false;
+    $("#admin-clear").hidden = false;
+    return true;
+  }catch(e){
+    $("#admin-note2").textContent = e.message || "Couldn't read that folder.";
+    return false;
+  }
+}
+
+$("#admin-unlock").onclick = ()=>{
+  const val = $("#admin-pass").value;
+  if(val !== ADMIN_PASSWORD){ $("#admin-note").textContent = "Wrong password."; return; }
+  sessionStorage.setItem("scfAdmin","1");
+  $("#admin-locked").hidden = true;
+  $("#admin-unlocked").hidden = false;
+  $("#admin-note").textContent = "";
+};
+if(sessionStorage.getItem("scfAdmin")==="1"){ $("#admin-locked").hidden=true; $("#admin-unlocked").hidden=false; }
+
+$("#admin-choose").onclick = async ()=>{
+  if(!window.showDirectoryPicker){ $("#admin-note2").textContent = "This browser can't remember folder access — try Chrome or Edge."; return; }
+  try{
+    const dir = await window.showDirectoryPicker({id:"scf-master", mode:"read"});
+    await saveHandle(dir);
+    await activateOverride(dir);
+  }catch(e){ if(e.name!=="AbortError") $("#admin-note2").textContent = e.message; }
+};
+$("#admin-rescan").onclick = ()=>{ if(rootHandle) activateOverride(rootHandle); };
+$("#admin-clear").onclick = async ()=>{
+  await clearHandle();
+  overrideActive = false; rootHandle = null;
+  reels = await loadBundled();
+  populateReelSelect();
+  $("#admin-src").textContent = "Serving the bundled snapshot checked into this page.";
+  $("#status").textContent = "Master data: bundled snapshot";
+  $("#admin-rescan").hidden = true; $("#admin-clear").hidden = true;
+};
+
+(async ()=>{
+  reels = await loadBundled();
+  populateReelSelect();
+  $("#status").textContent = "Master data: bundled snapshot";
+  if(window.showDirectoryPicker){
+    const handle = await loadHandle();
+    if(handle){
+      rootHandle = handle;
+      const ok = await activateOverride(handle, {silent:true});
+      if(!ok) $("#admin-src").textContent = `Remembered master folder “${handle.name}” needs re-approval — unlock admin and re-choose it.`;
+    }
+  }
+})();
+</script>
+</body></html>
