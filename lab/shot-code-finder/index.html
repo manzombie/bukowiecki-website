@@ -15,6 +15,7 @@ main{padding:22px;max-width:1100px}
 select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);background:#fff;border-radius:3px;color:var(--ink)}
 textarea{min-height:170px;resize:vertical;font:13px var(--mono);line-height:1.5}
 .row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.chk{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);cursor:pointer}.chk input{margin:0}
 .btn{border:1px solid var(--line);background:var(--panel);padding:9px 13px;border-radius:3px;font-weight:650;cursor:pointer}.btn:hover{border-color:var(--red);color:var(--red)}.btn.primary{background:var(--red);border-color:var(--red);color:#fff}.btn.primary:hover{color:#fff;opacity:.9}.btn:disabled{opacity:.5;cursor:default}
 .status{font:11px var(--mono);color:var(--muted)}
 .notice{padding:11px 13px;border:1px solid #d9bd8d;background:#fff7e9;color:#70420a;border-radius:3px;font-size:13px;margin-top:10px}
@@ -49,6 +50,7 @@ details.admin>summary{cursor:pointer;font:11px var(--mono);text-transform:upperc
     <div class="field">
       <label for="tcs">Timecodes (one per line)</label>
       <textarea id="tcs" placeholder="01:00:32:13&#10;01:44:12:14&#10;01:45:48:00&#10;01:45:48:00&#10;01:46:36:08&#10;01:55:51:23&#10;01:56:19:12&#10;01:56:22:11&#10;02:02:48:02"></textarea>
+      <label class="chk" style="margin-top:9px"><input type="checkbox" id="offset00"> Third-party QC report — timecodes start at 00:00:00:00 instead of 01:00:00:00 (shift +1 hour before matching)</label>
     </div>
     <div class="row">
       <button class="btn primary" id="find">Find shot codes</button>
@@ -169,9 +171,16 @@ function findShot(tc, rows){
   return null;
 }
 
+function shiftHour(tc, delta){
+  const p = tc.split(":");
+  const hh = ((parseInt(p[0],10) + delta) % 24 + 24) % 24;
+  return String(hh).padStart(2,"0") + ":" + p[1] + ":" + p[2] + ":" + p[3];
+}
+
 function runFind(){
   const reel=reels.find(r=>r.key===$("#reel").value);
   const lines=$("#tcs").value.split("\n").map(l=>l.trim()).filter(Boolean);
+  const offset=$("#offset00").checked;
   if(!reel || !lines.length){
     $("#rows").innerHTML = `<tr><td colspan="5" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr>`;
     $("#copy").hidden = true; $("#csv").hidden = true;
@@ -179,7 +188,8 @@ function runFind(){
   }
   const results = lines.map((tc,i)=>{
     if(!TC_RE.test(tc)) return {i:i+1, tc, shot:null, range:null, status:"bad", label:"Invalid format"};
-    const hit = findShot(tc, reel.rows);
+    const lookupTc = offset ? shiftHour(tc,1) : tc;
+    const hit = findShot(lookupTc, reel.rows);
     if(!hit) return {i:i+1, tc, shot:null, range:null, status:"miss", label:"No shot at this TC"};
     return {i:i+1, tc, shot:hit.shot, range:`${hit.start} – ${hit.end}`, status:"found", label:"Found"};
   });
@@ -196,6 +206,7 @@ function runFind(){
 
 $("#find").onclick = runFind;
 $("#reel").onchange = ()=>{ if($("#rows").children[0]?.children.length>1) runFind(); };
+$("#offset00").onchange = ()=>{ if($("#rows").children[0]?.children.length>1) runFind(); };
 
 $("#copy").onclick = async ()=>{
   const results = window.__scfResults || [];
