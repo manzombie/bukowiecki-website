@@ -63,7 +63,7 @@ details.admin>summary{cursor:pointer;font:11px var(--mono);text-transform:upperc
       <button class="btn primary" id="find">Find shot codes</button>
       <button class="btn" id="versions-upload">Upload versions</button>
       <input class="version-file" type="file" id="versions-file" accept=".edl,.txt,text/plain">
-      <button class="btn" id="copy" hidden>Copy shot codes</button>
+      <button class="btn" id="copy" hidden>Copy full version names</button>
       <button class="btn" id="csv" hidden>Download CSV</button>
       <span class="status" id="status">Loading master data…</span>
     </div>
@@ -72,8 +72,8 @@ details.admin>summary{cursor:pointer;font:11px var(--mono);text-transform:upperc
   </div>
 
   <table>
-    <thead><tr><th>#</th><th>Timecode</th><th>Shot code</th><th>Version</th><th>Version match</th><th>Matched range</th><th>Status</th></tr></thead>
-    <tbody id="rows"><tr><td colspan="7" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr></tbody>
+    <thead><tr><th>#</th><th>Timecode</th><th>Full version name</th><th>Version match</th><th>Matched range</th><th>Status</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="6" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr></tbody>
   </table>
 
   <details class="admin">
@@ -228,26 +228,25 @@ function runFind(){
   const lines=$("#tcs").value.split("\n").map(l=>l.trim()).filter(Boolean);
   const offset=$("#input-start").value==="00";
   if(!reel || !lines.length){
-    $("#rows").innerHTML = `<tr><td colspan="7" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr>`;
+    $("#rows").innerHTML = `<tr><td colspan="6" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr>`;
     $("#copy").hidden = true; $("#csv").hidden = true;
     return;
   }
   const results = lines.map((tc,i)=>{
-    if(!TC_RE.test(tc)) return {i:i+1, tc, shot:null, version:null, versionMatch:null, range:null, status:"bad", label:"Invalid format"};
+    if(!TC_RE.test(tc)) return {i:i+1, tc, shot:null, fullVersion:null, versionMatch:null, range:null, status:"bad", label:"Invalid format"};
     const lookupTc = offset ? shiftHour(tc,1) : tc;
     const hit = findShot(lookupTc, reel.rows);
     if(!hit){
       const version=findVersion(null,lookupTc);
-      return {i:i+1, tc, shot:null, version:version?.version||null, versionMatch:version?.method||null, range:null, status:"miss", label:"No shot at this TC"};
+      return {i:i+1, tc, shot:null, fullVersion:version?.clip||null, versionMatch:version?.method||null, range:null, status:"miss", label:"No shot at this TC"};
     }
     const version=findVersion(hit.shot,lookupTc);
-    return {i:i+1, tc, shot:hit.shot, version:version?.version||null, versionMatch:version?.method||null, range:`${hit.start} – ${hit.end}`, status:"found", label:"Found"};
+    return {i:i+1, tc, shot:hit.shot, fullVersion:version?.clip||null, versionMatch:version?.method||null, range:`${hit.start} – ${hit.end}`, status:"found", label:"Found"};
   });
   $("#rows").innerHTML = results.map(r=>`<tr>
     <td>${r.i}</td>
     <td class="tc">${esc(r.tc)}</td>
-    <td class="shot">${esc(r.shot||"—")}</td>
-    <td class="version">${esc(r.version||"—")}</td>
+    <td class="shot">${esc(r.fullVersion||"—")}</td>
     <td>${esc(r.versionMatch||"—")}</td>
     <td class="tc">${esc(r.range||"—")}</td>
     <td><span class="badge ${r.status}">${esc(r.label)}</span></td>
@@ -281,14 +280,14 @@ $("#versions-file").onchange=async e=>{
 
 $("#copy").onclick = async ()=>{
   const results = window.__scfResults || [];
-  const text = results.map(r=>r.shot||"").join("\n");
-  try{ await navigator.clipboard.writeText(text); $("#status").textContent="Shot codes copied."; }
+  const text = results.map(r=>r.fullVersion||"").join("\n");
+  try{ await navigator.clipboard.writeText(text); $("#status").textContent="Full version names copied."; }
   catch{ $("#status").textContent="Couldn't access clipboard."; }
 };
 $("#csv").onclick = ()=>{
   const results = window.__scfResults || [];
-  const lines=[["#","timecode","shot_code","version","version_match","versions_source","matched_range","status"]];
-  for(const r of results) lines.push([r.i, r.tc, r.shot||"", r.version||"", r.versionMatch||"", versionFilename, r.range||"", r.label]);
+  const lines=[["#","timecode","full_version_name","version_match","versions_source","matched_range","status"]];
+  for(const r of results) lines.push([r.i, r.tc, r.fullVersion||"", r.versionMatch||"", versionFilename, r.range||"", r.label]);
   const csv = lines.map(row=>row.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n");
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
