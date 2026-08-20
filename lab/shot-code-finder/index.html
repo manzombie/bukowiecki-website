@@ -32,6 +32,7 @@ details.admin>summary{cursor:pointer;font:11px var(--mono);text-transform:upperc
 .admin-box{border:1px dashed var(--line);border-radius:4px;padding:16px 18px;margin-top:8px}
 .admin-box input[type=password]{padding:9px 11px;border:1px solid var(--line);border-radius:3px;width:220px}
 .src{font:11px var(--mono);color:var(--muted);margin-top:4px}
+.version-file{display:none}.version-note{margin-top:9px}.version{font:700 12px var(--mono);color:var(--blue)}
 </style>
 </head>
 <body>
@@ -50,20 +51,29 @@ details.admin>summary{cursor:pointer;font:11px var(--mono);text-transform:upperc
     <div class="field">
       <label for="tcs">Timecodes (one per line)</label>
       <textarea id="tcs" placeholder="01:00:32:13&#10;01:44:12:14&#10;01:45:48:00&#10;01:45:48:00&#10;01:46:36:08&#10;01:55:51:23&#10;01:56:19:12&#10;01:56:22:11&#10;02:02:48:02"></textarea>
-      <label class="chk" style="margin-top:9px"><input type="checkbox" id="offset00"> Third-party QC report — timecodes start at 00:00:00:00 instead of 01:00:00:00 (shift +1 hour before matching)</label>
+    </div>
+    <div class="field">
+      <label for="input-start">Input timecode start</label>
+      <select id="input-start">
+        <option value="01">01:00:00:00 — master timeline (default)</option>
+        <option value="00">00:00:00:00 — QC report / Pixelogic (+1 hour when matching)</option>
+      </select>
     </div>
     <div class="row">
       <button class="btn primary" id="find">Find shot codes</button>
+      <button class="btn" id="versions-upload">Upload versions</button>
+      <input class="version-file" type="file" id="versions-file" accept=".edl,.txt,text/plain">
       <button class="btn" id="copy" hidden>Copy shot codes</button>
       <button class="btn" id="csv" hidden>Download CSV</button>
       <span class="status" id="status">Loading master data…</span>
     </div>
+    <div class="status version-note" id="versions-status">No versions EDL loaded.</div>
     <div id="notice"></div>
   </div>
 
   <table>
-    <thead><tr><th>#</th><th>Timecode</th><th>Shot code</th><th>Matched range</th><th>Status</th></tr></thead>
-    <tbody id="rows"><tr><td colspan="5" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr></tbody>
+    <thead><tr><th>#</th><th>Timecode</th><th>Shot code</th><th>Version</th><th>Version match</th><th>Matched range</th><th>Status</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="7" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr></tbody>
   </table>
 
   <details class="admin">
@@ -104,6 +114,8 @@ const TC_PAIR_RE = /^(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)$/;
 let reels = [];        // [{key,label,rows:[{start,end,shot}]}]
 let overrideActive = false;
 let rootHandle = null;
+let versionRows = [];  // [{shot,version,clip,start,end}]
+let versionFilename = "";
 
 function decode(buffer){
   const bytes=new Uint8Array(buffer);
@@ -171,6 +183,40 @@ function findShot(tc, rows){
   return null;
 }
 
+function parseVersionClip(name){
+  const clean=String(name||"").replace(/^\*\s+(?:FROM|TO) CLIP NAME:\s*/i,"").replace(/\.\[[^\]]+\]\.\w+.*$/i,"").trim();
+  const detailed=clean.match(/^(.+?)_(?:comp|plate|elem|roto|paint|prep|dmp|fx|anim|layout|light|grade)_[a-z0-9]+_v(\d+)$/i);
+  if(detailed) return {shot:detailed[1].toUpperCase(), version:`v${detailed[2].padStart(4,"0")}`, clip:clean};
+  const simple=clean.match(/^(.+?)_v(\d+)$/i);
+  if(simple) return {shot:simple[1].toUpperCase(), version:`v${simple[2].padStart(4,"0")}`, clip:clean};
+  return null;
+}
+
+function parseVersionsEdl(text){
+  const out=[];
+  const eventRe=/^\s*\d+\s+(\S+)\s+V\s+\S+\s+(?:(?:\d+)\s+)?(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)\s+(\d\d:\d\d:\d\d:\d\d)/i;
+  for(const raw of text.replaceAll("\r","").split("\n")){
+    const m=raw.match(eventRe);
+    if(!m || m[1].toUpperCase()==="BL") continue;
+    const parsed=parseVersionClip(m[1]);
+    if(parsed) out.push({...parsed,start:m[4],end:m[5]});
+  }
+  return out;
+}
+
+function versionNumber(version){ return parseInt(String(version||"").replace(/\D/g,""),10)||0; }
+
+function findVersion(shot, tc){
+  const id=String(shot||"").toUpperCase();
+  const byId=versionRows.filter(v=>v.shot===id);
+  const byTc=versionRows.filter(v=>tc>=v.start && tc<v.end);
+  const both=byId.filter(v=>tc>=v.start && tc<v.end);
+  const pool=both.length?both:byId.length?byId:byTc;
+  if(!pool.length) return null;
+  const hit=pool.reduce((best,v)=>!best||versionNumber(v.version)>versionNumber(best.version)?v:best,null);
+  return {...hit, method:both.length?"Shot ID + timecode":byId.length?"Shot ID":"Timecode"};
+}
+
 function shiftHour(tc, delta){
   const p = tc.split(":");
   const hh = ((parseInt(p[0],10) + delta) % 24 + 24) % 24;
@@ -180,23 +226,29 @@ function shiftHour(tc, delta){
 function runFind(){
   const reel=reels.find(r=>r.key===$("#reel").value);
   const lines=$("#tcs").value.split("\n").map(l=>l.trim()).filter(Boolean);
-  const offset=$("#offset00").checked;
+  const offset=$("#input-start").value==="00";
   if(!reel || !lines.length){
-    $("#rows").innerHTML = `<tr><td colspan="5" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr>`;
+    $("#rows").innerHTML = `<tr><td colspan="7" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr>`;
     $("#copy").hidden = true; $("#csv").hidden = true;
     return;
   }
   const results = lines.map((tc,i)=>{
-    if(!TC_RE.test(tc)) return {i:i+1, tc, shot:null, range:null, status:"bad", label:"Invalid format"};
+    if(!TC_RE.test(tc)) return {i:i+1, tc, shot:null, version:null, versionMatch:null, range:null, status:"bad", label:"Invalid format"};
     const lookupTc = offset ? shiftHour(tc,1) : tc;
     const hit = findShot(lookupTc, reel.rows);
-    if(!hit) return {i:i+1, tc, shot:null, range:null, status:"miss", label:"No shot at this TC"};
-    return {i:i+1, tc, shot:hit.shot, range:`${hit.start} – ${hit.end}`, status:"found", label:"Found"};
+    if(!hit){
+      const version=findVersion(null,lookupTc);
+      return {i:i+1, tc, shot:null, version:version?.version||null, versionMatch:version?.method||null, range:null, status:"miss", label:"No shot at this TC"};
+    }
+    const version=findVersion(hit.shot,lookupTc);
+    return {i:i+1, tc, shot:hit.shot, version:version?.version||null, versionMatch:version?.method||null, range:`${hit.start} – ${hit.end}`, status:"found", label:"Found"};
   });
   $("#rows").innerHTML = results.map(r=>`<tr>
     <td>${r.i}</td>
     <td class="tc">${esc(r.tc)}</td>
     <td class="shot">${esc(r.shot||"—")}</td>
+    <td class="version">${esc(r.version||"—")}</td>
+    <td>${esc(r.versionMatch||"—")}</td>
     <td class="tc">${esc(r.range||"—")}</td>
     <td><span class="badge ${r.status}">${esc(r.label)}</span></td>
   </tr>`).join("");
@@ -206,7 +258,26 @@ function runFind(){
 
 $("#find").onclick = runFind;
 $("#reel").onchange = ()=>{ if($("#rows").children[0]?.children.length>1) runFind(); };
-$("#offset00").onchange = ()=>{ if($("#rows").children[0]?.children.length>1) runFind(); };
+$("#input-start").onchange = ()=>{ if($("#rows").children[0]?.children.length>1) runFind(); };
+
+$("#versions-upload").onclick=()=>$("#versions-file").click();
+$("#versions-file").onchange=async e=>{
+  const file=e.target.files?.[0];
+  if(!file) return;
+  try{
+    const parsed=parseVersionsEdl(await file.text());
+    if(!parsed.length) throw new Error("No versioned VFX clips were found in that EDL.");
+    versionRows=parsed; versionFilename=file.name;
+    const shots=new Set(parsed.map(v=>v.shot));
+    $("#versions-status").textContent=`Versions: ${file.name} · ${parsed.length} timeline entries · ${shots.size} shots`;
+    $("#notice").innerHTML=`<div class="notice ok">Versions loaded. Results will match by Shot ID and record timecode.</div>`;
+    if(window.__scfResults) runFind();
+  }catch(err){
+    versionRows=[]; versionFilename="";
+    $("#versions-status").textContent="No versions EDL loaded.";
+    $("#notice").innerHTML=`<div class="notice error">${esc(err.message||"Couldn't read that EDL.")}</div>`;
+  }
+};
 
 $("#copy").onclick = async ()=>{
   const results = window.__scfResults || [];
@@ -216,8 +287,8 @@ $("#copy").onclick = async ()=>{
 };
 $("#csv").onclick = ()=>{
   const results = window.__scfResults || [];
-  const lines=[["#","timecode","shot_code","matched_range","status"]];
-  for(const r of results) lines.push([r.i, r.tc, r.shot||"", r.range||"", r.label]);
+  const lines=[["#","timecode","shot_code","version","version_match","versions_source","matched_range","status"]];
+  for(const r of results) lines.push([r.i, r.tc, r.shot||"", r.version||"", r.versionMatch||"", versionFilename, r.range||"", r.label]);
   const csv = lines.map(row=>row.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n");
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
