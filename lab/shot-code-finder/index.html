@@ -27,12 +27,8 @@ td{padding:10px 12px;border-bottom:1px solid #e7e2d8;vertical-align:middle;font-
 .badge{display:inline-block;padding:3px 7px;border-radius:20px;font:700 10px var(--mono);text-transform:uppercase}
 .found{background:#dceddf;color:#25603f}.miss{background:#f7ddd9;color:#a52d22}.bad{background:#e7edf0;color:#32596c}
 .empty{text-align:center;color:var(--muted);padding:40px}
-details.admin{margin-top:26px}
-details.admin>summary{cursor:pointer;font:11px var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:8px 0}
-.admin-box{border:1px dashed var(--line);border-radius:4px;padding:16px 18px;margin-top:8px}
-.admin-box input[type=password]{padding:9px 11px;border:1px solid var(--line);border-radius:3px;width:220px}
 .src{font:11px var(--mono);color:var(--muted);margin-top:4px}
-.version-file{display:none}.version-note{margin-top:9px}.version{font:700 12px var(--mono);color:var(--blue)}
+.hidden-file{display:none}.version-note{margin-top:9px}.version{font:700 12px var(--mono);color:var(--blue)}
 </style>
 </head>
 <body>
@@ -40,10 +36,20 @@ details.admin>summary{cursor:pointer;font:11px var(--mono);text-transform:upperc
 <section class="hero">
   <div class="eyebrow">Editorial lookup</div>
   <h1>Shot Code Finder</h1>
-  <p class="lede">Pick an episode, paste record timecodes, get back the shot code burned into that episode's master subcaps at each one. Reads the same Avid caption exports as Recap Checker.</p>
+  <p class="lede">Choose the folder containing your latest Recap Checker subcaps, pick an episode, then paste record timecodes to find the matching grade versions.</p>
 </section>
 <main>
   <div class="panel">
+    <div class="field">
+      <label>Master subcaps source</label>
+      <div class="row">
+        <button class="btn" id="master-choose">Choose recap folder…</button>
+        <button class="btn" id="master-rescan" hidden>Re-scan folder</button>
+        <button class="btn" id="master-clear" hidden>Use bundled data</button>
+        <input class="hidden-file" type="file" id="master-folder-input" accept=".txt,text/plain" webkitdirectory directory multiple>
+      </div>
+      <p class="src" id="master-src">Serving the bundled snapshot. Choose your recap folder to use the latest *_SUBCAPS.txt files.</p>
+    </div>
     <div class="field">
       <label for="reel">Episode</label>
       <select id="reel"></select>
@@ -62,7 +68,7 @@ details.admin>summary{cursor:pointer;font:11px var(--mono);text-transform:upperc
     <div class="row">
       <button class="btn primary" id="find">Find shot codes</button>
       <button class="btn" id="versions-upload">Upload versions</button>
-      <input class="version-file" type="file" id="versions-file" accept=".edl,.txt,text/plain">
+      <input class="hidden-file" type="file" id="versions-file" accept=".edl,.txt,text/plain">
       <button class="btn" id="copy" hidden>Copy full version names</button>
       <button class="btn" id="csv" hidden>Download CSV</button>
       <span class="status" id="status">Loading master data…</span>
@@ -75,37 +81,11 @@ details.admin>summary{cursor:pointer;font:11px var(--mono);text-transform:upperc
     <thead><tr><th>#</th><th>Timecode</th><th>Full version name</th><th>Version match</th><th>Matched range</th><th>Status</th></tr></thead>
     <tbody id="rows"><tr><td colspan="6" class="empty">Pick an episode, paste timecodes, hit Find.</td></tr></tbody>
   </table>
-
-  <details class="admin">
-    <summary>Admin — update master data</summary>
-    <div class="admin-box">
-      <p class="src" id="admin-src">Serving the bundled snapshot checked into this page.</p>
-      <div id="admin-locked">
-        <div class="row">
-          <input type="password" id="admin-pass" placeholder="admin password" autocomplete="off">
-          <button class="btn" id="admin-unlock">Unlock</button>
-        </div>
-        <p class="status" id="admin-note"></p>
-      </div>
-      <div id="admin-unlocked" hidden>
-        <div class="row">
-          <button class="btn" id="admin-choose">Choose master folder…</button>
-          <button class="btn" id="admin-rescan" hidden>Re-scan now</button>
-          <button class="btn" id="admin-clear" hidden>Use bundled data instead</button>
-        </div>
-        <p class="status" id="admin-note2"></p>
-      </div>
-    </div>
-  </details>
 </main>
 <script>
 "use strict";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-
-// ---- change this before going live ----
-const ADMIN_PASSWORD = "TROP2026";
-// ----------------------------------------
 
 const BUNDLED = ["301_LC2_SUBCAPS.txt","302_LC3_SUBCAPS.txt","303_LC5_SUBCAPS.txt","304_LC6_SUBCAPS.txt","305_LC7_SUBCAPS.txt","306_LC4_SUBCAPS.txt","307_LC7_SUBCAPS.txt","308_LC5_SUBCAPS.txt"];
 const TC_RE = /^\d\d:\d\d:\d\d:\d\d$/;
@@ -164,6 +144,16 @@ async function loadFromFolder(dir){
     if(!/_SUBCAPS\.txt$/i.test(h.name)) continue;
     const f=await h.getFile();
     out.push({key:h.name, label:labelFor(h.name), rows:parseSubcap(decode(await f.arrayBuffer()))});
+  }
+  out.sort((a,b)=> a.key<b.key?-1:a.key>b.key?1:0);
+  return out;
+}
+
+async function loadFromFiles(files){
+  const out=[];
+  for(const f of files){
+    if(!/_SUBCAPS\.txt$/i.test(f.name)) continue;
+    out.push({key:f.name, label:labelFor(f.name), rows:parseSubcap(decode(await f.arrayBuffer()))});
   }
   out.sort((a,b)=> a.key<b.key?-1:a.key>b.key?1:0);
   return out;
@@ -295,7 +285,7 @@ $("#csv").onclick = ()=>{
   a.click();
 };
 
-// ---- Admin: password gate + live folder override (IndexedDB-remembered, same pattern as Recap Checker) ----
+// ---- User-selectable live folder override (remembered when the browser supports persistent handles) ----
 function db(){ return new Promise((ok,no)=>{ const r=indexedDB.open("shot-code-finder",1); r.onupgradeneeded=()=>r.result.createObjectStore("handles"); r.onsuccess=()=>ok(r.result); r.onerror=()=>no(r.error); }); }
 async function saveHandle(h){ const d=await db(); return new Promise((ok,no)=>{ const t=d.transaction("handles","readwrite"); t.objectStore("handles").put(h,"master"); t.oncomplete=ok; t.onerror=()=>no(t.error); }); }
 async function loadHandle(){ try{ const d=await db(); return await new Promise(ok=>{ const r=d.transaction("handles").objectStore("handles").get("master"); r.onsuccess=()=>ok(r.result); r.onerror=()=>ok(null); }); }catch{ return null; } }
@@ -309,44 +299,49 @@ async function activateOverride(dir, {silent}={}){
     if(!loaded.length) throw new Error("No *_SUBCAPS.txt files found in that folder.");
     reels = loaded; overrideActive = true; rootHandle = dir;
     populateReelSelect();
-    $("#admin-src").textContent = `Live override active — reading ${loaded.length} file(s) from “${dir.name}”.`;
+    if(window.__scfResults) runFind();
+    $("#master-src").textContent = `Live folder active — reading ${loaded.length} file(s) from “${dir.name}”.`;
     $("#status").textContent = "Master data: live folder · " + new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
-    $("#admin-rescan").hidden = false;
-    $("#admin-clear").hidden = false;
+    $("#master-rescan").hidden = false;
+    $("#master-clear").hidden = false;
     return true;
   }catch(e){
-    $("#admin-note2").textContent = e.message || "Couldn't read that folder.";
+    $("#notice").innerHTML=`<div class="notice error">${esc(e.message||"Couldn't read that folder.")}</div>`;
     return false;
   }
 }
 
-$("#admin-unlock").onclick = ()=>{
-  const val = $("#admin-pass").value;
-  if(val !== ADMIN_PASSWORD){ $("#admin-note").textContent = "Wrong password."; return; }
-  sessionStorage.setItem("scfAdmin","1");
-  $("#admin-locked").hidden = true;
-  $("#admin-unlocked").hidden = false;
-  $("#admin-note").textContent = "";
-};
-if(sessionStorage.getItem("scfAdmin")==="1"){ $("#admin-locked").hidden=true; $("#admin-unlocked").hidden=false; }
-
-$("#admin-choose").onclick = async ()=>{
-  if(!window.showDirectoryPicker){ $("#admin-note2").textContent = "This browser can't remember folder access — try Chrome or Edge."; return; }
+$("#master-choose").onclick = async ()=>{
+  if(!window.showDirectoryPicker){ $("#master-folder-input").click(); return; }
   try{
     const dir = await window.showDirectoryPicker({id:"scf-master", mode:"read"});
     await saveHandle(dir);
     await activateOverride(dir);
-  }catch(e){ if(e.name!=="AbortError") $("#admin-note2").textContent = e.message; }
+  }catch(e){ if(e.name!=="AbortError") $("#notice").innerHTML=`<div class="notice error">${esc(e.message)}</div>`; }
 };
-$("#admin-rescan").onclick = ()=>{ if(rootHandle) activateOverride(rootHandle); };
-$("#admin-clear").onclick = async ()=>{
+$("#master-folder-input").onchange = async e=>{
+  const loaded=await loadFromFiles(e.target.files||[]);
+  if(!loaded.length){ $("#notice").innerHTML=`<div class="notice error">No *_SUBCAPS.txt files found in that folder.</div>`; return; }
+  reels=loaded; overrideActive=true; rootHandle=null;
+  populateReelSelect();
+  if(window.__scfResults) runFind();
+  const folder=e.target.files?.[0]?.webkitRelativePath?.split("/")[0]||"selected folder";
+  $("#master-src").textContent=`Live folder active — reading ${loaded.length} file(s) from “${folder}”. Re-choose the folder to refresh it.`;
+  $("#status").textContent="Master data: selected folder";
+  $("#master-rescan").hidden=true;
+  $("#master-clear").hidden=false;
+};
+$("#master-rescan").onclick = ()=>{ if(rootHandle) activateOverride(rootHandle); };
+$("#master-clear").onclick = async ()=>{
   await clearHandle();
   overrideActive = false; rootHandle = null;
   reels = await loadBundled();
   populateReelSelect();
-  $("#admin-src").textContent = "Serving the bundled snapshot checked into this page.";
+  if(window.__scfResults) runFind();
+  $("#master-src").textContent = "Serving the bundled snapshot. Choose your recap folder to use the latest *_SUBCAPS.txt files.";
   $("#status").textContent = "Master data: bundled snapshot";
-  $("#admin-rescan").hidden = true; $("#admin-clear").hidden = true;
+  $("#master-rescan").hidden = true; $("#master-clear").hidden = true;
+  $("#master-folder-input").value="";
 };
 
 (async ()=>{
@@ -358,7 +353,7 @@ $("#admin-clear").onclick = async ()=>{
     if(handle){
       rootHandle = handle;
       const ok = await activateOverride(handle, {silent:true});
-      if(!ok) $("#admin-src").textContent = `Remembered master folder “${handle.name}” needs re-approval — unlock admin and re-choose it.`;
+      if(!ok) $("#master-src").textContent = `Remembered recap folder “${handle.name}” needs permission again — choose it to reconnect.`;
     }
   }
 })();
