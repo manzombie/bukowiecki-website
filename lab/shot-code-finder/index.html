@@ -36,19 +36,19 @@ td{padding:10px 12px;border-bottom:1px solid #e7e2d8;vertical-align:middle;font-
 <section class="hero">
   <div class="eyebrow">Editorial lookup</div>
   <h1>Shot Code Finder</h1>
-  <p class="lede">Choose the folder containing your latest Recap Checker subcaps, pick an episode, then paste record timecodes to find the matching grade versions.</p>
+  <p class="lede">Choose the folder containing your latest subcap files, pick an episode, then paste record timecodes to find the matching grade versions.</p>
 </section>
 <main>
   <div class="panel">
     <div class="field">
       <label>Master subcaps source</label>
       <div class="row">
-        <button class="btn" id="master-choose">Choose recap folder…</button>
+        <button class="btn" id="master-choose">Choose subcap folder…</button>
         <button class="btn" id="master-rescan" hidden>Re-scan folder</button>
         <button class="btn" id="master-clear" hidden>Use bundled data</button>
         <input class="hidden-file" type="file" id="master-folder-input" accept=".txt,text/plain" webkitdirectory directory multiple>
       </div>
-      <p class="src" id="master-src">Serving the bundled snapshot. Choose your recap folder to use the latest *_SUBCAPS.txt files.</p>
+      <p class="src" id="master-src">Serving the bundled snapshot. Choose your subcap folder to use the latest *_SUBCAPS.txt files.</p>
     </div>
     <div class="field">
       <label for="reel">Episode</label>
@@ -338,7 +338,7 @@ $("#master-clear").onclick = async ()=>{
   reels = await loadBundled();
   populateReelSelect();
   if(window.__scfResults) runFind();
-  $("#master-src").textContent = "Serving the bundled snapshot. Choose your recap folder to use the latest *_SUBCAPS.txt files.";
+  $("#master-src").textContent = "Serving the bundled snapshot. Choose your subcap folder to use the latest *_SUBCAPS.txt files.";
   $("#status").textContent = "Master data: bundled snapshot";
   $("#master-rescan").hidden = true; $("#master-clear").hidden = true;
   $("#master-folder-input").value="";
@@ -353,7 +353,7 @@ $("#master-clear").onclick = async ()=>{
     if(handle){
       rootHandle = handle;
       const ok = await activateOverride(handle, {silent:true});
-      if(!ok) $("#master-src").textContent = `Remembered recap folder “${handle.name}” needs permission again — choose it to reconnect.`;
+      if(!ok) $("#master-src").textContent = `Remembered subcap folder “${handle.name}” needs permission again — choose it to reconnect.`;
     }
   }
 })();
