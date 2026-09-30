@@ -2,123 +2,173 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#04121c" />
 <title>Deeplight — Research #02 · Research Studio</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><path d=%22M28 16 L13 16 L13 84 L28 84%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%227%22/><path d=%22M72 16 L87 16 L87 84 L72 84%22 fill=%22none%22 stroke=%22%2316130f%22 stroke-width=%227%22/><circle cx=%2234%22 cy=%2234%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2266%22 cy=%2234%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2234%22 cy=%2266%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2266%22 cy=%2266%22 r=%228%22 fill=%22%2316130f%22/><circle cx=%2250%22 cy=%2250%22 r=%2210%22 fill=%22%23c0392b%22/></svg>" />
-<style>
-  :root { --accent:#c0392b; --teal:#3fb7a6; --paper:#f4f1ea; --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace; }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  html,body { height:100%; background:#04070c; overflow:hidden; color:var(--paper); font-family:var(--mono); }
-  #app { position:fixed; inset:0; }
-  canvas { display:block; }
-
-  /* ---- HUD ---- */
-  #hud { position:fixed; inset:0; pointer-events:none; z-index:10; }
-  #crosshair { position:absolute; left:50%; top:50%; width:34px; height:34px; transform:translate(-50%,-50%);
-    border:1px solid rgba(255,255,255,.5); border-radius:50%; }
-  #crosshair::before, #crosshair::after { content:""; position:absolute; background:rgba(255,255,255,.6); }
-  #crosshair::before { left:50%; top:-8px; width:1px; height:8px; }
-  #crosshair::after { top:50%; left:-8px; height:1px; width:8px; }
-  .hud-tl { position:absolute; top:18px; left:20px; font-size:13px; line-height:1.7; }
-  .hud-tr { position:absolute; top:18px; right:20px; text-align:right; font-size:13px; line-height:1.7; }
-  .hud-bl { position:absolute; bottom:18px; left:20px; font-size:14px; opacity:.7; line-height:1.7; }
-  #hp { letter-spacing:3px; font-size:18px; color:var(--accent); }
-  #score { font-size:22px; font-weight:bold; }
-  #mult { color:var(--teal); }
-  #progress-wrap { position:absolute; bottom:18px; left:50%; transform:translateX(-50%); width:240px; }
-  #progress-bar { height:2px; background:rgba(255,255,255,.15); }
-  #progress-bar > i { display:block; height:100%; width:0; background:var(--accent); transition:width .2s; }
-  #progress-label { text-align:center; font-size:10px; opacity:.5; margin-top:5px; letter-spacing:.1em; }
-  #toast { position:absolute; left:50%; top:34%; transform:translateX(-50%); font-size:15px; opacity:0;
-    transition:opacity .25s; text-shadow:0 2px 8px #000; white-space:nowrap; }
-  .audio-ctrls { position:absolute; bottom:18px; right:20px; display:flex; align-items:center; gap:8px; pointer-events:auto; }
-  .ac-label { font-family:var(--mono); font-size:13px; letter-spacing:.1em; color:rgba(244,241,234,.45); margin-right:2px; }
-  .ac { font-family:var(--mono); font-size:15px; letter-spacing:.04em; padding:9px 15px; cursor:pointer;
-    background:rgba(8,20,28,.6); color:rgba(244,241,234,.45); border:1px solid rgba(255,255,255,.16); border-radius:3px; }
-  .ac.trk { padding:9px 14px; min-width:38px; }
-  .ac:hover { border-color:rgba(255,255,255,.45); color:rgba(244,241,234,.8); }
-  .ac:disabled { opacity:.3; cursor:not-allowed; }
-  .ac.on { color:var(--teal); border-color:rgba(63,183,166,.6); background:rgba(63,183,166,.12); }
-
-  /* ---- overlays ---- */
-  .screen { position:fixed; inset:0; z-index:20; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    background:radial-gradient(ellipse at center, rgba(8,14,22,.85), rgba(2,4,8,.97)); text-align:center; padding:24px; }
-  .screen[hidden] { display:none; }
-  .screen h1 { font-size:clamp(34px,7vw,68px); font-weight:600; letter-spacing:-.02em; margin-bottom:8px; }
-  .screen h1 em { color:var(--accent); font-style:normal; }
-  .screen p { opacity:.7; font-size:14px; max-width:46ch; line-height:1.6; margin-bottom:22px; }
-  .screen .stat { font-size:14px; opacity:.85; line-height:2; }
-  .btn { pointer-events:auto; cursor:pointer; font-family:var(--mono); font-size:14px; letter-spacing:.04em;
-    padding:13px 26px; background:var(--paper); color:#04070c; border:none; border-radius:2px; margin-top:18px; }
-  .btn:hover { background:var(--accent); color:#fff; }
-  .keys { font-size:12px; opacity:.55; margin-top:20px; line-height:1.9; }
-  .keys b { color:var(--teal); font-weight:normal; }
-  .brand { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:21; font-size:11px; opacity:.5; letter-spacing:.08em; }
-  .brand a { color:inherit; text-decoration:none; }
-  #loading { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:30; background:#04070c; font-size:13px; letter-spacing:.15em; opacity:.7; }
-</style>
+<meta name="description" content="Pilot a compact research submarine through flooded caves. Your headlights are your eyes and your weapon." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%2304121c%22/><ellipse cx=%2248%22 cy=%2254%22 rx=%2230%22 ry=%2213%22 fill=%22%23d88a2c%22/><path d=%22M78 50 L98 38 L98 70 Z%22 fill=%22%23ffe0b0%22 opacity=%22.8%22/></svg>" />
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 <div id="app"></div>
+<div id="cockpit" hidden><div class="strut l"></div><div class="strut r"></div><div class="dash"></div></div>
+<div id="vignette"></div>
 
+<!-- ============ HUD ============ -->
 <div id="hud" hidden>
-  <div id="crosshair"></div>
-  <div class="hud-tl">
-    <div>DEPTH <span id="depthval">0</span>m</div>
-    <div id="hp">♥ ♥ ♥</div>
+  <div class="hud-tl panel">
+    <div class="meter"><span class="lbl">HULL</span><div class="bar"><i id="hull-bar"></i></div><b id="hull-val">100</b></div>
+    <div class="meter"><span class="lbl">ENERGY</span><div class="bar energy"><i id="energy-bar"></i></div><b id="energy-val">100</b></div>
+    <div class="meter sonar"><span class="lbl">SONAR</span><span id="sonar-val" class="ready">READY</span></div>
   </div>
-  <div class="hud-tr">
+  <div class="hud-tc">
+    <div id="objective"><span class="obj-mark">▸</span> <span id="obj-text"></span> <span id="obj-dist"></span></div>
+  </div>
+  <div class="hud-tr panel">
     <div id="score">0</div>
-    <div id="mult">×1</div>
+    <div id="mult"><b>×1</b> <span id="chain"></span></div>
   </div>
-  <div class="hud-bl">
-    <div>[A]/[D] turn &amp; branch · [W]/[S] rise/dive</div>
-    <div>mouse aim · click fire · [M] map · [C] view</div>
-  </div>
-  <div id="progress-wrap">
-    <div id="progress-bar"><i></i></div>
-    <div id="progress-label">TO EXIT</div>
-  </div>
-  <div id="toast"></div>
-  <div class="audio-ctrls">
-    <span class="ac-label">MUSIC</span>
-    <button class="ac trk" data-trk="track1" type="button">1</button>
-    <button class="ac trk" data-trk="track2" type="button">2</button>
-    <button class="ac trk" data-trk="track3" type="button">3</button>
-    <button id="btn-sfx" class="ac on" type="button">► SFX</button>
-  </div>
+  <div class="hud-bl"><span id="depth">DEPTH 0 m</span> · <span id="speed">0.0 m/s</span> · <span id="cam-mode">CHASE</span></div>
+  <div id="reticle"><div class="ring"></div><div class="limit">AIM LIMIT</div></div>
+  <div id="aimdot"></div>
+  <div id="markers"></div>
+  <div id="prompt" hidden><div class="p-title"></div><div class="p-body"></div></div>
+  <div id="toasts"></div>
+  <div id="banner"></div>
 </div>
 
-<div class="brand"><a href="/">Research Studio</a> / Research #02 — Deeplight</div>
+<!-- ============ touch ============ -->
+<div id="touch" hidden>
+  <div class="t-left"><div class="t-stick"><div class="t-knob"></div></div><span class="t-hint">STEER · THRUST</span></div>
+  <div class="t-right"><span class="t-hint">DRAG TO AIM</span></div>
+  <button class="t-btn fire" data-t="fire" aria-label="Fire">FIRE</button>
+  <button class="t-btn boost" data-t="boost" aria-label="Boost">BOOST</button>
+  <button class="t-btn rise" data-t="rise" aria-label="Rise">▲</button>
+  <button class="t-btn dive" data-t="dive" aria-label="Descend">▼</button>
+  <button class="t-btn sonar" data-t="sonar" aria-label="Sonar">SONAR</button>
+  <button class="t-btn small cam" data-t="camera" aria-label="Camera">CAM</button>
+  <button class="t-btn small pause" data-t="pause" aria-label="Pause">II</button>
+</div>
 
-<!-- start screen -->
-<div class="screen" id="start-screen">
+<!-- ============ screens ============ -->
+<div class="screen" id="title" hidden>
+  <div class="brand"><a href="/">Research Studio</a> / Research #02</div>
   <h1>Deep<em>light</em></h1>
-  <p>You are carried forward by the current through a flooded cave network.
-     Read the glowing passages, choose your route, and use your headlights as your gun.</p>
-  <button class="btn" id="play-btn">Dive</button>
-  <div class="keys">
-    <b>A</b> / <b>D</b> (or <b>←</b>/<b>→</b>) — turn &amp; choose branches<br>
-    <b>W</b> / <b>S</b> (or <b>↑</b>/<b>↓</b>) — rise / dive to dodge<br>
-    <b>mouse</b> — aim &nbsp;·&nbsp; <b>click</b> — fire &nbsp;·&nbsp; <b>M</b> — map &nbsp;·&nbsp; <b>R</b> — restart
+  <p class="lede">Pilot a compact research submarine into flooded caves to recover the lost <b>Halcyon</b>'s flight recorder.
+     Your headlights are your eyes — and your only weapon.</p>
+  <button class="btn primary" id="btn-dive">Dive</button>
+  <div class="row"><button class="btn" id="btn-controls">Controls</button><button class="btn" id="btn-settings">Settings</button></div>
+  <div id="best" class="mono"></div>
+  <div class="foot mono">Keyboard + mouse or touch · ~6–10 min expedition</div>
+</div>
+
+<div class="screen" id="pause" hidden>
+  <h2>Paused</h2>
+  <button class="btn primary" id="btn-resume">Resume</button>
+  <div class="row"><button class="btn" id="btn-p-controls">Controls</button><button class="btn" id="btn-p-settings">Settings</button></div>
+  <div class="row"><button class="btn" id="btn-restart">Restart dive</button><button class="btn" id="btn-quit">Title</button></div>
+  <div class="foot mono" id="pause-stats"></div>
+</div>
+
+<div class="screen" id="fail" hidden>
+  <h2 class="bad">Hull breached</h2>
+  <p id="fail-cause"></p>
+  <button class="btn primary" id="btn-continue">Continue from checkpoint <kbd>Enter</kbd></button>
+  <div class="row"><button class="btn" id="btn-fail-restart">Restart dive <kbd>R</kbd></button><button class="btn" id="btn-fail-quit">Title</button></div>
+  <div class="foot mono" id="fail-note">Continuing costs 750 points and restores 70% hull.</div>
+</div>
+
+<div class="screen" id="summary" hidden>
+  <h2 class="good">Extracted</h2>
+  <div id="rank"></div>
+  <table id="sum-table"></table>
+  <div id="sum-best" class="mono"></div>
+  <div class="row"><button class="btn primary" id="btn-again">Dive again</button><button class="btn" id="btn-sum-quit">Title</button></div>
+  <div class="foot mono">Score = pickups &amp; kills × chain multiplier + extraction, hull and time bonuses.</div>
+</div>
+
+<div class="screen sheet" id="controls" hidden>
+  <h2>Controls</h2>
+  <div class="cols">
+    <div id="controls-kb">
+      <h3>Keyboard + mouse</h3>
+      <table class="keys">
+        <tr><td><kbd>W</kbd> / <kbd>S</kbd></td><td>Thrust forward / brake &amp; reverse</td></tr>
+        <tr><td><kbd>A</kbd> / <kbd>D</kbd></td><td>Turn left / right</td></tr>
+        <tr><td><kbd>Space</kbd> / <kbd>Ctrl</kbd> or <kbd>Z</kbd></td><td>Rise / descend</td></tr>
+        <tr><td><kbd>Shift</kbd></td><td>Boost (drains energy)</td></tr>
+        <tr><td>Mouse</td><td>Aim headlights (limited gimbal, ±40°)</td></tr>
+        <tr><td>Left click (hold)</td><td>Fire light pulses (energy)</td></tr>
+        <tr><td>Right click / <kbd>Q</kbd></td><td>Sonar ping</td></tr>
+        <tr><td><kbd>C</kbd></td><td>Chase / cockpit camera</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Pause &amp; settings</td></tr>
+        <tr><td><kbd>R</kbd></td><td>Restart (on the failure screen)</td></tr>
+      </table>
+    </div>
+    <div id="controls-touch">
+      <h3>Touch</h3>
+      <table class="keys">
+        <tr><td>Left thumb</td><td>Stick: up = thrust, down = brake, sideways = turn</td></tr>
+        <tr><td>Right thumb</td><td>Drag anywhere free to aim</td></tr>
+        <tr><td>▲ / ▼</td><td>Rise / descend</td></tr>
+        <tr><td>FIRE · BOOST</td><td>Hold</td></tr>
+        <tr><td>SONAR · CAM · II</td><td>Tap</td></tr>
+      </table>
+    </div>
   </div>
+  <h3>Reading the caves</h3>
+  <ul class="legend">
+    <li><span class="sw gold">▣</span> Gold bands — salvage (score)</li>
+    <li><span class="sw green">✚</span> Green cross canister — hull repair</li>
+    <li><span class="sw cyan">◉</span> Cyan beacons — the safe passage</li>
+    <li><span class="sw red">◆</span> Red buoys, bones — danger, better loot</li>
+    <li><span class="sw red">✺</span> Spiked orbs — mines: blink faster as they arm</li>
+    <li><span class="sw violet">◌</span> Shades — freeze while lit by your beams</li>
+  </ul>
+  <button class="btn primary back">Back</button>
 </div>
 
-<!-- end screen -->
-<div class="screen" id="end-screen" hidden>
-  <h1 id="end-title">Surfaced</h1>
-  <div class="stat" id="end-stats"></div>
-  <button class="btn" id="again-btn">Dive again</button>
+<div class="screen sheet" id="settings" hidden>
+  <h2>Settings</h2>
+  <div class="grid">
+    <label>Music volume <input type="range" min="0" max="1" step="0.05" data-s="musicVol" /></label>
+    <label>Effects volume <input type="range" min="0" max="1" step="0.05" data-s="sfxVol" /></label>
+    <label>Aim sensitivity <input type="range" min="0.3" max="2.5" step="0.05" data-s="sensitivity" /></label>
+    <label>Field of view <input type="range" min="60" max="95" step="1" data-s="fov" /></label>
+    <label class="chk"><input type="checkbox" data-s="invertY" /> Invert vertical aim</label>
+    <label class="chk"><input type="checkbox" data-s="reducedMotion" /> Reduced motion (no camera roll/sway)</label>
+    <label class="chk"><input type="checkbox" data-s="shake" /> Impact camera shake</label>
+    <label>Quality <select data-s="quality"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+    <label>Route assist <select data-s="routeAssist"><option value="off">Off</option><option value="sonar">After sonar ping</option><option value="always">Always</option></select></label>
+    <label>Music track <button class="btn small" id="btn-track" type="button">Track 1</button></label>
+  </div>
+  <h3>Key bindings <button class="btn small" id="btn-reset-keys" type="button">Reset</button></h3>
+  <table id="bind-table" class="keys"></table>
+  <p class="note mono">On Windows/Linux, Ctrl+W closes the browser tab — use <kbd>Z</kbd> to descend or rebind.</p>
+  <button class="btn primary back">Back</button>
 </div>
 
-<div id="loading">DESCENDING…</div>
+<div id="loading"><div class="ld-title">DESCENDING</div><div class="ld-bar"><i id="ld-bar"></i></div><div class="ld-sub mono" id="ld-sub">Building caves…</div></div>
+<div id="error" hidden><h2>Deeplight can't start</h2><p id="error-msg"></p><a class="btn" href="/">Back to Research Studio</a></div>
+<div id="rotate" hidden>Rotate your device to landscape</div>
 
+<script>
+  window.__t0 = performance.now();
+  // watchdog: if the game never boots (blocked CDN, old browser), say so instead of hanging
+  setTimeout(function () {
+    if (window.__deeplight || !document.getElementById("error").hidden) return;
+    document.getElementById("loading").hidden = true;
+    document.getElementById("error").hidden = false;
+    document.getElementById("error-msg").textContent = "Deeplight didn't finish loading. Check your connection (the 3D engine loads from a CDN) and reload, or try a current Chrome, Edge, Firefox or Safari.";
+  }, 45000);
+</script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="src/engine.js"></script>
+<script type="module" src="src/main.js"></script>
+<noscript><p style="padding:2em;color:#fff">Deeplight needs JavaScript.</p></noscript>
 </body>
 </html>

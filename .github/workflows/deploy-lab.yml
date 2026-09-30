@@ -50,6 +50,7 @@ jobs:
           # Authoring-only artifacts the shipped site never needs:
           rm -rf _deploy/deeplight/tools/.venv          # local Python env
           rm -rf _deploy/deeplight/levels/source        # source level PNGs (game loads JSON only)
+          rm -rf _deploy/deeplight/tests _deploy/deeplight/package.json   # Node/Chrome test harness only
           find _deploy -type d -name '__pycache__' -prune -exec rm -rf {} +
           echo "Staged $(find _deploy -type f | wc -l) files."
 
