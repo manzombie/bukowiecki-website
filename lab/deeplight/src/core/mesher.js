@@ -16,14 +16,14 @@ export const MESH = { chunk: 16, voxel: 1.0 };
 export const PALETTES = {
   base:    { a: [0.36, 0.40, 0.42], b: [0.25, 0.30, 0.34], glow: 0.0 },
   bay:     { a: [0.46, 0.44, 0.40], b: [0.30, 0.31, 0.33], glow: 0.0 },
-  kelp:    { a: [0.30, 0.40, 0.36], b: [0.20, 0.30, 0.28], glow: 0.35 },
+  kelp:    { a: [0.30, 0.40, 0.36], b: [0.20, 0.30, 0.28], glow: 0.22 },
   echo:    { a: [0.34, 0.38, 0.48], b: [0.22, 0.25, 0.34], glow: 0.15 },
   rust:    { a: [0.50, 0.33, 0.24], b: [0.32, 0.20, 0.16], glow: 0.05 },
-  safe:    { a: [0.34, 0.42, 0.46], b: [0.24, 0.31, 0.36], glow: 0.55 },
-  crystal: { a: [0.36, 0.34, 0.48], b: [0.22, 0.22, 0.32], glow: 0.9 },
+  safe:    { a: [0.34, 0.42, 0.46], b: [0.24, 0.31, 0.36], glow: 0.4 },
+  crystal: { a: [0.36, 0.34, 0.48], b: [0.22, 0.22, 0.32], glow: 0.45 },
   basalt:  { a: [0.24, 0.25, 0.28], b: [0.15, 0.15, 0.18], glow: 0.12 },
   warden:  { a: [0.42, 0.26, 0.24], b: [0.24, 0.14, 0.14], glow: 0.08 },
-  shaft:   { a: [0.40, 0.44, 0.44], b: [0.28, 0.32, 0.33], glow: 0.2 },
+  shaft:   { a: [0.34, 0.38, 0.39], b: [0.24, 0.27, 0.28], glow: 0.1 },
 };
 const METAL = { a: [0.36, 0.30, 0.24], b: [0.20, 0.17, 0.14] };
 
@@ -130,12 +130,13 @@ function shade(world, x, y, z, nx, ny, nz, Col, Glow) {
     r += rust * 0.18; gg += rust * 0.06;
   }
   Col.push(r, gg, b);
-  // bioluminescent patches: sparse, clustered, mostly on ceilings/walls
+  // bioluminescent colonies: a SMOOTH per-vertex mask (where colonies grow);
+  // the individual glowing spots are generated per pixel in the rock shader
   let glow = 0;
   if (pal.glow && mat !== "metal") {
-    const cl = vnoise(x * 0.09 + 40, y * 0.09, z * 0.09);
-    const sp = vnoise(x * 0.9, y * 0.9 + 7, z * 0.9);
-    if (cl > 0.35 && sp > 0.55) glow = pal.glow * Math.min(1, (sp - 0.55) * 4) * Math.min(1, (cl - 0.35) * 4) * (0.6 + 0.4 * Math.max(0, -ny + 0.3));
+    const cl = vnoise(x * 0.07 + 40, y * 0.07, z * 0.07);
+    const t = Math.min(1, Math.max(0, (cl - 0.1) / 0.5));
+    glow = pal.glow * t * t * (3 - 2 * t) * (0.55 + 0.45 * Math.max(0, -ny + 0.4));
   }
   Glow.push(glow);
 }

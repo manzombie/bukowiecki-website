@@ -106,16 +106,18 @@ export class View {
           diffuseColor.rgb *= 0.78 + 0.42*grain;`)
         .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
           { vec3 vp = -vViewPosition;
-            float hb = n3(vWPos*1.3)*0.6 + n3(vWPos*3.7)*0.4;
+            float hb = n3(vWPos*1.1)*0.75 + n3(vWPos*2.6)*0.25;
             vec3 dpx = dFdx(vp), dpy = dFdy(vp);
             float dhx = dFdx(hb), dhy = dFdy(hb);
             vec3 r1 = cross(dpy, normal), r2 = cross(normal, dpx);
             float det = dot(dpx, r1);
             vec3 grad = sign(det) * (dhx * r1 + dhy * r2);
-            normal = normalize(abs(det) * normal - grad * 0.3); }`)
+            normal = normalize(abs(det) * normal - grad * 0.2); }`)
         .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
-          float gl = vGlow * (0.7 + 0.3*sin(uTime*1.3 + vWPos.x*0.35 + vWPos.z*0.21));
-          totalEmissiveRadiance += uGlow * gl * 1.6;`)
+          float sp = n3(vWPos*1.6 + 7.0) * 0.7 + n3(vWPos*4.1) * 0.3;
+          float dots = smoothstep(0.7, 0.84, sp);
+          float gl = vGlow * dots * (0.7 + 0.3*sin(uTime*1.3 + vWPos.x*0.35 + vWPos.z*0.21));
+          totalEmissiveRadiance += uGlow * gl * 1.4;`)
         .replace("#include <fog_fragment>", `#include <fog_fragment>
           float dS = distance(vWPos, uSonarO);
           float ring = exp(-pow((dS - uSonarR) / 1.8, 2.0));
@@ -217,7 +219,7 @@ export class View {
     if (D.crystals) {
       const room = L.nodes.find((n) => n.id === D.crystals);
       const spots = [];
-      for (let k = 0; k < 90; k++) {
+      for (let k = 0; k < 55; k++) {
         const th = rng() * 6.28, ph = (rng() - 0.3) * 1.6;
         const d = [Math.cos(th) * Math.cos(ph), Math.sin(ph), Math.sin(th) * Math.cos(ph)];
         const w = toWall([room.p[0], room.p[1] + 6, room.p[2]], d);
@@ -225,7 +227,7 @@ export class View {
       }
       const cr = new THREE.InstancedMesh(models.crystalGeometry(), models.materials().crystal, spots.length);
       spots.forEach(([p, d], i) => {
-        q.setFromUnitVectors(up, new THREE.Vector3(-d[0], -d[1], -d[2]).normalize()); sc.setScalar(0.5 + rng() * 0.9);
+        q.setFromUnitVectors(up, new THREE.Vector3(-d[0], -d[1], -d[2]).normalize()); sc.setScalar(0.3 + rng() * 0.45);
         m4.compose(new THREE.Vector3(...p), q, sc); cr.setMatrixAt(i, m4);
       });
       this.decor.add(cr);
@@ -251,7 +253,7 @@ export class View {
     if (top) {
       const disc = new THREE.Mesh(new THREE.CircleGeometry(12, 40), new THREE.MeshBasicMaterial({ color: 0xbfe8ff, fog: false }));
       disc.rotation.x = Math.PI / 2; disc.position.set(top.p[0], top.p[1] + 5.5, top.p[2]); this.decor.add(disc);
-      const shaftLight = new THREE.SpotLight(0xcfeeff, 1800, 110, 0.35, 0.8, 1.2);
+      const shaftLight = new THREE.SpotLight(0xcfeeff, 60, 110, 0.35, 0.8, 1.0);
       shaftLight.position.set(top.p[0], top.p[1] + 4, top.p[2]); shaftLight.target.position.set(top.p[0], top.p[1] - 80, top.p[2]);
       this.decor.add(shaftLight, shaftLight.target);
       this.fx.addGodRays(new THREE.Vector3(top.p[0], top.p[1] + 5, top.p[2]));
@@ -270,8 +272,8 @@ export class View {
           ph.position.copy(p); ph.lookAt(p.clone().addScaledVector(side, s)); this.decor.add(ph);
         }
       }
-      const wl = new THREE.PointLight(0x7fd8ff, 20, 26, 1.6);
-      wl.position.copy(a.clone().lerp(b, 0.5)).addScaledVector(up, 8); this.decor.add(wl);
+      const wl = new THREE.PointLight(0x8fdcff, 120, 45, 1.3);
+      wl.position.copy(a.clone().lerp(b, 0.5)).addScaledVector(up, 11); this.decor.add(wl);
     }
   }
 
@@ -301,6 +303,15 @@ export class View {
       this.scene.add(this.membrane);
       this.membraneFade = 1;
     }
+  }
+
+  /** compile every shader up front so the first explosion / creature / beam doesn't hitch */
+  warmup() {
+    const hidden = [];
+    this.scene.traverse((o) => { if (!o.visible) { hidden.push(o); o.visible = true; } });
+    const fl = this.flash.intensity; this.flash.intensity = 1;   // light count must match gameplay
+    try { this.renderer.compile(this.scene, this.camera); if (this.composer) this.composer.render(0); else this.renderer.render(this.scene, this.camera); }
+    finally { for (const o of hidden) o.visible = false; this.flash.intensity = fl; }
   }
 
   /** after a restart the sim recreates its entities; reuse the same objects (no GPU churn) */

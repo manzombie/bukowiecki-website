@@ -122,7 +122,7 @@ export class Fx {
     const col = [], pos = geo.attributes.position;
     for (let i = 0; i < pos.count; i++) { const k = 1 + pos.getY(i) / 90; col.push(k * 0.35, k * 0.45, k * 0.5); }
     geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
-    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: true }));
     m.position.copy(top); this.scene.add(m); this.godRays = m;
   }
 
@@ -178,6 +178,6 @@ export class Fx {
     // propeller wash only when the tail is well away from the lens (cockpit view / wide shots)
     this.bubbleT -= dt;
     if (opts.thrust && this.bubbleT <= 0 && rs.tail && cam.position.distanceTo({ x: rs.tail[0], y: rs.tail[1], z: rs.tail[2], isVector3: true }) > 9) { this.bubbles(rs.tail, 1); this.bubbleT = 0.08; }
-    if (this.godRays) this.godRays.material.opacity = 0.28 + Math.sin(t * 0.7) * 0.06;
+    if (this.godRays) this.godRays.material.opacity = 0.16 + Math.sin(t * 0.7) * 0.04;
   }
 }

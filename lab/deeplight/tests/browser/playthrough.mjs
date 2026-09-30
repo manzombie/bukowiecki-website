@@ -12,7 +12,7 @@ const quality = opt("quality", "medium"), cpu = +opt("cpu", "1"), mobile = args.
 const tag = opt("tag", `${variant}-${quality}-${W}x${H}${cpu > 1 ? "-cpu" + cpu : ""}`);
 const out = `tests/browser/out/${tag}`; mkdirSync(out, { recursive: true });
 
-const b = await launch({ width: W, height: H });
+const b = await launch({ width: W, height: H, extra: args.includes("--uncapped") ? ["--disable-gpu-vsync", "--disable-frame-rate-limit"] : [] });
 try {
   if (mobile) await b.send("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: 2, mobile: true });
   if (cpu > 1) await b.send("Emulation.setCPUThrottlingRate", { rate: cpu });
@@ -21,7 +21,10 @@ try {
   const load = await b.eval("JSON.stringify(window.__loadTimes)");
   await b.eval(`(() => {
     window.__ft = []; let last = performance.now();
-    const f = (t) => { window.__ft.push(t - last); last = t; requestAnimationFrame(f); }; requestAnimationFrame(f);
+    window.__long = []; const f = (t) => { const d = t - last; window.__ft.push(d); if (d > 40 && window.__deeplight) { const g = window.__deeplight; window.__long.push({ ms: Math.round(d), t: +g.sim.time.toFixed(2), obj: g.sim.objective && g.sim.objective.id, mode: g.mode, geo: g.view.renderer.info.memory.geometries, prog: g.view.renderer.info.programs.length }); } last = t; requestAnimationFrame(f); }; requestAnimationFrame(f);
+    const g = window.__deeplight; window.__cpu = []; const of = g._frame.bind(g);
+    g._frame = (dt) => { const a = performance.now(); of(dt); const c = performance.now() - a; if (c > 12) window.__cpu.push({ ms: +c.toFixed(1), t: +g.sim.time.toFixed(1), obj: g.sim.objective && g.sim.objective.id }); };
+    window.__progs0 = g.view.renderer.info.programs.map((p) => p.name + ':' + p.cacheKey.length);
     document.getElementById('btn-dive').click(); return true; })()`);
   const t0 = Date.now(); let lastShot = -99, lastObj = "", shots = 0, samples = [];
   while (Date.now() - t0 < 9 * 60 * 1000) {
@@ -42,6 +45,9 @@ try {
   const pct = (p) => samples[Math.floor(samples.length * p)];
   const avg = samples.reduce((a, x) => a + x, 0) / samples.length;
   console.log(JSON.stringify({ tag, load: JSON.parse(load), frames: samples.length, avgMs: +avg.toFixed(2), fps: +(1000 / avg).toFixed(1), p50: +pct(0.5).toFixed(1), p95: +pct(0.95).toFixed(1), p99: +pct(0.99).toFixed(1), max: +samples.at(-1).toFixed(1) }));
+  console.log('LONG FRAMES', JSON.stringify((await b.eval('window.__long')).slice(0, 12)));
+  console.log('CPU>12ms', JSON.stringify((await b.eval('window.__cpu')).slice(0, 30)), 'count', await b.eval('window.__cpu.length'));
+  console.log('NEW PROGRAMS', JSON.stringify(await b.eval("window.__deeplight.view.renderer.info.programs.map((p) => p.name).filter((n, i, a) => true).slice(window.__progs0.length)")));
   const errs = b.logs.filter((l) => /error|exception/i.test(l));
   if (errs.length) console.log("CONSOLE ERRORS:\n" + errs.slice(0, 10).join("\n"));
 } finally { await b.close(); }

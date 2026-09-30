@@ -11,7 +11,7 @@ export async function launch({ port = 9333, headless = true, width = 1280, heigh
   const dir = mkdtempSync(join(tmpdir(), "deeplight-cdp-"));
   const args = [
     `--remote-debugging-port=${port}`, `--user-data-dir=${dir}`, "--no-first-run", "--no-default-browser-check",
-    "--autoplay-policy=no-user-gesture-required", "--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=metal",
+    "--autoplay-policy=no-user-gesture-required", "--mute-audio", "--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=metal",
     "--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--disable-backgrounding-occluded-windows",
     `--window-size=${width},${height}`, ...(headless ? ["--headless=new"] : []), ...extra, "about:blank",
   ];

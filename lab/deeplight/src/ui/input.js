@@ -211,7 +211,23 @@ export class TouchControls {
         this.btn.get(name).add(e.pointerId);
         if (["sonar", "camera", "pause"].includes(name)) input.pressed.add(name);
       });
-      const up = (e) => { this.btn.get(name)?.delete(e.pointerId); if (!this.btn.get(name)?.size) b.classList.remove("down"); };
+      const release = (n, id) => { this.btn.get(n)?.delete(id); if (!this.btn.get(n)?.size) root.querySelector(`[data-t=${n}]`)?.classList.remove("down"); };
+      const up = (e) => { release(name, e.pointerId); if (name === "rise" || name === "dive") release(name === "rise" ? "dive" : "rise", e.pointerId); };
+      // rise/descend act as a rocker: sliding the thumb from one to the other switches direction
+      if (name === "rise" || name === "dive") b.addEventListener("pointermove", (e) => {
+        const over = document.elementFromPoint(e.clientX, e.clientY)?.closest?.("[data-t]");
+        const other = over && over !== b && (over.dataset.t === "rise" || over.dataset.t === "dive") ? over.dataset.t : null;
+        const mine = this.btn.get(name)?.has(e.pointerId);
+        if (other && mine) {
+          release(name, e.pointerId);
+          if (!this.btn.has(other)) this.btn.set(other, new Set());
+          this.btn.get(other).add(e.pointerId); over.classList.add("down");
+        } else if (!other && over === b && !mine) {
+          const o = name === "rise" ? "dive" : "rise";
+          if (this.btn.get(o)?.delete(e.pointerId) && !this.btn.get(o).size) root.querySelector(`[data-t=${o}]`).classList.remove("down");
+          this.btn.get(name)?.add(e.pointerId) ?? this.btn.set(name, new Set([e.pointerId])); b.classList.add("down");
+        }
+      });
       b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("lostpointercapture", up);
     }
   }

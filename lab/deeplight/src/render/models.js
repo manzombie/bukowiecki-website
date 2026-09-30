@@ -40,7 +40,7 @@ function mats() {
   M.post = new THREE.MeshStandardMaterial({ color: 0x2c3438, roughness: 0.7, metalness: 0.5 });
   M.bone = new THREE.MeshStandardMaterial({ color: 0xb8ae96, roughness: 0.8 });
   M.kelp = new THREE.MeshStandardMaterial({ color: 0x1f4a33, roughness: 0.9, emissive: 0x06170e, emissiveIntensity: 1, side: THREE.DoubleSide });
-  M.crystal = new THREE.MeshStandardMaterial({ color: 0x6b8cff, roughness: 0.15, metalness: 0.1, emissive: 0x3a7bff, emissiveIntensity: 1.1, flatShading: true });
+  M.crystal = new THREE.MeshStandardMaterial({ color: 0x7fb4d8, roughness: 0.25, metalness: 0.1, emissive: 0x1f86b8, emissiveIntensity: 0.55, flatShading: true });
   M.boulder = new THREE.MeshStandardMaterial({ color: 0x5b5e60, roughness: 0.95, flatShading: true });
   return M;
 }
@@ -294,12 +294,14 @@ export function kelpGeometry() {
 }
 export function crystalGeometry() {
   if (G.crystal) return G.crystal;
+  // a cluster of elongated hexagonal crystals with pointed tips, rooted at y=0
   const geos = [];
-  for (let k = 0; k < 5; k++) {
-    const c = new THREE.ConeGeometry(0.35 + (k % 2) * 0.15, 2.2 + k * 0.5, 5);
-    c.translate(0, (2.2 + k * 0.5) / 2 - 0.3, 0);
-    c.rotateZ((k - 2) * 0.28); c.rotateX((k % 3 - 1) * 0.25);
-    geos.push(c);
+  const rng = (k) => ((Math.sin(k * 91.7) * 43758.5) % 1 + 1) % 1;
+  for (let k = 0; k < 6; k++) {
+    const h = 1.2 + rng(k) * 2.2, r = 0.18 + rng(k + 9) * 0.22;
+    const body = new THREE.CylinderGeometry(r, r * 1.1, h, 6); body.translate(0, h / 2, 0);
+    const tip = new THREE.ConeGeometry(r, r * 2.2, 6); tip.translate(0, h + r * 1.1, 0);
+    for (const g of [body, tip]) { g.rotateZ((rng(k + 3) - 0.5) * 0.9); g.rotateX((rng(k + 5) - 0.5) * 0.9); g.translate((rng(k + 7) - 0.5) * 0.8, 0, (rng(k + 11) - 0.5) * 0.8); geos.push(g); }
   }
   G.crystal = mergeGeos(geos);
   return G.crystal;

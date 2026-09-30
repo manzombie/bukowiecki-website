@@ -87,6 +87,9 @@ async function boot() {
   view.buildDecor();
   window.__loadTimes.decor = Math.round(performance.now() - tDecor);
   const game = new Game({ level, world, view, settings, DebugOverlay });
+  const tWarm = performance.now();
+  view.warmup();
+  window.__loadTimes.warmup = Math.round(performance.now() - tWarm);
   window.__deeplight = game;
   $("loading").hidden = true;
   game.showTitle();

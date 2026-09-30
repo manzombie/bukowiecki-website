@@ -19,8 +19,8 @@ const T = {
   repair:   { pick: 3.4 },
   recorder: { pick: 4.0 },
   mine:     { r: 1.7, hp: 2, sense: 12, arm: 1.5, lose: 17, blast: 9, dmg: 34 },
-  lurker:   { r: 1.5, hp: 6, sense: 30, tell: 0.9, lunge: 24, lungeT: 0.75, bite: 20, recover: 1.6, speed: 5, leash: 55, segs: 9, seg: 1.5 },
-  warden:   { r: 2.6, hp: 24, sense: 60, tell: 1.25, lunge: 25, lungeT: 0.9, bite: 26, recover: 2.2, speed: 6.5, leash: 60, segs: 14, seg: 2.6 },
+  lurker:   { r: 1.5, hp: 6, sense: 30, tell: 1.0, lunge: 23, lungeT: 0.75, bite: 17, recover: 1.8, speed: 5, leash: 55, segs: 9, seg: 1.5, rest: 1.8 },
+  warden:   { r: 2.6, hp: 22, sense: 60, tell: 1.5, lunge: 21, lungeT: 0.9, bite: 18, recover: 2.6, speed: 6.0, leash: 60, segs: 14, seg: 2.6, rest: 3.0 },
   shade:    { r: 1.1, hp: 1, sense: 40, speed: 5.8, cone: 0.42, lightRange: 48, dmg: 11 },
   seal:     { r: 1.3, hp: 4 },
   boulder:  { r: 2.0, hp: 2, fall: 11, dmg: 22, tell: 1.3 },
@@ -382,7 +382,7 @@ export class GameSim {
       }
       case "recover":
         e.timer -= dt;
-        if (e.timer <= 0) { e.state = "patrol"; e.cd = 1.4; }
+        if (e.timer <= 0) { e.state = "patrol"; e.cd = c.rest; }
         break;
     }
     this._keepInWater(e.pos, c.r);
