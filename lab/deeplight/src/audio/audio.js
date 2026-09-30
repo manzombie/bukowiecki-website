@@ -11,7 +11,7 @@ export class GameAudio {
   constructor(settings) {
     this.settings = settings; this.ctx = null; this.buf = {};
     this.track = 0; this.musicOn = false;
-    settings.onChange((k) => { if (k === "musicVol" || k === "sfxVol") this._vol(); });
+    settings.onChange((k) => { if (k === "musicVol" || k === "sfxVol") this._vol(); if (k === "musicEnabled") this._applyMusic(); });
     document.addEventListener("visibilitychange", () => {
       if (!this.ctx) return;
       if (document.hidden) this.ctx.suspend(); else if (this.wantRunning) this.ctx.resume();
@@ -32,7 +32,7 @@ export class GameAudio {
       this._synth();
       await Promise.all([...TRACKS, ...ONESHOTS, "ambient"].map((n) => this._load(n)));
       this._ambient();
-      if (this.musicOn) this._startMusic();
+      this._applyMusic();
     } catch (_) { this.ctx = null; }
   }
 
@@ -83,8 +83,10 @@ export class GameAudio {
     const g = this.ctx.createGain(); g.gain.value = 0.55; s.connect(g).connect(this.sfx); s.start();
   }
 
-  setMusic(on) { this.musicOn = on; if (!this.ctx) return; if (on) this._startMusic(); else this._stopMusic(); }
-  nextTrack() { this.track = (this.track + 1) % TRACKS.length; if (this.musicOn) { this._stopMusic(); this._startMusic(); } return this.track; }
+  /** gameplay wants music (true while diving); plays only if the player has music enabled */
+  setMusic(on) { this.musicOn = on; this._applyMusic(); }
+  _applyMusic() { if (!this.ctx) return; if (this.musicOn && this.settings.get("musicEnabled") !== false) this._startMusic(); else this._stopMusic(); }
+  nextTrack() { this.track = (this.track + 1) % TRACKS.length; if (this.musicSrc) { this._stopMusic(); this._applyMusic(); } return this.track; }
   _startMusic() {
     if (this.musicSrc) return;
     const b = this.buf[TRACKS[this.track]]; if (!b) return;

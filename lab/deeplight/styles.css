@@ -114,6 +114,7 @@ kbd { font-family: var(--mono); font-size: .85em; padding: 1px 6px; border: 1px 
 .btn:hover, .btn:focus-visible { border-color: var(--warm); outline: none; }
 .btn.primary { background: var(--warm); color: #1a0d00; border-color: var(--warm); font-size: 16px; padding: 14px 34px; }
 .btn.primary:hover { background: #ffc98a; }
+.music-toggle[aria-pressed=false] { color: var(--dim); text-decoration: line-through; }
 .btn.small { padding: 6px 12px; min-height: 32px; font-size: 12px; }
 .foot { color: var(--dim); font-size: 12px; margin-top: 8px; }
 #best { color: var(--gold); font-size: 13px; min-height: 1em; }

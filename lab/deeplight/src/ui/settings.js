@@ -11,7 +11,7 @@ export class Settings {
     const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
     const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
     this.defaults = {
-      musicVol: 0.45, sfxVol: 0.85, sensitivity: 1, invertY: false, fov: 72,
+      musicVol: 0.45, musicEnabled: true, sfxVol: 0.85, sensitivity: 1, invertY: false, fov: 72,
       reducedMotion: reduce, shake: true, quality: coarse ? "low" : "medium",
       routeAssist: "sonar", bindings: null, seenTutorial: false,
     };

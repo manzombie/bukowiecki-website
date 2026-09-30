@@ -217,6 +217,11 @@ class Game {
         if (k === "quality") this.view.setQuality(v);
       });
     }
+    const musicBtns = [$("btn-music"), $("btn-p-music")];
+    this.syncMusicButtons = () => { const on = this.settings.get("musicEnabled") !== false; for (const b of musicBtns) { b.textContent = "♪ Music: " + (on ? "On" : "Off"); b.setAttribute("aria-pressed", String(on)); } };
+    this.toggleMusic = () => { this.settings.set("musicEnabled", this.settings.get("musicEnabled") === false); this.syncMusicButtons(); return this.settings.get("musicEnabled"); };
+    for (const b of musicBtns) b.addEventListener("click", (e) => { e.stopPropagation(); this.audio.unlock(); this.toggleMusic(); });
+    this.syncMusicButtons();
     on("btn-track", () => { const t = this.audio.nextTrack(); $("btn-track").textContent = "Track " + (t + 1); });
     on("btn-reset-keys", () => { this.input.resetBindings(); this._bindTable(); });
     this._bindTable();
@@ -335,10 +340,12 @@ class Game {
   _frame(dt) {
     const sim = this.sim, inp = this.input;
     const opts = { reducedMotion: this.settings.get("reducedMotion"), shake: this.settings.get("shake"), fov: this.settings.get("fov"), routeAssist: this.settings.get("routeAssist"), thrust: 0 };
-    if (inp.consume("debug")) this.debug.toggle();
+    // the developer overlay is only available with ?debug in the URL (so ` can't turn it on by accident)
+    if (inp.consume("debug") && params.has("debug")) this.debug.toggle();
 
     if (this.mode === "play") {
       if (inp.consume("pause")) { this.pause(); return; }
+      if (inp.consume("music")) this.hud.toast(this.toggleMusic() ? "MUSIC ON" : "MUSIC OFF", "#9fe8ff");
       if (inp.consume("camera")) this.rig.mode = this.rig.mode === "chase" ? "cockpit" : "chase";
       const st = this.bot ? this._botInput() : inp.state();
       const fi = this._frameInput;

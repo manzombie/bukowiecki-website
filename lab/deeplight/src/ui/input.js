@@ -21,6 +21,7 @@ export const DEFAULT_BINDINGS = {
   fire: ["KeyF"],
   sonar: ["KeyQ"],
   camera: ["KeyC"],
+  music: ["KeyM"],
   pause: ["Escape", "KeyP"],
   restart: ["KeyR"],
   debug: ["Backquote"],
@@ -28,7 +29,7 @@ export const DEFAULT_BINDINGS = {
 export const ACTION_LABELS = {
   thrust: "Forward thrust", reverse: "Brake / reverse", left: "Turn left", right: "Turn right",
   rise: "Rise", dive: "Descend", boost: "Boost", fire: "Fire (alt)", sonar: "Sonar",
-  camera: "Camera view", pause: "Pause", restart: "Restart (failure screen)",
+  camera: "Camera view", music: "Music on/off", pause: "Pause", restart: "Restart (failure screen)",
 };
 
 export class Input {
@@ -100,7 +101,7 @@ export class Input {
       if (e.repeat) return;
       this.keys.add(e.code);
       this.lastDevice = "keyboard";
-      if (act && ["sonar", "camera", "pause", "restart", "debug"].includes(act)) this.pressed.add(act);
+      if (act && ["sonar", "camera", "music", "pause", "restart", "debug"].includes(act)) this.pressed.add(act);
     } else this.keys.delete(e.code);
   }
 
