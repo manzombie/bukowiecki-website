@@ -36,3 +36,4 @@ lab/deeplight/levels/*.debug.png
 
 # Local backup copies of vfxtools (never commit)
 vfxtools_backup_*/
+lab/deeplight/tests/browser/out/
