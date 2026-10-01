@@ -1,7 +1,10 @@
 /* =================================================================
    films3d.js — real-time floating 3D film objects (Three.js, vanilla)
-   One lightweight WebGL viewer per film node, created lazily when the
-   node nears the viewport and rendered only while it's on screen.
+   ONE shared WebGL renderer + lighting environment for all film nodes.
+   Each node gets a small 2D canvas; the shared renderer draws that node's
+   view and it is copied into the node's canvas. One GPU context instead of
+   six (iOS Safari limits live contexts), canvases stay in the page flow (no
+   scroll lag). Nodes render only while on screen.
    Locked "alien" lighting recipe applied to all (see 3d-recipe.md).
    Graceful fallback: no-WebGL → static poster image.
    ================================================================= */
@@ -57,6 +60,18 @@ else if (!webglOK()) {
   loader.setDRACOLoader(draco);
   const viewers = new Map();   // node -> viewer
 
+  // ---- the single shared renderer (offscreen) + shared environment map
+  const shared = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+  shared.setPixelRatio(1);                 // we size in device pixels ourselves
+  shared.toneMapping = THREE.ACESFilmicToneMapping;
+  shared.toneMappingExposure = 1.1;
+  shared.outputColorSpace = THREE.SRGBColorSpace;
+  shared.setClearColor(0x000000, 0);
+  shared.setScissorTest(true);
+  let RW = 1, RH = 1;                      // shared drawing-buffer size (device px)
+  const envTex = new THREE.PMREMGenerator(shared).fromScene(new RoomEnvironment(), 0.04).texture;
+  const DPR = () => Math.min(window.devicePixelRatio || 1, 2);
+
   function placeRim(light) {
     const az = RECIPE.rimAz * Math.PI / 180;
     const el = RECIPE.rimEl * Math.PI / 180;
@@ -72,20 +87,14 @@ else if (!webglOK()) {
     const mount = node.querySelector(".film__viewer");
     const w = mount.clientWidth || 1, h = mount.clientHeight || 1;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(w, h);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    mount.appendChild(renderer.domElement);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    mount.appendChild(canvas);
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(35, w / h, 0.01, 100);
     camera.position.set(0, 0, 3.2);
-
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = envTex;
 
     const key = new THREE.DirectionalLight(0xcad6ff, RECIPE.key);
     key.position.set(-2, 2.5, 3);
@@ -95,14 +104,14 @@ else if (!webglOK()) {
     rim2.position.set(1.5, -1.2, -2);
     scene.add(key, rim, rim2, new THREE.AmbientLight(0x404048, 0.4));
 
-    const controls = new OrbitControls(camera, renderer.domElement);
+    const controls = new OrbitControls(camera, canvas);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
     controls.enableZoom = false;
     controls.enablePan = false;
     controls.autoRotate = false;   // motion comes from scroll (+ drag), not auto-spin
 
-    const v = { node, mount, renderer, scene, camera, controls, pivot: null, model: null, heroY: 0, ready: false, visible: true };
+    const v = { node, mount, canvas, ctx, pw: 1, ph: 1, scene, camera, controls, pivot: null, model: null, heroY: 0, ready: false, visible: true };
 
     loader.load(node.dataset.glb, (gltf) => {
       const model = gltf.scene;
@@ -150,12 +159,25 @@ else if (!webglOK()) {
   function sizeViewer(v) {
     const w = v.mount.clientWidth, h = v.mount.clientHeight;
     if (!w || !h) return;
-    v.renderer.setSize(w, h);
+    const d = DPR();
+    v.pw = Math.round(w * d); v.ph = Math.round(h * d);
+    v.canvas.width = v.pw; v.canvas.height = v.ph;
     v.camera.aspect = w / h;
     v.camera.updateProjectionMatrix();
+    if (v.pw > RW || v.ph > RH) { RW = Math.max(RW, v.pw); RH = Math.max(RH, v.ph); shared.setSize(RW, RH, false); }
   }
 
-  // Create lazily when near; keep alive (5 small contexts is fine), render only visible.
+  /** render one viewer with the shared renderer, then copy it into the node's canvas */
+  function drawViewer(v) {
+    shared.setViewport(0, 0, v.pw, v.ph);
+    shared.setScissor(0, 0, v.pw, v.ph);
+    shared.render(v.scene, v.camera);
+    v.ctx.clearRect(0, 0, v.pw, v.ph);
+    // GL origin is bottom-left: the rendered region is the bottom-left pw×ph block
+    v.ctx.drawImage(shared.domElement, 0, RH - v.ph, v.pw, v.ph, 0, 0, v.pw, v.ph);
+  }
+
+  // Create lazily when near; render only while visible.
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       const node = e.target;
@@ -197,7 +219,7 @@ else if (!webglOK()) {
         }
       }
       v.controls.update();
-      v.renderer.render(v.scene, v.camera);
+      drawViewer(v);
     });
 
     if (DEBUG_ROT) {

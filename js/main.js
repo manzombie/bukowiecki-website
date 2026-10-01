@@ -45,6 +45,18 @@ const LAB_URL        = "https://lab.bukowiecki.co/"; // Studio Cipher lab CTA ta
     })
     .filter(Boolean);
 
+  const navToggle = nav.querySelector(".nav__toggle");
+  if (navToggle) {
+    const setOpen = (open) => {
+      nav.classList.toggle("is-open", open);
+      navToggle.setAttribute("aria-expanded", String(open));
+      navToggle.textContent = open ? "Close" : "Menu";
+    };
+    navToggle.addEventListener("click", () => setOpen(!nav.classList.contains("is-open")));
+    navLinks.forEach((a) => a.addEventListener("click", () => setOpen(false)));
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") setOpen(false); });
+  }
+
   function onScrollNav() {
     nav.classList.toggle("is-scrolled", window.scrollY > 40);
   }
@@ -89,140 +101,7 @@ const LAB_URL        = "https://lab.bukowiecki.co/"; // Studio Cipher lab CTA ta
   }
 
   /* ---------------------------------------------------------------
-     3. FILM VIDEOS — scroll-scrubbed (like the hero sequence)
-        Scroll position is the playhead: scroll DOWN plays the clip
-        forward, scroll UP plays it backward. Each node maps its
-        travel through the viewport (enter→leave) to currentTime.
-        Lazy-load sources; only scrub videos currently in view.
-     --------------------------------------------------------------- */
-  const filmVideos = document.querySelectorAll("[data-film-video]");
-
-  function loadVideoSources(video) {
-    if (video.dataset.loaded) return;
-    video.querySelectorAll("source[data-src]").forEach((s) => {
-      s.src = s.dataset.src;
-    });
-    video.preload = "auto";
-    video.load();
-    video.dataset.loaded = "1";
-  }
-
-  // Release a video's decoder + buffers when it's far off-screen. Browsers keep
-  // only a few video decoders alive; holding all five means the oldest (the first
-  // node, Avatar) gets silently evicted and frozen. Unloading distant clips caps
-  // live decoders to the one or two near the viewport, so the node you're looking
-  // at always owns a decoder. It reloads from HTTP cache when you scroll back.
-  function unloadVideoSources(video) {
-    if (!video.dataset.loaded) return;
-    video.pause();
-    video.querySelectorAll("source").forEach((s) => s.removeAttribute("src"));
-    video.removeAttribute("src");
-    video.load(); // frees the decoder; falls back to the poster frame
-    delete video.dataset.loaded;
-  }
-
-  if (!prefersReducedMotion && !isMobile && filmVideos.length) {
-    // Progress of a node through the viewport:
-    // 0 = top edge entering at the bottom, 0.5 = centered, 1 = bottom edge leaving at the top.
-    function nodeProgress(rect, vh) {
-      return Math.min(1, Math.max(0, (vh - rect.top) / (vh + rect.height)));
-    }
-
-    // A self-converging rAF loop (NOT scroll-event gated). Each frame it samples
-    // the live scroll position and seeks the film videos toward their target
-    // currentTime. A seek that can't run this frame (still seeking) is retried
-    // next frame, so nothing gets stranded the way a single-shot scroll handler
-    // could. The loop runs only while ≥1 film node is on screen and parks once
-    // the scroll position has been stable and all seeks have settled.
-    //
-    // IMPORTANT — decoder budget: browsers keep only a few video decoders alive.
-    // Seeking all five WebMs at once thrashes and the least-recently-used ones
-    // get evicted and freeze on a stale frame. So we scrub ONLY the single
-    // most-centered node each frame (one active decoder); the others hold their
-    // last frame until they become the centered one — which is exactly how you
-    // view them while scrolling past one at a time.
-    let visibleCount = 0;
-    let looping = false;
-    let lastY = null;
-    let stableFrames = 0;
-
-    function tick() {
-      if (visibleCount <= 0) { looping = false; return; }
-      const vh = window.innerHeight;
-      const y = window.scrollY;
-      if (y === lastY) { stableFrames++; } else { stableFrames = 0; lastY = y; }
-
-      // Find the in-view video whose center is nearest the viewport center.
-      let video = null, bestDist = Infinity;
-      filmVideos.forEach((v) => {
-        if (!v._inView) return;
-        const r = v.getBoundingClientRect();
-        const dist = Math.abs(r.top + r.height / 2 - vh / 2);
-        if (dist < bestDist) { bestDist = dist; video = v; }
-      });
-
-      let pending = false; // seek still settling?
-      if (video) {
-        const d = video.duration;
-        if (!d || !isFinite(d)) {
-          pending = true;                  // metadata not ready — keep looping
-        } else {
-          if (!video.paused) video.pause(); // scroll is the clock — never free-run
-          if (video.seeking) {
-            pending = true;                 // retry next frame
-          } else {
-            const rect = video.getBoundingClientRect();
-            const target = Math.min(d - 0.04, nodeProgress(rect, vh) * d);
-            if (Math.abs(target - video.currentTime) > 0.03) {
-              video.currentTime = target;   // currentTime drives the playhead
-              pending = true;
-            }
-          }
-        }
-      }
-
-      // Park once the page is still and the active video has reached target.
-      if (stableFrames > 12 && !pending) { looping = false; return; }
-      requestAnimationFrame(tick);
-    }
-    function startLoop() {
-      if (!looping) { looping = true; stableFrames = 0; lastY = null; requestAnimationFrame(tick); }
-    }
-
-    // Track which nodes are near the viewport; lazy-load (and unload-when-far)
-    // their sources to cap live decoders; drive the loop. The generous margin
-    // keeps the current node + immediate neighbour loaded, and frees the rest.
-    const filmObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const video = entry.target;
-          if (entry.isIntersecting) {
-            loadVideoSources(video);
-            video.pause();
-            if (!video._inView) { video._inView = true; visibleCount++; }
-          } else {
-            if (video._inView) { video._inView = false; visibleCount--; }
-            unloadVideoSources(video); // far off-screen → free its decoder
-          }
-        });
-        if (visibleCount > 0) startLoop();
-      },
-      { rootMargin: "300px 0px 300px 0px", threshold: 0 }
-    );
-    filmVideos.forEach((video) => {
-      filmObserver.observe(video);
-      // Kick the loop when metadata lands so the first frame matches scroll pos.
-      video.addEventListener("loadedmetadata", () => { video.pause(); startLoop(); });
-    });
-
-    // Any scroll/resize wakes the loop (it parks itself when idle again).
-    window.addEventListener("scroll", startLoop, { passive: true });
-    window.addEventListener("resize", startLoop);
-  }
-  /* On mobile / reduced-motion the poster (WebP first frame) simply stays. */
-
-  /* ---------------------------------------------------------------
-     4. HERO — scroll-scrubbed frame sequence on a sticky canvas
+     3. HERO — scroll-scrubbed frame sequence on a sticky canvas
      --------------------------------------------------------------- */
   const FRAME_COUNT = 61;
   const framePath = (i) =>
@@ -251,9 +130,21 @@ const LAB_URL        = "https://lab.bukowiecki.co/"; // Studio Cipher lab CTA ta
       drawFromScroll();
     }
 
-    function drawFrame(index) {
+    // nearest frame that has finished loading (frames stream in progressively)
+    function nearestLoaded(index) {
+      for (let d = 0; d < FRAME_COUNT; d++) {
+        for (const i of [index - d, index + d]) {
+          const im = images[i];
+          if (im && im.complete && im.naturalWidth) return i;
+        }
+      }
+      return -1;
+    }
+
+    function drawFrame(wanted) {
+      const index = nearestLoaded(wanted);
+      if (index < 0) return;
       const img = images[index];
-      if (!img || !img.complete || !img.naturalWidth) return;
       if (index === currentFrame) return;
       currentFrame = index;
 
@@ -297,29 +188,30 @@ const LAB_URL        = "https://lab.bukowiecki.co/"; // Studio Cipher lab CTA ta
       });
     }
 
-    // Preload the ENTIRE sequence before enabling scrub.
-    for (let i = 1; i <= FRAME_COUNT; i++) {
-      const img = new Image();
-      img.onload = img.onerror = () => {
-        loadedCount++;
-        if (loadedCount === FRAME_COUNT) {
-          ready = true;
-          resizeCanvas();
-          drawFrame(0);
-          drawFromScroll();
-        } else if (i === 1) {
-          // show frame 1 as soon as it lands, even mid-preload
-          drawFrame(0);
-        }
-      };
-      img.src = framePath(i);
-      images[i - 1] = img;
+    // Load the opening frames first so the hero appears immediately, then stream
+    // the rest a few at a time (the scrub uses the nearest loaded frame meanwhile).
+    function loadFrame(i) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.decoding = "async";
+        img.onload = img.onerror = () => {
+          loadedCount++;
+          if (i === 1) { ready = true; resizeCanvas(); }
+          else if (ready) { currentFrame = -1; drawFromScroll(); }
+          resolve();
+        };
+        img.src = framePath(i);
+        images[i - 1] = img;
+      });
     }
-
-    // Draw frame 1 the instant it's available so we never show empty canvas.
-    if (images[0]) {
-      images[0].decode ? images[0].decode().then(() => { resizeCanvas(); drawFrame(0); }).catch(() => {}) : null;
-    }
+    (async () => {
+      await loadFrame(1);
+      const order = [];
+      for (let i = 2; i <= FRAME_COUNT; i++) order.push(i);
+      for (let k = 0; k < order.length; k += 6) {
+        await Promise.all(order.slice(k, k + 6).map(loadFrame));
+      }
+    })();
 
     window.addEventListener("scroll", onScrollHero, { passive: true });
     window.addEventListener("resize", resizeCanvas);

@@ -16,13 +16,30 @@
   <meta property="og:title" content="Lukasz Bukowiecki — VFX Editor &amp; Workflow Builder" />
   <meta property="og:description" content="VFX editorial on Avatar, Gravity, Harry Potter, Black Mirror and The Rings of Power. I build the tools that take the manual work out of editorial." />
   <meta property="og:url" content="https://bukowiecki.co/" />
-  <!-- OG image = hero end frame (Oscar presented) on black -->
+  <!-- OG image = hero end frame on black -->
   <meta property="og:image" content="https://bukowiecki.co/images/og-image.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Lukasz Bukowiecki — VFX Editor &amp; Workflow Builder" />
   <meta name="twitter:description" content="VFX editorial on Avatar, Gravity, Harry Potter, Black Mirror and The Rings of Power. I build the tools that take the manual work out of editorial." />
   <meta name="twitter:image" content="https://bukowiecki.co/images/og-image.jpg" />
   <link rel="canonical" href="https://bukowiecki.co/" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Lukasz Bukowiecki",
+    "url": "https://bukowiecki.co/",
+    "jobTitle": "VFX Editor",
+    "description": "VFX editor on Avatar, Gravity, Harry Potter, Black Mirror and The Rings of Power, building editorial workflow tools including FRAME/SHIFT.",
+    "address": { "@type": "PostalAddress", "addressLocality": "London", "addressCountry": "GB" },
+    "knowsAbout": ["VFX editorial", "EDL and ALE workflows", "Shot tracking", "Conform", "Post-production pipeline tools"],
+    "sameAs": [
+      "https://www.imdb.com/name/nm3164979/",
+      "https://www.linkedin.com/in/lukasz-bukowiecki",
+      "https://x.com/manzombie_eth"
+    ]
+  }
+  </script>
 
   <!-- ============================================================= -->
   <!-- FONTS — serif (story) + mono (machine)                         -->
@@ -34,7 +51,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/style.css?v=copy1" />
+  <link rel="stylesheet" href="css/style.css?v=r2" />
 
   <!-- Three.js (vanilla, CDN, no build step) for the real-time 3D film objects -->
   <script type="importmap">
@@ -48,13 +65,15 @@
 </head>
 
 <body>
+  <a class="skip-link mono" href="#work">Skip to content</a>
 
   <!-- ============================================================= -->
   <!-- NAV — fixed, minimal, mono                                     -->
   <!-- ============================================================= -->
   <header class="nav" id="nav">
     <a href="#top" class="nav__brand">bukowiecki.co</a>
-    <nav class="nav__links" aria-label="Primary">
+    <button class="nav__toggle mono" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav__links" id="nav-links" aria-label="Primary">
       <a href="#work" data-nav="work">Work<span class="nav__dot" aria-hidden="true"></span></a>
       <a href="#frameshift" data-nav="frameshift">FRAME/SHIFT<span class="nav__dot" aria-hidden="true"></span></a>
       <a href="#vfx-tools" data-nav="vfx-tools">VFX Tools<span class="nav__dot" aria-hidden="true"></span></a>
@@ -93,12 +112,13 @@
           </p>
           <div class="hero__cta-row">
             <a href="#work" class="btn btn--accent mono">&rarr; See the work</a>
+            <a href="#frameshift" class="btn btn--ghost mono">FRAME/SHIFT &rarr;</a>
           </div>
         </div>
 
         <!-- Thin mono proof line -->
         <p class="hero__proof mono">
-          FEATURES &amp; EPISODIC ·
+          CREDITS ON OSCAR- &amp; BAFTA-WINNING PRODUCTIONS ·
           <a href="https://www.imdb.com/name/nm3164979/" class="proof__link" target="_blank" rel="noopener">IMDB &nearr;</a>
         </p>
       </div>
@@ -120,10 +140,10 @@
     </div>
 
     <!-- AVATAR · 2009 -->
-    <article class="film film--left reveal" data-film="avatar" data-glb="films/avatar_rock.glb?v=rock1" data-roty="-45" data-rotx="30">
+    <article class="film film--left reveal" data-film="avatar" data-glb="films/avatar_rock.glb?v=c2" data-roty="-45" data-rotx="30">
       <div class="film__viewer" aria-hidden="true"></div>
-      <img class="film__poster" src="films/avatar.poster.webp" loading="lazy"
-           alt="A heavy piloted mech walker, shadowed pilot in an open cockpit, worn metal armor with an orange rim light raking the left plating, floating in a void." />
+      <img class="film__poster" src="films/avatar.poster.webp?v=c2" loading="lazy"
+           alt="A chunk of blue unobtanium ore floating above a round metal display plinth, orange rim light on its edge, in a black void." />
       <div class="film__caption">
         <h3 class="film__title">Avatar</h3>
         <p class="film__meta mono">VFX Editor · 2009 · Framestore</p>
@@ -132,9 +152,9 @@
     </article>
 
     <!-- HARRY POTTER · 2010–11 -->
-    <article class="film film--right reveal" data-film="hp" data-glb="films/hp.glb?v=hp2" data-roty="45">
+    <article class="film film--right reveal" data-film="hp" data-glb="films/hp.glb?v=c2" data-roty="45">
       <div class="film__viewer" aria-hidden="true"></div>
-      <img class="film__poster" src="films/hp.poster.webp" loading="lazy"
+      <img class="film__poster" src="films/hp.poster.webp?v=c2" loading="lazy"
            alt="Round wire-frame eyeglasses with an orange rim light catching the thin metal and temple arms, floating in a void." />
       <div class="film__caption">
         <h3 class="film__title">Harry Potter and the Deathly Hallows</h3>
@@ -144,10 +164,10 @@
     </article>
 
     <!-- GRAVITY · 2013 -->
-    <article class="film film--left reveal" data-film="gravity" data-glb="films/gravity_capsule.glb?v=cap1" data-rotz="-45" data-rotx="30">
+    <article class="film film--left reveal" data-film="gravity" data-glb="films/gravity_capsule.glb?v=c2" data-rotz="-45" data-rotx="30">
       <div class="film__viewer" aria-hidden="true"></div>
-      <img class="film__poster" src="films/gravity.poster.webp" loading="lazy"
-           alt="An empty Russian cosmonaut space helmet with a reflective visor and an 'L. DEMIDOV' name tag, orange glinting on the glass, floating in a void." />
+      <img class="film__poster" src="films/gravity.poster.webp?v=c2" loading="lazy"
+           alt="A small space capsule tumbling in a black void, its hull caught by an orange rim light." />
       <div class="film__caption">
         <h3 class="film__title">Gravity</h3>
         <p class="film__meta mono">VFX Editor · 2013 · Framestore</p>
@@ -156,9 +176,9 @@
     </article>
 
     <!-- ALIEN: COVENANT · 2017 -->
-    <article class="film film--right reveal" data-film="alien" data-glb="films/alien.glb?v=hd1" data-rotx="30" data-roty="-20">
+    <article class="film film--right reveal" data-film="alien" data-glb="films/alien.glb?v=c2" data-rotx="30" data-roty="-20">
       <div class="film__viewer" aria-hidden="true"></div>
-      <img class="film__poster" src="films/alien.poster.webp" loading="lazy"
+      <img class="film__poster" src="films/alien.poster.webp?v=c2" loading="lazy"
            alt="A biomechanical facehugger-style creature with bony finger-legs and a curled segmented tail, orange raking the spine, floating in a void." />
       <div class="film__caption">
         <h3 class="film__title">Alien: Covenant</h3>
@@ -168,9 +188,9 @@
     </article>
 
     <!-- BLACK MIRROR · 2019 -->
-    <article class="film film--left reveal" data-film="blackmirror" data-glb="films/blackmirror.glb?v=hd1" data-roty="-20" data-rotx="30">
+    <article class="film film--left reveal" data-film="blackmirror" data-glb="films/blackmirror.glb?v=c2" data-roty="-120" data-rotx="15">
       <div class="film__viewer" aria-hidden="true"></div>
-      <img class="film__poster" src="films/blackmirror.poster.webp" loading="lazy"
+      <img class="film__poster" src="films/blackmirror.poster.webp?v=c2" loading="lazy"
            alt="A switched-off smartphone with a cracked screen, orange glowing faintly through the spiderweb of cracks, floating in a void." />
       <div class="film__caption">
         <h3 class="film__title">Black Mirror</h3>
@@ -180,9 +200,9 @@
     </article>
 
     <!-- THE RINGS OF POWER · 2026 (the present — the climax of the scroll) -->
-    <article class="film film--right reveal" data-film="rop" data-glb="films/rop.glb?v=rop1" data-rotx="45" data-roty="-20">
+    <article class="film film--right reveal" data-film="rop" data-glb="films/rop.glb?v=c2" data-rotx="45" data-roty="-20">
       <div class="film__viewer" aria-hidden="true"></div>
-      <img class="film__poster" src="films/rop.poster.webp" loading="lazy"
+      <img class="film__poster" src="films/rop.poster.webp?v=c2" loading="lazy"
            alt="A freshly forged metal ring, a thin molten orange seam still glowing around its band, floating in a void." />
       <div class="film__caption">
         <h3 class="film__title">The Lord of the Rings: The Rings of Power</h3>
@@ -193,7 +213,7 @@
 
     <!-- Additional credits strip (text only, no objects) -->
     <p class="films__also mono reveal">
-      ALSO: KAOS · The Witcher: Blood Origin · Dracula · The Dark Crystal ·
+      ALSO: The Iris Affair · KAOS · The Witcher: Blood Origin · Dracula · The Dark Crystal ·
       A Discovery of Witches · Brave New World · Guardians of the Galaxy Vol. 2 ·
       Paddington 1–2 · Everest · Jupiter Ascending · Geostorm · The Golden Compass
     </p>
@@ -232,9 +252,14 @@
   <!-- ============================================================= -->
   <section class="section product" id="frameshift">
     <div class="product__inner reveal">
-      <div class="product__object">
-        <img class="product__logo" src="images/frame_shift_logo_WHITE.png"
+      <div class="product__object product__object--shot">
+        <img class="product__logo product__logo--small" src="images/frame_shift_logo_WHITE.png"
              alt="FRAME/SHIFT logo." loading="lazy" />
+        <figure class="shot-frame">
+          <img src="images/frameshift-shot-desk.webp" width="2160" height="1095" loading="lazy"
+               alt="FRAME/SHIFT Shot Desk: one shot's status, vendor, notes history, cut and source timecode ranges, and count-sheet export, shown with sample data." />
+          <figcaption class="mono">Shot Desk · sample data</figcaption>
+        </figure>
       </div>
       <div class="product__copy">
         <h2 class="section__title">FRAME/SHIFT.</h2>
@@ -344,7 +369,7 @@
       </p>
       <!-- Mr. Lobster — one line, proof of shipping; never a second pitch -->
       <p class="now__elsewhere">
-        <img class="now__lobster" src="images/mr_lobster_PFP.png"
+        <img class="now__lobster" src="images/mr_lobster.webp" width="48" height="48"
              alt="Mr. Lobster — a brushed-metal lobster brand mark." loading="lazy" />
         <span>Elsewhere: <strong>Mr.&nbsp;Lobster</strong> — proof I ship AI products outside film.
         <a class="link-mono mono" href="https://mrlobster.co.uk" target="_blank" rel="noopener">&rarr; mrlobster.co.uk &nearr;</a></span>
@@ -362,8 +387,7 @@
     <div class="about__body reveal">
       <p class="prose">
         I was the kid who stayed through the credits, wondering who all those
-        people were. It took nine years of studying while working restaurant
-        shifts to become one of them.
+        people were.
       </p>
       <p class="prose">
         Seventeen years later, my name has scrolled past on Avatar, Gravity,
@@ -387,6 +411,7 @@
       <p class="contact__sub">For VFX editorial, AI in post-production pipelines, or speaking.</p>
       <div class="contact__links mono">
         <a href="mailto:lukasz.vfx@gmail.com">EMAIL &nearr;</a>
+        <a href="mailto:lukasz.vfx@gmail.com?subject=CV%20request">CV ON REQUEST &nearr;</a>
         <a href="https://www.linkedin.com/in/lukasz-bukowiecki" target="_blank" rel="noopener">LINKEDIN &nearr;</a>
         <a href="https://www.imdb.com/name/nm3164979/" target="_blank" rel="noopener">IMDB &nearr;</a>
         <a href="https://x.com/manzombie_eth" target="_blank" rel="noopener">X &nearr;</a>
@@ -395,7 +420,7 @@
     <footer class="footer mono">© 2026 Lukasz Bukowiecki · bukowiecki.co</footer>
   </section>
 
-  <script src="js/main.js?v=3d1"></script>
-  <script type="module" src="js/films3d.js?v=3d7"></script>
+  <script src="js/main.js?v=r2"></script>
+  <script type="module" src="js/films3d.js?v=r2"></script>
 </body>
 </html>
