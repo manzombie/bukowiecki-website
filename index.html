@@ -24,21 +24,139 @@
   <meta name="twitter:image" content="https://bukowiecki.co/images/og-image.jpg" />
   <link rel="canonical" href="https://bukowiecki.co/" />
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "Lukasz Bukowiecki",
-    "url": "https://bukowiecki.co/",
-    "jobTitle": "VFX Editor",
-    "description": "VFX editor on Avatar, Gravity, Harry Potter, Black Mirror and The Rings of Power, building editorial workflow tools including FRAME/SHIFT.",
-    "address": { "@type": "PostalAddress", "addressLocality": "London", "addressCountry": "GB" },
-    "knowsAbout": ["VFX editorial", "EDL and ALE workflows", "Shot tracking", "Conform", "Post-production pipeline tools"],
-    "sameAs": [
-      "https://www.imdb.com/name/nm3164979/",
-      "https://www.linkedin.com/in/lukasz-bukowiecki",
-      "https://x.com/manzombie_eth"
-    ]
-  }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": "https://bukowiecki.co/#person",
+      "name": "Lukasz Bukowiecki",
+      "url": "https://bukowiecki.co/",
+      "image": "https://bukowiecki.co/images/og-image.jpg",
+      "jobTitle": "VFX Editor",
+      "description": "VFX editor on Avatar, Gravity, Harry Potter, Black Mirror and The Rings of Power, building editorial workflow tools including FRAME/SHIFT.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "London",
+        "addressCountry": "GB"
+      },
+      "knowsAbout": [
+        "VFX editorial",
+        "EDL and ALE workflows",
+        "Shot tracking",
+        "Conform",
+        "Post-production pipeline tools"
+      ],
+      "knowsLanguage": [
+        "en",
+        "pl"
+      ],
+      "sameAs": [
+        "https://www.imdb.com/name/nm3164979/",
+        "https://www.linkedin.com/in/lukasz-bukowiecki",
+        "https://x.com/manzombie_eth"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://bukowiecki.co/#website",
+      "url": "https://bukowiecki.co/",
+      "name": "Lukasz Bukowiecki — VFX Editor & Workflow Builder",
+      "publisher": {
+        "@id": "https://bukowiecki.co/#person"
+      }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://bukowiecki.co/#work",
+      "name": "Selected VFX editorial credits",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "Movie",
+            "name": "Avatar",
+            "contributor": {
+              "@id": "https://bukowiecki.co/#person"
+            },
+            "dateCreated": "2009"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "Movie",
+            "name": "Harry Potter and the Deathly Hallows",
+            "contributor": {
+              "@id": "https://bukowiecki.co/#person"
+            },
+            "dateCreated": "2010"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "Movie",
+            "name": "Gravity",
+            "contributor": {
+              "@id": "https://bukowiecki.co/#person"
+            },
+            "dateCreated": "2013"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "Movie",
+            "name": "Alien: Covenant",
+            "contributor": {
+              "@id": "https://bukowiecki.co/#person"
+            },
+            "dateCreated": "2017"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "TVSeries",
+            "name": "Black Mirror",
+            "contributor": {
+              "@id": "https://bukowiecki.co/#person"
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "TVSeries",
+            "name": "The Lord of the Rings: The Rings of Power",
+            "contributor": {
+              "@id": "https://bukowiecki.co/#person"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "VFX EDL Audit",
+      "url": "https://bukowiecki.co/vfxtools/edl-audit.html",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Web browser",
+      "isAccessibleForFree": true,
+      "description": "Compare two EDL cuts and list every trim, take change, omitted and new VFX shot; export CSV, JSON or Avid SUBCAPS.",
+      "author": {
+        "@id": "https://bukowiecki.co/#person"
+      }
+    }
+  ]
+}
   </script>
 
   <!-- ============================================================= -->
