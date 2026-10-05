@@ -506,6 +506,32 @@
         .warnings-section li:last-child {
             border-bottom: none;
         }
+        /* ---- Dark-theme fix (2026-10): the shared dark styles.css made the
+           text light, but these result blocks still had light backgrounds,
+           so table rows were near-invisible. Dark tints, same colour coding. */
+        .drop-area:hover { background: rgba(255,77,0,.08); }
+        .drop-area.drag-over, .drop-area.has-file { background: rgba(46,160,67,.10); }
+        .drop-area.has-file, .drop-area.has-file * { color: #e8e8e8; }
+        .summary-changes, .changes-title { background: rgba(66,135,245,.14); }
+        .summary-omit,    .omit-title    { background: rgba(229,57,53,.14); }
+        .summary-new,     .new-title     { background: rgba(67,160,71,.14); }
+        .summary-takes                   { background: rgba(255,152,0,.14); }
+        .summary-changes .summary-value, .changes-title, .audit-table .delta.changed { color: #7fb2ff; }
+        .summary-omit .summary-value,    .omit-title  { color: #ff8a80; }
+        .summary-new .summary-value,     .new-title   { color: #81c995; }
+        .summary-takes .summary-value                 { color: #ffb74d; }
+        .row-changed, .row-changed td { background: #141414; color: #e8e8e8; }
+        .row-unchanged, .row-unchanged td { background: #0e0e0e; color: #8a8a8a; }
+        .row-omit td { background: rgba(229,57,53,.08); color: #e8e8e8; }
+        .row-new td  { background: rgba(67,160,71,.08); color: #e8e8e8; }
+        .audit-table tbody tr:hover td { background: #1c1c1c; }
+        .conf-high { background: rgba(67,160,71,.18); color: #81c995; }
+        .conf-med  { background: rgba(255,152,0,.18); color: #ffb74d; }
+        .conf-low  { background: rgba(229,57,53,.18); color: #ff8a80; }
+        .warnings-section { background: rgba(255,193,7,.10); }
+        .warnings-section h3 { color: #ffd54f; }
+        .subcaps-controls select { background: #141414; color: #e8e8e8; }
+        .subcaps-controls select option { background: #141414; color: #e8e8e8; }
     </style>
 </head>
 <body>
@@ -693,7 +719,7 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <p>&copy; 2025 Lukasz Bukowiecki. All rights reserved.</p>
+                <p>&copy; Lukasz Bukowiecki. All rights reserved.</p>
                 <p>Part of <a href="https://bukowiecki.co/" class="footer-link">bukowiecki.co</a></p>
             </div>
         </div>

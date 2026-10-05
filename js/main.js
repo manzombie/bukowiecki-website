@@ -31,6 +31,10 @@ const LAB_URL        = "https://lab.bukowiecki.co/"; // Studio Cipher lab CTA ta
   document.querySelectorAll('[data-link="lab"]').forEach((a) => {
     a.setAttribute("href", LAB_URL);
   });
+  // Footer year stays current without edits
+  document.querySelectorAll("[data-year]").forEach((el) => {
+    el.textContent = String(new Date().getFullYear());
+  });
 
   /* ---------------------------------------------------------------
      1. NAV — background on scroll + active-section dot
