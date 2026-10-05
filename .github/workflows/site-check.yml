@@ -1,0 +1,18 @@
+name: Site check
+
+# Runs the same check the deploys run, on every PR and branch push, so problems
+# show up before anything is merged to main (merging to main deploys live).
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Broken links, share-preview tags, stale copy, JSON-LD, sitemaps
+        run: python3 tools/site_check.py

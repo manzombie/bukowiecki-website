@@ -17,6 +17,8 @@ on:
       - '.github/workflows/deploy-lab.yml'
       - '.github/workflows/deploy-vfxtools.yml'
       - '**.md'
+      - 'tools/**'
+      - '.github/workflows/site-check.yml'
   workflow_dispatch:
 
 concurrency:
@@ -41,13 +43,16 @@ jobs:
         if: steps.gate.outputs.ready == 'true'
         uses: actions/checkout@v4
 
+      - name: Site check (blocks deploy on broken links / stale copy / bad meta)
+        if: steps.gate.outputs.ready == 'true'
+        run: python3 tools/site_check.py
+
       - name: Stage redesign files only (exclude sub-apps + cruft)
         if: steps.gate.outputs.ready == 'true'
         run: |
           mkdir -p _deploy
           cp -r index.html css js hero films images _deploy/
           cp robots.txt sitemap.xml _deploy/
-          [ -f glb-test.html ] && cp glb-test.html _deploy/ || true
           find _deploy -name '.DS_Store' -delete
           echo "Staged $(find _deploy -type f | wc -l) files."
 

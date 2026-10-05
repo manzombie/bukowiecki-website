@@ -40,6 +40,10 @@ jobs:
         if: steps.gate.outputs.ready == 'true'
         uses: actions/checkout@v4
 
+      - name: Site check (blocks deploy on broken links / stale copy / bad meta)
+        if: steps.gate.outputs.ready == 'true'
+        run: python3 tools/site_check.py
+
       - name: Stage lab files (exclude cruft + throwaway tests)
         if: steps.gate.outputs.ready == 'true'
         run: |
